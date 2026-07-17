@@ -1,21 +1,62 @@
-```txt
-npm install
-npm run dev
+# MiraiWay — コーポレートサイト リニューアル（第一弾）
+
+## プロジェクト概要
+- **名称**: MiraiWay コーポレートサイト リニューアル
+- **目的**: 現行サイト（https://www.miraiway-japan.com/）を、提供されたリニューアルデザイン画像に基づきブラッシュアップ
+- **コンセプト**: 「国境を越えて、可能性はつながる。」— スリランカと日本をつなぐ蛇行するリボン（道）のモチーフと、回転するワードグローブによるビジュアル表現
+
+## URL
+- **開発プレビュー（サンドボックス）**: https://3000-im82ctc1q1b4ryp0dspqf-d0b9e1e2.sandbox.novita.ai
+- **本番**: 未デプロイ（Cloudflare Pages へのデプロイは次ステップ）
+
+## 完成済み機能（第一弾）
+- ✅ 固定ヘッダー（スクロール時シャドウ、モバイルハンバーガーメニュー）
+- ✅ ヒーローセクション：キャッチコピー＋**3D回転ワードグローブ**（MiraiWay / Japan / Connection 等36ワード、Fibonacci球面配置＋requestAnimationFrame）
+- ✅ 蛇行リボン（SVGグラデーション：ゴールド→ブルー）
+- ✅ 01 ABOUT US：会社紹介＋緑の丘陵写真＋実績数値
+- ✅ 02 SERVICES：4つの支援（人材マッチング / 日本語教育 / 企業サポート / 定着支援）円形アイコンカード
+- ✅ 03 PROCESS：ご利用の流れ5ステップ（点線タイムライン、東京スカイライン背景）
+- ✅ 04 CONTACT：お問い合わせフォーム（バリデーション付き、API連携）＋握手写真
+- ✅ ネイビーのフッター（サイトマップ・CTA・プライバシーポリシー/利用規約リンク）
+- ✅ スクロールリビール・アニメーション（IntersectionObserver）
+- ✅ レスポンシブ対応（PC / タブレット / スマホ）
+
+## 機能エントリーポイント（URI）
+| メソッド | パス | 説明 |
+|---|---|---|
+| GET | `/` | メインページ（ワンページ構成） |
+| POST | `/api/contact` | お問い合わせ受付 `{name, company?, email, message}` → `{ok, message}` |
+| GET | `/static/*` | 静的アセット（CSS / JS / 画像 / favicon） |
+
+## 未実装機能・次の推奨ステップ
+1. **お問い合わせメール送信連携**（Resend / SendGrid 等。APIキーは Cloudflare secrets で管理）
+2. **お問い合わせ履歴の保存**（Cloudflare D1）
+3. **英語版（EN）ページ**（ヘッダーの言語切替は現在ダミー）
+4. **会社概要・採用情報の個別ページ**
+5. **Cloudflare Pages への本番デプロイ＋独自ドメイン（miraiway-japan.com）接続**
+6. 写真素材の差し替え（実際の現地写真・スタッフ写真へ）
+
+## データアーキテクチャ
+- **データモデル**: 現時点では永続化なし（お問い合わせはAPI受付のみ）
+- **ストレージ**: 未使用（次段階で D1 を導入予定）
+
+## ユーザーガイド
+1. トップページを開くと、ヒーローに回転するワードグローブが表示されます
+2. ナビゲーションまたはスクロールで 01〜04 の各セクションへ移動
+3. 「お問い合わせ」フォームに必須項目（お名前・メール・内容）を入力して送信すると受付完了メッセージが表示されます
+
+## デプロイ
+- **プラットフォーム**: Cloudflare Pages（予定）
+- **ステータス**: 🟡 サンドボックス開発プレビュー稼働中
+- **技術スタック**: Hono + TypeScript + Vite + Vanilla CSS/JS（CDN: Font Awesome, Axios, Google Fonts）
+- **最終更新**: 2026-07-17
+
+## 開発コマンド
+```bash
+npm run build                      # ビルド
+pm2 start ecosystem.config.cjs     # 開発サーバー起動（port 3000）
+npm run deploy                     # Cloudflare Pages デプロイ（要APIトークン）
 ```
 
-```txt
-npm run deploy
-```
-
-[For generating/synchronizing types based on your Worker configuration run](https://developers.cloudflare.com/workers/wrangler/commands/#types):
-
-```txt
-npm run cf-typegen
-```
-
-Pass the `CloudflareBindings` as generics when instantiation `Hono`:
-
-```ts
-// src/index.ts
-const app = new Hono<{ Bindings: CloudflareBindings }>()
-```
+## 画像ライセンス
+使用画像はすべて CC/パブリックドメインライセンスの素材（image_search 経由で取得）。
