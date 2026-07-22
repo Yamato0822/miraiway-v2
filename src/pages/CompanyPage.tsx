@@ -16,203 +16,264 @@ export const CompanyPage: FC = () => {
         {/* Custom Interactive Cursor */}
         <div id="custom-cursor" aria-hidden="true"></div>
 
+        {/* ===== 1. Apple-Pro Minimalist Hero Section ===== */}
         <section class="company-hero-section">
           <div class="company-bg-glow" aria-hidden="true"></div>
 
           <div class="company-container">
-            {/* Page Header */}
             <div class="company-page-header">
-              <span class="eyebrow">ABOUT US &bull; COMPANY OVERVIEW</span>
-              <h1 class="company-main-title">会社概要</h1>
+              <span class="eyebrow">01 &bull; COMPANY OVERVIEW &amp; VISION</span>
+              <h1 class="company-main-title reveal">会社概要</h1>
+              <p class="company-hero-lead reveal">
+                国境を越え、確信の未来をつなぐ。<br />
+                日本とスリランカの二拠点から創り出す、持続可能な国際人材エコシステム。
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* ===== 2. Apple Executive Leadership Showcase Section (Moved UP) ===== */}
+        <section class="company-executive-section">
+          <div class="company-container">
+            <div class="section-label-bar">
+              <span class="section-label-num">02</span>
+              <span class="section-label-title">EXECUTIVE LEADERSHIP &amp; MESSAGES</span>
             </div>
 
-            {/* Split 2-Column Main Section */}
-            <div class="company-split-grid">
-              {/* Left Column: Company Overview & Mission */}
-              <div class="company-left-col">
-                <div class="company-brand-card">
-                  <div class="company-logo-header">
-                    <LogoMark width={80} height={66} />
-                    <span class="company-sub-brand">Japan &amp; Sri Lanka Bridge</span>
+            <div class="executive-showcase-grid">
+              {/* Executive 1: Hasitha Shamika */}
+              <div class="executive-card reveal">
+                <div class="executive-image-wrap">
+                  <img src="/static/images/hasitha-shamika.png" alt="Hasitha Shamika" loading="lazy" />
+                  <div class="executive-image-overlay">
+                    <span class="executive-region-tag"><i class="fas fa-globe-asia"></i> SRI LANKA DIRECTIVITY</span>
                   </div>
-
-                  <h2 class="company-catch-title">
-                    国境を越えて、可能性をつなぐ。<br />
-                    人材のキャリアと企業の未来を支える一気通貫サポート。
-                  </h2>
-                  <p class="company-mission-desc">
-                    スリランカ現地での高品質な教育から、厳選した人材マッチング、各種手続きの伴走、そして来日後の持続的な定着支援まで。日本とスリランカの確固たる両国体制で、企業様と働く方の双方が輝く未来を共創します。
-                  </p>
                 </div>
 
-                {/* Rich Styled Info List */}
-                <div class="company-info-card-wrap">
-                  <h3 class="info-card-title">基本情報</h3>
+                <div class="executive-body">
+                  <div class="executive-title-group">
+                    <span class="executive-role">共同代表 ／ スリランカ事業責任者</span>
+                    <h3 class="executive-name">Hasitha Shamika</h3>
+                  </div>
 
-                  <div class="company-info-list">
-                    <div class="info-item">
-                      <div class="item-icon-wrap">
-                        <i class="fas fa-building"></i>
-                      </div>
-                      <div class="item-body">
-                        <span class="item-label">会社名</span>
-                        <span class="item-value font-bold">MiraiWay（ミライウェイ）</span>
-                      </div>
-                    </div>
+                  <blockquote class="executive-quote">
+                    「スリランカ出身の当事者として、現地の教育機関・志の高い若者と確固たる信頼関係を築いています。日本でキャリアを切り拓きたい若者が安心して挑戦できるよう、来目前の高度教育から日本拠点との円滑な連携に全力を注ぎます。」
+                  </blockquote>
 
-                    <div class="info-item">
-                      <div class="item-icon-wrap">
-                        <i class="fas fa-calendar-alt"></i>
-                      </div>
-                      <div class="item-body">
-                        <span class="item-label">設立</span>
-                        <span class="item-value">2025年11月</span>
-                      </div>
-                    </div>
-
-                    <div class="info-item">
-                      <div class="item-icon-wrap">
-                        <i class="fas fa-map-marker-alt"></i>
-                      </div>
-                      <div class="item-body">
-                        <span class="item-label">所在地</span>
-                        <span class="item-value">東京都 ／ スリランカ</span>
-                      </div>
-                    </div>
-
-                    <div class="info-item">
-                      <div class="item-icon-wrap">
-                        <i class="fas fa-briefcase"></i>
-                      </div>
-                      <div class="item-body">
-                        <span class="item-label">事業内容</span>
-                        <span class="item-value">特定技能人材の採用・教育・定着支援（一気通貫）</span>
-                      </div>
-                    </div>
-
-                    <div class="info-item">
-                      <div class="item-icon-wrap">
-                        <i class="fas fa-globe-asia"></i>
-                      </div>
-                      <div class="item-body">
-                        <span class="item-label">対象国</span>
-                        <span class="item-value">スリランカ民主社会主義共和国</span>
-                      </div>
-                    </div>
-
-                    <div class="info-item">
-                      <div class="item-icon-wrap">
-                        <i class="fas fa-layer-group"></i>
-                      </div>
-                      <div class="item-body">
-                        <span class="item-label">対象分野</span>
-                        <span class="item-value">建築 ／ 介護 ／ 農業 ほか順次拡大</span>
-                      </div>
-                    </div>
-
-                    <div class="info-item">
-                      <div class="item-icon-wrap">
-                        <i class="fas fa-file-contract"></i>
-                      </div>
-                      <div class="item-body">
-                        <span class="item-label">許認可状況</span>
-                        <span class="item-value">各種登録・許可手続き準備中</span>
-                      </div>
-                    </div>
-
-                    <div class="info-item">
-                      <div class="item-icon-wrap">
-                        <i class="fas fa-coins"></i>
-                      </div>
-                      <div class="item-body">
-                        <span class="item-label">資本金</span>
-                        <span class="item-value">設立前</span>
-                      </div>
-                    </div>
-
-                    <div class="info-item">
-                      <div class="item-icon-wrap">
-                        <i class="fas fa-link"></i>
-                      </div>
-                      <div class="item-body">
-                        <span class="item-label">公式Web</span>
-                        <span class="item-value">
-                          <a href="https://www.miraiway-japan.com/" target="_blank" rel="noopener" class="inline-link">
-                            https://www.miraiway-japan.com/
-                          </a>
-                        </span>
-                      </div>
-                    </div>
-
-                    <div class="info-item">
-                      <div class="item-icon-wrap">
-                        <i class="fas fa-users"></i>
-                      </div>
-                      <div class="item-body">
-                        <span class="item-label">従業員数</span>
-                        <span class="item-value">日本・スリランカ計 8名（グループ・提携スタッフ含む）</span>
-                      </div>
-                    </div>
+                  <div class="executive-stat-mini">
+                    <span class="mini-label">RESPONSIBILITY</span>
+                    <span class="mini-value">現地直営校統括・面接選考・日本語教育</span>
                   </div>
                 </div>
               </div>
 
-              {/* Right Column: Co-Founders Profiles */}
-              <div class="company-right-col">
-                <div class="founders-header">
-                  <span class="founders-eyebrow">CO-FOUNDERS</span>
-                  <h2 class="founders-title">共同代表メッセージ・プロフィール</h2>
-                  <p class="founders-lead">スリランカと日本、双方の視点から信頼のサポートを提供します。</p>
+              {/* Executive 2: Hiroki Sato */}
+              <div class="executive-card reveal">
+                <div class="executive-image-wrap">
+                  <img src="/static/images/sato-hiroki.png" alt="佐藤 弘輝" loading="lazy" />
+                  <div class="executive-image-overlay">
+                    <span class="executive-region-tag orange"><i class="fas fa-building"></i> JAPAN DIRECTIVITY</span>
+                  </div>
                 </div>
 
-                <div class="founders-cards-wrap">
-                  {/* Founder 1 */}
-                  <div class="founder-card-premium">
-                    <div class="founder-card-badge">スリランカ現地責任</div>
-                    <div class="founder-photo-box">
-                      <img src="/static/images/hasitha-shamika.png" alt="Hasitha Shamika" loading="lazy" />
-                      <div class="photo-overlay"></div>
-                    </div>
-                    <div class="founder-card-content">
-                      <div class="founder-name-group">
-                        <h3 class="founder-name">Hasitha Shamika</h3>
-                        <p class="founder-role">共同代表 ／ スリランカ事業責任者</p>
-                      </div>
-                      <p class="founder-message">
-                        「スリランカ出身の当事者として、現地の教育機関・求職者と強固な絆を築いています。高い熱量を持つ若者が日本で輝けるよう、来日前の教育から日本・スリランカ間の円滑な連携に全力を注ぎます。」
-                      </p>
-                    </div>
+                <div class="executive-body">
+                  <div class="executive-title-group">
+                    <span class="executive-role orange">共同代表 ／ 日本事業責任者</span>
+                    <h3 class="executive-name">佐藤 弘輝</h3>
                   </div>
 
-                  {/* Founder 2 */}
-                  <div class="founder-card-premium">
-                    <div class="founder-card-badge">日本事業責任</div>
-                    <div class="founder-photo-box">
-                      <img src="/static/images/sato-hiroki.png" alt="佐藤 弘輝" loading="lazy" />
-                      <div class="photo-overlay"></div>
-                    </div>
-                    <div class="founder-card-content">
-                      <div class="founder-name-group">
-                        <h3 class="founder-name">佐藤 弘輝</h3>
-                        <p class="founder-role">共同代表 ／ 日本事業責任者</p>
-                      </div>
-                      <p class="founder-message">
-                        「日本企業様が抱える人材不足や受け入れに関する不安に寄り添い、単なる採用にとどまらない長期定着型の事業設計を推進します。企業の持続的成長と人材の挑戦を全力で支援いたします。」
-                      </p>
-                    </div>
+                  <blockquote class="executive-quote">
+                    「日本企業様が直面している深刻な人手不足や、特定技能受入れへの疑問・不安に真摯に寄り添います。単なる採用あっせんに留まらず、企業の持続的成長と働く方の成長が合致する長期伴走型の仕組みを共創します。」
+                  </blockquote>
+
+                  <div class="executive-stat-mini">
+                    <span class="mini-label orange">RESPONSIBILITY</span>
+                    <span class="mini-value">国内企業サポート・在留資格申請・定着支援</span>
                   </div>
                 </div>
               </div>
             </div>
+          </div>
+        </section>
 
-            {/* Bottom Slogan & Contact CTA Banner */}
-            <div class="company-bottom-banner">
-              <div class="banner-content">
-                <span class="star-sparkle">✦</span>
-                <p class="slogan-main">日本とスリランカの両国体制で、教育・採用・定着までを一気通貫で支援。</p>
-                <p class="slogan-sub">人材活用やご質問など、お気軽にご相談ください。</p>
-                <div class="banner-cta">
-                  <a href="/contact" class="btn btn-primary btn-banner-contact">
+        {/* ===== 3. Apple Spec Sheet Style Basic Information ===== */}
+        <section class="company-spec-section">
+          <div class="company-container">
+            <div class="section-label-bar">
+              <span class="section-label-num">03</span>
+              <span class="section-label-title">CORPORATE SPECIFICATIONS</span>
+            </div>
+
+            <div class="apple-spec-sheet-grid">
+              <div class="spec-row reveal">
+                <div class="spec-label">会社名</div>
+                <div class="spec-value font-bold">MiraiWay（ミライウェイ）</div>
+              </div>
+
+              <div class="spec-row reveal">
+                <div class="spec-label">設立</div>
+                <div class="spec-value">2025年11月</div>
+              </div>
+
+              <div class="spec-row reveal">
+                <div class="spec-label">拠在地</div>
+                <div class="spec-value">
+                  <div class="location-duo">
+                    <span class="loc-item"><strong>日本拠点:</strong> 東京都</span>
+                    <span class="loc-item"><strong>スリランカ拠点:</strong> コロンボ</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="spec-row reveal">
+                <div class="spec-label">事業内容</div>
+                <div class="spec-value">
+                  特定技能人材の現地教育、採用マッチング、各種在留資格申請サポート、渡航受入れ＆定着伴走支援（一気通貫サポート）
+                </div>
+              </div>
+
+              <div class="spec-row reveal">
+                <div class="spec-label">対象国</div>
+                <div class="spec-value">スリランカ民主社会主義共和国</div>
+              </div>
+
+              <div class="spec-row reveal">
+                <div class="spec-label">対象分野</div>
+                <div class="spec-value">建築 ／ 介護 ／ 農業 ほか順次拡大</div>
+              </div>
+
+              <div class="spec-row reveal">
+                <div class="spec-label">許認可状況</div>
+                <div class="spec-value">登録支援機関・各種関連許可 手続き準備中</div>
+              </div>
+
+              <div class="spec-row reveal">
+                <div class="spec-label">従業員・提携体制</div>
+                <div class="spec-value">日本・スリランカ計 8名（グループ・直営スクール講師・提携スタッフ含む）</div>
+              </div>
+
+              <div class="spec-row reveal">
+                <div class="spec-label">公式Webサイト</div>
+                <div class="spec-value">
+                  <a href="https://www.miraiway-japan.com/" target="_blank" rel="noopener" class="inline-spec-link">
+                    https://www.miraiway-japan.com/ <i class="fas fa-arrow-up-right-from-square"></i>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ===== 4. Infographic Metric Stats Section (Moved ABOVE Contact CTA) ===== */}
+        <section class="company-infographics-section">
+          <div class="company-container">
+            <div class="section-label-bar">
+              <span class="section-label-num">04</span>
+              <span class="section-label-title">KEY METRICS &amp; INFOGRAPHICS</span>
+            </div>
+
+            <div class="company-infographic-grid">
+              {/* Metric 1: Education Hours */}
+              <div class="infographic-card reveal">
+                <div class="card-metric-header">
+                  <span class="metric-tag">INTENSIVE TRAINING</span>
+                  <div class="metric-number-wrap">
+                    <span class="counter" data-target="600">0</span>
+                    <span class="metric-unit">時間+</span>
+                  </div>
+                </div>
+                <h3 class="metric-title">現地自社スクールでの直営徹底教育</h3>
+                <p class="metric-desc">
+                  日本語能力（N3〜N4相当）だけでなく、日本企業の商習慣・生活マナー・実務基礎まで妥協なくトレーニング。
+                </p>
+                <div class="metric-bar-bg">
+                  <div class="bar-animate" data-bar-height="88" style={{ width: '0%' }}></div>
+                </div>
+              </div>
+
+              {/* Metric 2: Time Difference & Dual Hub */}
+              <div class="infographic-card reveal">
+                <div class="card-metric-header">
+                  <span class="metric-tag">DUAL HUB SYNERGY</span>
+                  <div class="metric-number-wrap">
+                    <span class="counter" data-target="3">0</span>
+                    <span class="metric-decimal">.5</span>
+                    <span class="metric-unit">時間</span>
+                  </div>
+                </div>
+                <h3 class="metric-title">わずか3.5時間の時差が生むリアルタイム連携</h3>
+                <p class="metric-desc">
+                  東京とコロンボの二拠点が密に同期。面接のセッティングから各種ビザ申請、渡航手続きまでスピーディに対応。
+                </p>
+                <div class="metric-badge-list">
+                  <span class="infographic-badge"><i class="fas fa-location-dot"></i> TOKYO (JAPAN)</span>
+                  <span class="infographic-badge orange"><i class="fas fa-location-dot"></i> COLOMBO (SRI LANKA)</span>
+                </div>
+              </div>
+
+              {/* Metric 3: Core Sectors */}
+              <div class="infographic-card reveal">
+                <div class="card-metric-header">
+                  <span class="metric-tag">PRIMARY SECTORS</span>
+                  <div class="metric-number-wrap">
+                    <span class="counter" data-target="3">0</span>
+                    <span class="metric-unit">大主要分野</span>
+                  </div>
+                </div>
+                <h3 class="metric-title">建築 ・ 介護 ・ 農業 の特定技能に特化</h3>
+                <p class="metric-desc">
+                  人手不足が深刻な3大産業へ特化。専門知識を持った現地の即戦力候補者をスピーディに企業様へご紹介。
+                </p>
+                <div class="sector-icon-row">
+                  <div class="sector-chip"><i class="fas fa-building"></i> 建築</div>
+                  <div class="sector-chip"><i class="fas fa-heart-pulse"></i> 介護</div>
+                  <div class="sector-chip"><i class="fas fa-seedling"></i> 農業</div>
+                </div>
+              </div>
+
+              {/* Metric 4: Target Retention Rate */}
+              <div class="infographic-card highlight reveal">
+                <div class="card-metric-header">
+                  <span class="metric-tag orange">RETENTION TARGET</span>
+                  <div class="metric-number-wrap">
+                    <span class="counter" data-target="98">0</span>
+                    <span class="metric-decimal">.4</span>
+                    <span class="metric-unit">%</span>
+                  </div>
+                </div>
+                <h3 class="metric-title">来日後の手厚い生活＆キャリア伴走支援</h3>
+                <p class="metric-desc">
+                  入社後の生活相談・メンタルケア・キャリアアップ面談を実施。企業様と働く方の双方が長く満足できる環境を共創。
+                </p>
+                <div class="metric-gauge-indicator">
+                  <span class="gauge-fill"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ===== 5. Bottom Slogan & Contact CTA Banner ===== */}
+        <section class="company-cta-section">
+          <div class="company-container">
+            <div class="company-cta-banner reveal">
+              {/* Canvas for Shooting Star & Particle Animation */}
+              <canvas id="shooting-stars-canvas" class="shooting-star-canvas"></canvas>
+
+              <div class="cta-banner-content">
+                <div class="cta-logo-row">
+                  <LogoMark width={70} height={58} />
+                  <span class="cta-badge">JOIN THE FUTURE</span>
+                </div>
+                <h2 class="cta-main-title">
+                  確実な人材育成と、手厚い定着伴走。<br />
+                  MiraiWayとともに、新しい可能性を拓きませんか？
+                </h2>
+                <p class="cta-sub-desc">
+                  特定技能人材の活用計画のご相談から、現地教育の視察案内までお気軽にお問い合わせください。
+                </p>
+                <div class="cta-btn-wrap">
+                  <a href="/contact" class="btn btn-primary btn-cta-sparkle">
                     <span>お問い合わせフォームへ</span>
                     <i class="fas fa-arrow-right"></i>
                   </a>
@@ -227,3 +288,4 @@ export const CompanyPage: FC = () => {
     </Layout>
   )
 }
+

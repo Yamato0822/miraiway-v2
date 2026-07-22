@@ -2735,7 +2735,7 @@ textarea.form-control {
   transform: translate3d(0, 0, 0);
 }
 .srilanka-floating.is-dimmed {
-  opacity: 0.92;
+  opacity: 0.68;
   transform: translate3d(0, -6px, 0);
 }
 
@@ -2900,3 +2900,474 @@ textarea.form-control {
   a, button, .btn, .service-card-horizontal, .kinetic-track { cursor: auto !important; }
   #custom-cursor { display: none !important; }
 }
+
+/* ==========================================================================
+   Company Overview Page (Apple-Pro Infographics & Executive Showcase)
+   ========================================================================== */
+.company-page-main {
+  background: #f8fafc;
+  color: var(--color-slate-900);
+  position: relative;
+  padding-top: 100px;
+}
+
+.company-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* --- Section Label Bar --- */
+.section-label-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 20px;
+  margin-bottom: 32px;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+}
+.section-label-num {
+  font-family: var(--font-en);
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #0284c7;
+  letter-spacing: 0.1em;
+}
+.section-label-title {
+  font-family: var(--font-en);
+  font-size: 0.825rem;
+  font-weight: 700;
+  color: var(--color-slate-500);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+/* --- 1. Hero Section --- */
+.company-hero-section {
+  position: relative;
+  padding: 60px 0 40px;
+  text-align: left;
+}
+.company-hero-lead {
+  font-size: 1.25rem;
+  line-height: 1.8;
+  color: var(--color-slate-600);
+  max-width: 800px;
+  margin-top: 20px;
+  font-weight: 500;
+}
+
+/* --- 2. Infographics Section --- */
+.company-infographics-section {
+  padding: 60px 0;
+}
+.company-infographic-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 28px;
+}
+@media (max-width: 768px) {
+  .company-infographic-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.infographic-card {
+  position: relative;
+  background: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  padding: 36px 32px;
+  border-radius: 0px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+}
+.infographic-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08);
+  border-color: #0284c7;
+}
+.infographic-card.highlight {
+  background: linear-gradient(135deg, #ffffff 0%, #fff7ed 100%);
+  border-color: rgba(249, 115, 22, 0.3);
+}
+
+.card-metric-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+.metric-tag {
+  font-family: var(--font-en);
+  font-size: 0.725rem;
+  font-weight: 800;
+  color: #0284c7;
+  letter-spacing: 0.15em;
+  background: rgba(2, 132, 199, 0.08);
+  padding: 4px 10px;
+  border-radius: 0px;
+}
+.metric-tag.orange {
+  color: #f97316;
+  background: rgba(249, 115, 22, 0.08);
+}
+
+.metric-number-wrap {
+  display: flex;
+  align-items: baseline;
+  font-family: var(--font-en);
+}
+.counter {
+  font-size: 3.5rem;
+  font-weight: 800;
+  color: var(--color-slate-900);
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+.metric-decimal {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #f97316;
+  line-height: 1;
+}
+.metric-unit {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--color-slate-600);
+  margin-left: 4px;
+}
+
+.metric-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--color-slate-900);
+  margin-bottom: 10px;
+}
+.metric-desc {
+  font-size: 0.925rem;
+  line-height: 1.6;
+  color: var(--color-slate-600);
+}
+
+/* Metric Bars & Badges */
+.metric-bar-bg {
+  width: 100%;
+  height: 6px;
+  background: #f1f5f9;
+  margin-top: 24px;
+  overflow: hidden;
+}
+.bar-animate {
+  height: 100%;
+  background: linear-gradient(90deg, #0284c7 0%, #38bdf8 100%);
+  transition: width 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.metric-badge-list {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+.infographic-badge {
+  font-size: 0.75rem;
+  font-family: var(--font-en);
+  font-weight: 700;
+  color: #0284c7;
+  background: #f0f9ff;
+  border: 1px solid rgba(2, 132, 199, 0.2);
+  padding: 6px 12px;
+}
+.infographic-badge.orange {
+  color: #f97316;
+  background: #fff7ed;
+  border-color: rgba(249, 115, 22, 0.2);
+}
+
+.sector-icon-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+.sector-chip {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--color-slate-800);
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 8px 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.metric-gauge-indicator {
+  width: 100%;
+  height: 6px;
+  background: #f1f5f9;
+  margin-top: 24px;
+  position: relative;
+}
+.gauge-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 98.4%;
+  height: 100%;
+  background: linear-gradient(90deg, #f97316 0%, #fbbf24 100%);
+}
+
+/* --- 3. Apple Spec Sheet Section --- */
+.company-spec-section {
+  padding: 60px 0;
+}
+.apple-spec-sheet-grid {
+  border-top: 1px solid #e2e8f0;
+}
+.spec-row {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  padding: 24px 16px;
+  border-bottom: 1px solid #e2e8f0;
+  transition: background 0.3s ease;
+}
+.spec-row:hover {
+  background: #ffffff;
+}
+@media (max-width: 640px) {
+  .spec-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+}
+
+.spec-label {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-slate-500);
+}
+.spec-value {
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: var(--color-slate-900);
+}
+.location-duo {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.inline-spec-link {
+  color: #0284c7;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+.inline-spec-link:hover {
+  color: #f97316;
+  text-decoration: underline;
+}
+
+/* --- 4. Executive Showcase Section --- */
+.company-executive-section {
+  padding: 70px 0;
+}
+.executive-showcase-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 32px;
+}
+@media (max-width: 868px) {
+  .executive-showcase-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.executive-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+  box-shadow: 0 12px 35px rgba(15, 23, 42, 0.05);
+  transition: all 0.4s ease;
+}
+.executive-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 24px 50px rgba(15, 23, 42, 0.1);
+  border-color: #0284c7;
+}
+
+.executive-image-wrap {
+  position: relative;
+  width: 100%;
+  height: 320px;
+  background: #f1f5f9;
+  overflow: hidden;
+}
+.executive-image-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  transition: transform 0.6s ease;
+}
+.executive-card:hover .executive-image-wrap img {
+  transform: scale(1.04);
+}
+.executive-image-overlay {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+}
+.executive-region-tag {
+  font-size: 0.725rem;
+  font-family: var(--font-en);
+  font-weight: 800;
+  color: #ffffff;
+  background: rgba(2, 132, 199, 0.9);
+  padding: 6px 14px;
+  backdrop-filter: blur(8px);
+}
+.executive-region-tag.orange {
+  background: rgba(249, 115, 22, 0.9);
+}
+
+.executive-body {
+  padding: 32px 28px;
+}
+.executive-role {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #0284c7;
+  display: block;
+  margin-bottom: 6px;
+}
+.executive-role.orange {
+  color: #f97316;
+}
+.executive-name {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--color-slate-900);
+  margin-bottom: 16px;
+}
+.executive-quote {
+  font-size: 0.95rem;
+  line-height: 1.8;
+  color: var(--color-slate-700);
+  font-style: italic;
+  padding-left: 16px;
+  border-left: 3px solid #0284c7;
+  margin-bottom: 24px;
+}
+.executive-card:nth-child(2) .executive-quote {
+  border-left-color: #f97316;
+}
+
+.executive-stat-mini {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 16px;
+  border-top: 1px solid #f1f5f9;
+}
+.mini-label {
+  font-family: var(--font-en);
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: var(--color-slate-400);
+  letter-spacing: 0.1em;
+}
+.mini-value {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-slate-800);
+}
+
+/* --- 5. CTA Section & Shooting Star Background --- */
+.company-cta-section {
+  padding: 60px 0 100px;
+}
+.company-cta-banner {
+  position: relative;
+  background: linear-gradient(135deg, #0b1329 0%, #111c38 50%, #0f172a 100%);
+  color: #ffffff !important;
+  padding: 64px 48px;
+  border-radius: 0px;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.2);
+  overflow: hidden;
+  border: 1px solid rgba(2, 132, 199, 0.3);
+}
+
+/* Shooting Star Canvas Background */
+.shooting-star-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.cta-banner-content {
+  position: relative;
+  z-index: 2;
+}
+
+.cta-logo-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.cta-badge {
+  font-family: var(--font-en);
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #f97316;
+  letter-spacing: 0.15em;
+  border: 1px solid rgba(249, 115, 22, 0.5);
+  background: rgba(249, 115, 22, 0.1);
+  padding: 4px 14px;
+}
+
+.cta-main-title {
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1.5;
+  color: #ffffff !important;
+  margin-bottom: 18px;
+  letter-spacing: -0.01em;
+}
+
+.cta-sub-desc {
+  font-size: 1.05rem;
+  color: #cbd5e1 !important;
+  margin-bottom: 36px;
+  max-width: 720px;
+  line-height: 1.7;
+}
+
+.btn-cta-sparkle {
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  color: #ffffff !important;
+  padding: 16px 36px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 10px 25px rgba(2, 132, 199, 0.4);
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.3s ease;
+}
+.btn-cta-sparkle:hover {
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  box-shadow: 0 12px 30px rgba(249, 115, 22, 0.5);
+  transform: translateY(-2px);
+}
+.btn-cta-sparkle i {
+  color: #ffffff !important;
+  font-size: 1rem;
+}
+

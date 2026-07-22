@@ -911,16 +911,9 @@
       fadeDuration: 0
     });
 
-    map.on('error', event => {
-      const message = event && event.error && event.error.message
-        ? event.error.message
-        : 'Unknown map rendering error';
-      vectorMapContainer.dataset.mapError = message;
-      console.error(`[MapLibre] ${message}`);
-    });
-
     window.realMapLibreInstance = map;
 
+    // 2. Custom Pulse Marker DOM Elements for Sri Lanka & Japan Only
     const createPulsingDOM = (isOrange = false) => {
       const el = document.createElement('div');
       el.className = 'custom-map-marker';
@@ -932,11 +925,6 @@
 
     new maplibregl.Marker({ element: createPulsingDOM(false) }).setLngLat(sriLankaLngLat).addTo(map);
     new maplibregl.Marker({ element: createPulsingDOM(true) }).setLngLat(japanLngLat).addTo(map);
-
-    const particleEl = document.createElement('div');
-    particleEl.className = 'particle-flight-head';
-    particleEl.innerHTML = `<div style="width:14px;height:14px;border-radius:50%;background:#f59e0b;box-shadow:0 0 18px #f59e0b, 0 0 35px #fbbf24;"></div>`;
-    const particleMarker = new maplibregl.Marker({ element: particleEl }).setLngLat(sriLankaLngLat).addTo(map);
 
     function generateGreatCircleCoordinates(start, end, numPoints = 240) {
       const coords = [];
@@ -982,6 +970,18 @@
 
     map.on('load', () => {
       isMapLoaded = true;
+
+      // Clean up default basemap circle layers (e.g. China country dot, city place dots)
+      try {
+        const styleLayers = map.getStyle().layers || [];
+        styleLayers.forEach(layer => {
+          if (layer.type === 'circle') {
+            map.setLayoutProperty(layer.id, 'visibility', 'none');
+          }
+        });
+      } catch (e) {
+        console.warn('Basemap circle cleanup notice:', e);
+      }
       const firstLabelLayer = map.getStyle().layers.find(layer => layer.type === 'symbol');
 
       map.addSource('sri-lanka-src', {
@@ -995,13 +995,6 @@
         data: '/static/geojson/japan.json',
         tolerance: 0.1,
         buffer: 64
-      });
-      vectorMapContainer.dataset.boundaryStatus = 'registered';
-
-      map.on('sourcedata', event => {
-        if ((event.sourceId === 'sri-lanka-src' || event.sourceId === 'japan-src') && event.isSourceLoaded) {
-          vectorMapContainer.dataset.boundaryStatus = 'loaded';
-        }
       });
 
       const addBoundaryLayers = (country, color) => {
@@ -1069,7 +1062,7 @@
         source: 'flight-arc-src',
         layout: { 'line-cap': 'round', 'line-join': 'round' },
         paint: {
-          'line-gradient': ['interpolate', ['linear'], ['line-progress'], 0, '#0284c7', 0.52, '#f59e0b', 1, '#f97316'],
+          'line-color': ['interpolate', ['linear'], ['line-progress'], 0, '#0284c7', 0.52, '#f59e0b', 1, '#f97316'],
           'line-width': ['interpolate', ['linear'], ['zoom'], 3, 2.25, 6, 3.5],
           'line-opacity': 0.98
         }
@@ -1215,7 +1208,6 @@
           map.getSource('flight-arc-src').setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: [] } });
           lastVisibleCount = 0;
         }
-        particleEl.style.opacity = '0';
         if (isMapLoaded && map.getLayer('sri-lanka-fill')) map.setPaintProperty('sri-lanka-fill', 'fill-opacity', 0.50);
         if (isMapLoaded && map.getLayer('japan-fill')) map.setPaintProperty('japan-fill', 'fill-opacity', 0.16);
       } else if (progress <= 0.86) {
@@ -1229,10 +1221,6 @@
             geometry: { type: 'LineString', coordinates: fullArcCoords.slice(0, visibleCount) }
           });
           lastVisibleCount = visibleCount;
-        }
-        if (visibleCount > 1 && visibleCount < fullArcCoords.length) {
-          particleMarker.setLngLat(fullArcCoords[visibleCount - 1]);
-          particleEl.style.opacity = '1';
         }
         if (panelSriLanka) panelSriLanka.classList.add('moved-left');
         if (panelSriLanka) panelSriLanka.classList.toggle('is-dimmed', t > 0.7);
@@ -1253,8 +1241,6 @@
           });
           lastVisibleCount = fullArcCoords.length;
         }
-        particleMarker.setLngLat(japanLngLat);
-        particleEl.style.opacity = '1';
         if (panelSriLanka) panelSriLanka.classList.add('moved-left');
         if (panelSriLanka) panelSriLanka.classList.add('is-dimmed');
         if (panelJapan) panelJapan.classList.add('is-visible');
@@ -1282,4 +1268,149 @@
     updateTargetProgress();
   }
 
+  /* ---------- Infographics Counter Animation Engine ---------- */
+  const counters = document.querySelectorAll('.counter');
+  const barAnimates = document.querySelectorAll('.bar-animate');
+
+  if (counters.length > 0 && 'IntersectionObserver' in window) {
+    const counterObserver = new IntersectionObserver((entries, observer) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const targetEl = entry.target;
+          const targetNum = parseInt(targetEl.getAttribute('data-target') || '0', 10);
+          let currentNum = 0;
+          const duration = 1400; // ms
+          const stepTime = 20; // ms
+          const steps = duration / stepTime;
+          const increment = targetNum / steps;
+
+          const timer = setInterval(() => {
+            currentNum += increment;
+            if (currentNum >= targetNum) {
+              targetEl.textContent = targetNum.toLocaleString();
+              clearInterval(timer);
+            } else {
+              targetEl.textContent = Math.floor(currentNum).toLocaleString();
+            }
+          }, stepTime);
+
+          // Animate progress bar if in same card
+          const parentCard = targetEl.closest('.infographic-card');
+          if (parentCard) {
+            const bar = parentCard.querySelector('.bar-animate');
+            if (bar) {
+              const targetWidth = bar.getAttribute('data-bar-height') || '88';
+              bar.style.width = `${targetWidth}%`;
+            }
+          }
+
+          observer.unobserve(targetEl);
+        }
+      });
+    }, { threshold: 0.2 });
+
+    counters.forEach(counter => counterObserver.observe(counter));
+  }
+
+  /* ---------- Shooting Star Canvas Animation Engine ---------- */
+  const starCanvas = document.getElementById('shooting-stars-canvas');
+  if (starCanvas) {
+    const ctx = starCanvas.getContext('2d');
+    let width = starCanvas.width = starCanvas.parentElement.clientWidth;
+    let height = starCanvas.height = starCanvas.parentElement.clientHeight;
+
+    const stars = [];
+    const shootingStars = [];
+
+    // Background Twinkling Stars
+    for (let i = 0; i < 45; i++) {
+      stars.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        size: Math.random() * 1.5 + 0.5,
+        alpha: Math.random(),
+        speed: Math.random() * 0.02 + 0.005
+      });
+    }
+
+    function createShootingStar() {
+      const isOrange = Math.random() > 0.4;
+      shootingStars.push({
+        x: Math.random() * width * 0.8,
+        y: Math.random() * height * 0.4,
+        length: Math.random() * 80 + 60,
+        speed: Math.random() * 8 + 6,
+        angle: Math.PI / 4 + (Math.random() * 0.1 - 0.05), // ~45 deg
+        color: isOrange ? '#f97316' : '#38bdf8',
+        alpha: 1,
+        life: 0,
+        maxLife: Math.random() * 40 + 30
+      });
+    }
+
+    // Periodically spawn shooting stars
+    setInterval(createShootingStar, 1800);
+
+    function renderShootingStars() {
+      ctx.clearRect(0, 0, width, height);
+
+      // Draw Twinkling Stars
+      stars.forEach(star => {
+        star.alpha += star.speed;
+        if (star.alpha > 1 || star.alpha < 0.1) star.speed = -star.speed;
+        ctx.fillStyle = `rgba(255, 255, 255, ${Math.abs(star.alpha)})`;
+        ctx.beginPath();
+        ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // Draw & Update Shooting Stars
+      for (let i = shootingStars.length - 1; i >= 0; i--) {
+        const ss = shootingStars[i];
+        ss.x += Math.cos(ss.angle) * ss.speed;
+        ss.y += Math.sin(ss.angle) * ss.speed;
+        ss.life++;
+
+        const tailX = ss.x - Math.cos(ss.angle) * ss.length;
+        const tailY = ss.y - Math.sin(ss.angle) * ss.length;
+
+        const grad = ctx.createLinearGradient(ss.x, ss.y, tailX, tailY);
+        grad.addColorStop(0, ss.color);
+        grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = 2.2;
+        ctx.beginPath();
+        ctx.moveTo(ss.x, ss.y);
+        ctx.lineTo(tailX, tailY);
+        ctx.stroke();
+
+        // Sparkle head
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(ss.x, ss.y, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        if (ss.life > ss.maxLife) {
+          shootingStars.splice(i, 1);
+        }
+      }
+
+      requestAnimationFrame(renderShootingStars);
+    }
+
+    window.addEventListener('resize', () => {
+      if (starCanvas.parentElement) {
+        width = starCanvas.width = starCanvas.parentElement.clientWidth;
+        height = starCanvas.height = starCanvas.parentElement.clientHeight;
+      }
+    });
+
+    renderShootingStars();
+  }
+
 })();
+
+
+
+
