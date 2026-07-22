@@ -1069,7 +1069,7 @@
         source: 'flight-arc-src',
         layout: { 'line-cap': 'round', 'line-join': 'round' },
         paint: {
-          'line-color': ['interpolate', ['linear'], ['line-progress'], 0, '#0284c7', 0.52, '#f59e0b', 1, '#f97316'],
+          'line-gradient': ['interpolate', ['linear'], ['line-progress'], 0, '#0284c7', 0.52, '#f59e0b', 1, '#f97316'],
           'line-width': ['interpolate', ['linear'], ['zoom'], 3, 2.25, 6, 3.5],
           'line-opacity': 0.98
         }

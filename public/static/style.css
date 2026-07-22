@@ -2735,7 +2735,7 @@ textarea.form-control {
   transform: translate3d(0, 0, 0);
 }
 .srilanka-floating.is-dimmed {
-  opacity: 0.68;
+  opacity: 0.92;
   transform: translate3d(0, -6px, 0);
 }
 
@@ -2900,4 +2900,3 @@ textarea.form-control {
   a, button, .btn, .service-card-horizontal, .kinetic-track { cursor: auto !important; }
   #custom-cursor { display: none !important; }
 }
-
