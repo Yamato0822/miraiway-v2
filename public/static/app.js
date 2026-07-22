@@ -29,6 +29,9 @@
     setTimeout(() => {
       if (pageLoader) pageLoader.style.display = 'none';
       if (loadingScreen) loadingScreen.style.display = 'none';
+      if (window.realMapLibreInstance) {
+        window.realMapLibreInstance.resize();
+      }
     }, 850);
   }
 
@@ -867,6 +870,416 @@
         });
       });
     });
+  }
+
+  /* ---------- MapLibre GL precision scrollytelling ---------- */
+  const realMapWrapper = document.getElementById('real-map-scrolly-wrapper');
+  const vectorMapContainer = document.getElementById('maplibre-vector-map');
+  const panelSriLanka = document.getElementById('panel-srilanka');
+  const panelJapan = document.getElementById('panel-japan');
+  const phaseIndicatorText = document.getElementById('map-phase-text');
+  const routeProgressFill = document.getElementById('map-route-progress-fill');
+
+  if (realMapWrapper && vectorMapContainer && window.maplibregl) {
+    if (window.realMapLibreInstance) {
+      try {
+        window.realMapLibreInstance.remove();
+      } catch (e) {
+        console.warn('MapLibre cleanup notice:', e);
+      }
+      window.realMapLibreInstance = null;
+    }
+
+    const sriLankaLngLat = [79.8612, 6.9271];
+    const japanLngLat = [139.6503, 35.6762];
+    const sriLankaBounds = [[79.45, 5.72], [82.08, 10.08]];
+    // The visual story focuses on the main Japanese archipelago. Remote islands
+    // remain in the boundary data and render whenever they enter the viewport.
+    const japanBounds = [[126.7, 25.3], [146.35, 45.75]];
+    const routeBounds = [[76.4, 3.1], [143.1, 40.2]];
+    const reduceMapMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const map = new maplibregl.Map({
+      container: 'maplibre-vector-map',
+      style: 'https://tiles.openfreemap.org/styles/positron',
+      center: [80.7718, 7.8731],
+      zoom: 5.8,
+      interactive: false,
+      attributionControl: false,
+      trackResize: true,
+      renderWorldCopies: false,
+      fadeDuration: 0
+    });
+
+    map.on('error', event => {
+      const message = event && event.error && event.error.message
+        ? event.error.message
+        : 'Unknown map rendering error';
+      vectorMapContainer.dataset.mapError = message;
+      console.error(`[MapLibre] ${message}`);
+    });
+
+    window.realMapLibreInstance = map;
+
+    const createPulsingDOM = (isOrange = false) => {
+      const el = document.createElement('div');
+      el.className = 'custom-map-marker';
+      const cls = isOrange ? 'marker-dot-core orange' : 'marker-dot-core';
+      const pulseCls = isOrange ? 'marker-pulse-wave orange' : 'marker-pulse-wave';
+      el.innerHTML = `<div class="${cls}"></div><div class="${pulseCls}"></div>`;
+      return el;
+    };
+
+    new maplibregl.Marker({ element: createPulsingDOM(false) }).setLngLat(sriLankaLngLat).addTo(map);
+    new maplibregl.Marker({ element: createPulsingDOM(true) }).setLngLat(japanLngLat).addTo(map);
+
+    const particleEl = document.createElement('div');
+    particleEl.className = 'particle-flight-head';
+    particleEl.innerHTML = `<div style="width:14px;height:14px;border-radius:50%;background:#f59e0b;box-shadow:0 0 18px #f59e0b, 0 0 35px #fbbf24;"></div>`;
+    const particleMarker = new maplibregl.Marker({ element: particleEl }).setLngLat(sriLankaLngLat).addTo(map);
+
+    function generateGreatCircleCoordinates(start, end, numPoints = 240) {
+      const coords = [];
+      const toRadians = value => value * Math.PI / 180;
+      const toDegrees = value => value * 180 / Math.PI;
+      const startLng = toRadians(start[0]);
+      const startLat = toRadians(start[1]);
+      const endLng = toRadians(end[0]);
+      const endLat = toRadians(end[1]);
+      const startVector = [
+        Math.cos(startLat) * Math.cos(startLng),
+        Math.cos(startLat) * Math.sin(startLng),
+        Math.sin(startLat)
+      ];
+      const endVector = [
+        Math.cos(endLat) * Math.cos(endLng),
+        Math.cos(endLat) * Math.sin(endLng),
+        Math.sin(endLat)
+      ];
+      const dot = Math.max(-1, Math.min(1,
+        startVector[0] * endVector[0] +
+        startVector[1] * endVector[1] +
+        startVector[2] * endVector[2]
+      ));
+      const angle = Math.acos(dot);
+      const sinAngle = Math.sin(angle);
+
+      for (let i = 0; i <= numPoints; i++) {
+        const t = i / numPoints;
+        const startWeight = Math.sin((1 - t) * angle) / sinAngle;
+        const endWeight = Math.sin(t * angle) / sinAngle;
+        const x = startWeight * startVector[0] + endWeight * endVector[0];
+        const y = startWeight * startVector[1] + endWeight * endVector[1];
+        const z = startWeight * startVector[2] + endWeight * endVector[2];
+        coords.push([toDegrees(Math.atan2(y, x)), toDegrees(Math.atan2(z, Math.hypot(x, y)))]);
+      }
+      return coords;
+    }
+
+    const fullArcCoords = generateGreatCircleCoordinates(sriLankaLngLat, japanLngLat);
+    let isMapLoaded = false;
+    let cameraKeyframes = [];
+
+    map.on('load', () => {
+      isMapLoaded = true;
+      const firstLabelLayer = map.getStyle().layers.find(layer => layer.type === 'symbol');
+
+      map.addSource('sri-lanka-src', {
+        type: 'geojson',
+        data: '/static/geojson/sri_lanka.json',
+        tolerance: 0.1,
+        buffer: 64
+      });
+      map.addSource('japan-src', {
+        type: 'geojson',
+        data: '/static/geojson/japan.json',
+        tolerance: 0.1,
+        buffer: 64
+      });
+      vectorMapContainer.dataset.boundaryStatus = 'registered';
+
+      map.on('sourcedata', event => {
+        if ((event.sourceId === 'sri-lanka-src' || event.sourceId === 'japan-src') && event.isSourceLoaded) {
+          vectorMapContainer.dataset.boundaryStatus = 'loaded';
+        }
+      });
+
+      const addBoundaryLayers = (country, color) => {
+        const beforeId = firstLabelLayer ? firstLabelLayer.id : undefined;
+        map.addLayer({
+          id: `${country}-fill`,
+          type: 'fill',
+          source: `${country}-src`,
+          paint: {
+            'fill-color': color,
+            'fill-opacity': country === 'sri-lanka' ? 0.52 : 0.18,
+            'fill-antialias': true
+          }
+        }, beforeId);
+        map.addLayer({
+          id: `${country}-outline-halo`,
+          type: 'line',
+          source: `${country}-src`,
+          layout: { 'line-cap': 'round', 'line-join': 'round' },
+          paint: {
+            'line-color': '#ffffff',
+            'line-width': ['interpolate', ['linear'], ['zoom'], 3, 2, 6, 4],
+            'line-opacity': 0.9,
+            'line-blur': 0.6
+          }
+        }, beforeId);
+        map.addLayer({
+          id: `${country}-outline`,
+          type: 'line',
+          source: `${country}-src`,
+          layout: { 'line-cap': 'round', 'line-join': 'round' },
+          paint: {
+            'line-color': color,
+            'line-width': ['interpolate', ['linear'], ['zoom'], 3, 1.15, 6, 2.25],
+            'line-opacity': 0.98
+          }
+        }, beforeId);
+      };
+
+      addBoundaryLayers('sri-lanka', '#0284c7');
+      addBoundaryLayers('japan', '#f97316');
+
+      map.addSource('flight-arc-src', {
+        type: 'geojson',
+        lineMetrics: true,
+        data: { type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: [] } }
+      });
+
+      map.addLayer({
+        id: 'flight-arc-glow',
+        type: 'line',
+        source: 'flight-arc-src',
+        layout: { 'line-cap': 'round', 'line-join': 'round' },
+        paint: {
+          'line-color': '#fb923c',
+          'line-width': ['interpolate', ['linear'], ['zoom'], 3, 7, 6, 11],
+          'line-opacity': 0.22,
+          'line-blur': 3
+        }
+      });
+
+      map.addLayer({
+        id: 'flight-arc-core',
+        type: 'line',
+        source: 'flight-arc-src',
+        layout: { 'line-cap': 'round', 'line-join': 'round' },
+        paint: {
+          'line-color': ['interpolate', ['linear'], ['line-progress'], 0, '#0284c7', 0.52, '#f59e0b', 1, '#f97316'],
+          'line-width': ['interpolate', ['linear'], ['zoom'], 3, 2.25, 6, 3.5],
+          'line-opacity': 0.98
+        }
+      });
+      calculateCameraKeyframes();
+      triggerRender();
+    });
+
+    function lerp(a, b, t) { return a + (b - a) * t; }
+    function clamp(value, min = 0, max = 1) { return Math.max(min, Math.min(max, value)); }
+    function smootherStep(value) {
+      const x = clamp(value);
+      return x * x * x * (x * (x * 6 - 15) + 10);
+    }
+
+    function normalizeCamera(camera, fallback) {
+      if (!camera) return fallback;
+      const center = camera.center.toArray ? camera.center.toArray() : camera.center;
+      return { center, zoom: camera.zoom };
+    }
+
+    function calculateCameraKeyframes() {
+      const width = vectorMapContainer.clientWidth || window.innerWidth;
+      const isMobile = width < 900;
+      const isCompactDesktop = width < 1180;
+      const headerClearance = 78;
+      const sidePanelSpace = Math.min(460, Math.max(360, width * 0.27));
+
+      const sriPadding = isMobile
+        ? { top: headerClearance + 92, right: 24, bottom: 250, left: 24 }
+        : { top: headerClearance + 92, right: Math.max(64, width * 0.08), bottom: 64, left: sidePanelSpace };
+      const routePadding = isMobile
+        ? { top: headerClearance + 96, right: 22, bottom: 245, left: 22 }
+        : { top: headerClearance + 76, right: 72, bottom: 64, left: 72 };
+      const japanPadding = isMobile
+        ? { top: headerClearance + 96, right: 22, bottom: 285, left: 22 }
+        : {
+            top: headerClearance + 88,
+            right: sidePanelSpace,
+            bottom: 54,
+            left: isCompactDesktop ? 48 : sidePanelSpace
+          };
+
+      const sriCamera = normalizeCamera(
+        map.cameraForBounds(sriLankaBounds, { padding: sriPadding, maxZoom: 6.25 }),
+        { center: [80.9, 7.9], zoom: 5.8 }
+      );
+      const routeCamera = normalizeCamera(
+        map.cameraForBounds(routeBounds, { padding: routePadding, maxZoom: 4.05 }),
+        { center: [109.5, 21.5], zoom: 3.45 }
+      );
+      const japanCamera = normalizeCamera(
+        map.cameraForBounds(japanBounds, { padding: japanPadding, maxZoom: 5.15 }),
+        { center: [137.0, 36.0], zoom: 4.75 }
+      );
+
+      cameraKeyframes = [
+        { progress: 0, camera: sriCamera },
+        { progress: 0.14, camera: sriCamera },
+        { progress: 0.5, camera: routeCamera },
+        { progress: 0.88, camera: japanCamera },
+        { progress: 1, camera: japanCamera }
+      ];
+    }
+
+    function getCameraForProgress(progress) {
+      if (!cameraKeyframes.length) return null;
+      let nextIndex = cameraKeyframes.findIndex(frame => progress <= frame.progress);
+      if (nextIndex <= 0) return cameraKeyframes[0].camera;
+      if (nextIndex === -1) return cameraKeyframes[cameraKeyframes.length - 1].camera;
+
+      const previous = cameraKeyframes[nextIndex - 1];
+      const next = cameraKeyframes[nextIndex];
+      const localProgress = smootherStep((progress - previous.progress) / (next.progress - previous.progress));
+      return {
+        center: [
+          lerp(previous.camera.center[0], next.camera.center[0], localProgress),
+          lerp(previous.camera.center[1], next.camera.center[1], localProgress)
+        ],
+        zoom: lerp(previous.camera.zoom, next.camera.zoom, localProgress)
+      };
+    }
+
+    let targetProgress = 0;
+    let currentProgress = 0;
+    let animFrameId = null;
+    let lastRenderedProgress = -1;
+    let lastVisibleCount = -1;
+    let previousFrameTime = performance.now();
+
+    function updateTargetProgress() {
+      const rect = realMapWrapper.getBoundingClientRect();
+      const scrollableHeight = rect.height - window.innerHeight;
+      if (scrollableHeight <= 0) return;
+      const scrolled = -rect.top;
+      targetProgress = clamp(scrolled / scrollableHeight);
+      if (reduceMapMotion) currentProgress = targetProgress;
+      triggerRender();
+    }
+
+    function renderStep(frameTime) {
+      const diff = targetProgress - currentProgress;
+      const deltaSeconds = Math.min(0.05, Math.max(0.001, (frameTime - previousFrameTime) / 1000));
+      previousFrameTime = frameTime;
+
+      if (!reduceMapMotion && Math.abs(diff) > 0.0002) {
+        const response = 1 - Math.exp(-11.5 * deltaSeconds);
+        currentProgress += diff * response;
+      } else {
+        currentProgress = targetProgress;
+      }
+
+      if (Math.abs(currentProgress - lastRenderedProgress) >= 0.00008) {
+        lastRenderedProgress = currentProgress;
+        renderMapState(currentProgress);
+      }
+
+      if (!reduceMapMotion && Math.abs(targetProgress - currentProgress) > 0.0002) {
+        animFrameId = requestAnimationFrame(renderStep);
+      } else {
+        animFrameId = null;
+      }
+    }
+
+    function renderMapState(progress) {
+      const camera = getCameraForProgress(progress);
+      if (camera) map.jumpTo({ center: camera.center, zoom: camera.zoom, bearing: 0, pitch: 0 });
+
+      if (routeProgressFill) {
+        routeProgressFill.style.transform = `scaleX(${progress.toFixed(4)})`;
+      }
+
+      if (progress < 0.12) {
+        realMapWrapper.dataset.phase = 'sri-lanka';
+        if (panelSriLanka) panelSriLanka.classList.remove('moved-left');
+        if (panelSriLanka) panelSriLanka.classList.remove('is-dimmed');
+        if (panelJapan) panelJapan.classList.remove('is-visible');
+        if (phaseIndicatorText) {
+          phaseIndicatorText.textContent = 'PHASE 1: SRI LANKA HUB FOCUS';
+          phaseIndicatorText.style.color = '#0284c7';
+        }
+        if (isMapLoaded && map.getSource('flight-arc-src') && lastVisibleCount !== 0) {
+          map.getSource('flight-arc-src').setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: [] } });
+          lastVisibleCount = 0;
+        }
+        particleEl.style.opacity = '0';
+        if (isMapLoaded && map.getLayer('sri-lanka-fill')) map.setPaintProperty('sri-lanka-fill', 'fill-opacity', 0.50);
+        if (isMapLoaded && map.getLayer('japan-fill')) map.setPaintProperty('japan-fill', 'fill-opacity', 0.16);
+      } else if (progress <= 0.86) {
+        realMapWrapper.dataset.phase = 'pathway';
+        const t = clamp((progress - 0.12) / 0.74);
+        const visibleCount = Math.max(2, Math.round(fullArcCoords.length * smootherStep(t)));
+        if (isMapLoaded && map.getSource('flight-arc-src') && visibleCount !== lastVisibleCount) {
+          map.getSource('flight-arc-src').setData({
+            type: 'Feature',
+            properties: {},
+            geometry: { type: 'LineString', coordinates: fullArcCoords.slice(0, visibleCount) }
+          });
+          lastVisibleCount = visibleCount;
+        }
+        if (visibleCount > 1 && visibleCount < fullArcCoords.length) {
+          particleMarker.setLngLat(fullArcCoords[visibleCount - 1]);
+          particleEl.style.opacity = '1';
+        }
+        if (panelSriLanka) panelSriLanka.classList.add('moved-left');
+        if (panelSriLanka) panelSriLanka.classList.toggle('is-dimmed', t > 0.7);
+        if (panelJapan) panelJapan.classList.toggle('is-visible', t > 0.54);
+        if (isMapLoaded && map.getLayer('sri-lanka-fill')) map.setPaintProperty('sri-lanka-fill', 'fill-opacity', lerp(0.50, 0.30, t));
+        if (isMapLoaded && map.getLayer('japan-fill')) map.setPaintProperty('japan-fill', 'fill-opacity', lerp(0.16, 0.52, smootherStep(t)));
+        if (phaseIndicatorText) {
+          phaseIndicatorText.textContent = 'PHASE 2: REAL-TIME GLOBAL PATHWAY';
+          phaseIndicatorText.style.color = '#f59e0b';
+        }
+      } else {
+        realMapWrapper.dataset.phase = 'japan';
+        if (isMapLoaded && map.getSource('flight-arc-src') && lastVisibleCount !== fullArcCoords.length) {
+          map.getSource('flight-arc-src').setData({
+            type: 'Feature',
+            properties: {},
+            geometry: { type: 'LineString', coordinates: fullArcCoords }
+          });
+          lastVisibleCount = fullArcCoords.length;
+        }
+        particleMarker.setLngLat(japanLngLat);
+        particleEl.style.opacity = '1';
+        if (panelSriLanka) panelSriLanka.classList.add('moved-left');
+        if (panelSriLanka) panelSriLanka.classList.add('is-dimmed');
+        if (panelJapan) panelJapan.classList.add('is-visible');
+        if (isMapLoaded && map.getLayer('sri-lanka-fill')) map.setPaintProperty('sri-lanka-fill', 'fill-opacity', 0.30);
+        if (isMapLoaded && map.getLayer('japan-fill')) map.setPaintProperty('japan-fill', 'fill-opacity', 0.52);
+        if (phaseIndicatorText) {
+          phaseIndicatorText.textContent = 'PHASE 3: JAPAN ARRIVAL & SUPPORT';
+          phaseIndicatorText.style.color = '#f97316';
+        }
+      }
+    }
+
+    function triggerRender() {
+      if (!animFrameId) animFrameId = requestAnimationFrame(renderStep);
+    }
+
+    window.addEventListener('scroll', updateTargetProgress, { passive: true });
+    window.addEventListener('resize', () => {
+      map.resize();
+      if (isMapLoaded) calculateCameraKeyframes();
+      updateTargetProgress();
+    }, { passive: true });
+
+    // Initial Trigger
+    updateTargetProgress();
   }
 
 })();

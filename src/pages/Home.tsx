@@ -112,87 +112,67 @@ export const Home: FC = () => {
               </div>
             </div>
 
-            <div class="about-stats-row reveal">
-              <div class="about-stat-box">
-                <div class="stat-box-left">
-                  <div class="stat-icon-wrap" style={{ background: 'rgba(232, 185, 90, 0.1)' }}>
-                    <i class="fas fa-map-marker-alt" style={{ color: '#E8B95A' }}></i>
+            {/* ===== MapLibre GL JS Precision Scrollytelling Section ===== */}
+            <div class="real-map-section-wrapper" id="real-map-scrolly-wrapper">
+              <div class="real-map-sticky-container">
+                <div
+                  id="maplibre-vector-map"
+                  class="maplibre-map-canvas"
+                  role="img"
+                  aria-label="スリランカのコロンボから日本の東京へつながる支援ルート"
+                ></div>
+
+                {/* Apple-Style Precision Top Indicator Bar */}
+                <div class="map-top-bar">
+                  <div class="map-bar-left">
+                    <span class="bar-num">04</span>
+                    <span class="bar-sep">|</span>
+                    <span class="bar-title">GLOBAL BRIDGE &amp; PATHWAY</span>
                   </div>
-                  <div class="stat-info">
-                    <div class="stat-number-wrap">
-                      <span class="stat-num counter" data-target="2">
-                        0
-                      </span>
-                      <span class="stat-unit">拠点</span>
-                    </div>
-                    <p class="stat-en">Japan &bull; Sri Lanka</p>
-                    <div class="stat-jp-line"></div>
-                    <p class="stat-jp">
-                      日本とスリランカに拠点を構え、<br />
-                      地域を越えて支援しています。
+                  <div class="map-bar-right">
+                    <span class="bar-phase-indicator" id="map-phase-text">PHASE 1: SRI LANKA HUB FOCUS</span>
+                    <span class="map-route-progress" aria-hidden="true">
+                      <span class="map-route-progress-fill" id="map-route-progress-fill"></span>
+                    </span>
+                  </div>
+                </div>
+
+                {/* Floating Role Information Panels */}
+                {/* 1. Sri Lanka Hub Panel */}
+                <div class="map-info-floating-panel srilanka-floating" id="panel-srilanka">
+                  <div class="panel-inner">
+                    <span class="float-badge">START / 01</span>
+                    <h3 class="float-title">スリランカ拠点 (Colombo)</h3>
+                    <div class="float-coords">6.9271° N &bull; 79.8612° E</div>
+                    <p class="float-desc">
+                      自社直営スクールでの高度日本語教育、日本文化習得、技能・マナー研修を実施。企業様との厳選面接・内定まで一気通貫で伴走します。
                     </p>
                   </div>
                 </div>
-                <div class="stat-box-right">
-                  <div class="flag-pair">
-                    <div class="flag-item">
-                      <span class="flag-emoji">🇯🇵</span>
-                      <span class="flag-name">Japan</span>
-                    </div>
-                    <div class="flag-connector">
-                      <div class="flag-line"></div>
-                      <i class="fas fa-exchange-alt flag-arrow"></i>
-                      <div class="flag-line"></div>
-                    </div>
-                    <div class="flag-item">
-                      <span class="flag-emoji">🇱🇰</span>
-                      <span class="flag-name">Sri Lanka</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
 
-              <div class="stat-divider"></div>
-
-              <div class="about-stat-box reveal reveal-delay-1">
-                <div class="stat-box-left">
-                  <div class="stat-icon-wrap" style={{ background: '#F0F4F8' }}>
-                    <i class="fas fa-users" style={{ color: '#5482B0' }}></i>
-                  </div>
-                  <div class="stat-info">
-                    <div class="stat-number-wrap">
-                      <span class="stat-num counter" data-target="4">
-                        0
-                      </span>
-                      <span class="stat-unit">分野</span>
-                    </div>
-                    <p class="stat-en">介護・外食・建設・農業</p>
-                    <div class="stat-jp-line"></div>
-                    <p class="stat-jp">
-                      多様な分野で、人材の可能性を<br />
-                      広げています。
+                {/* 2. Japan Hub Panel */}
+                <div class="map-info-floating-panel japan-floating" id="panel-japan">
+                  <div class="panel-inner">
+                    <span class="float-badge orange">ARRIVAL / 02</span>
+                    <h3 class="float-title">日本拠点 (Tokyo)</h3>
+                    <div class="float-coords">35.6762° N &bull; 139.6503° E</div>
+                    <p class="float-desc">
+                      在留資格手続き、空港出迎え、住居手配、就労開始後の生活サポートから中長期的なキャリア形成・WORK &amp; RETENTIONまで全面支援。
                     </p>
+                    <div class="float-photo-box">
+                      <img src="/static/images/tokyo-skyline.jpg" alt="東京の都市景観" loading="lazy" />
+                      <div class="float-photo-caption">
+                        <strong>WORK &amp; RETENTION</strong>
+                        <span>東京タワーから見た、革新の街並み</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <div class="stat-box-right stat-chart-area">
-                  <div class="mini-chart four-bars">
-                    <div class="bar-col">
-                      <div class="bar blue-bar bar-animate" data-bar-height="40"></div>
-                      <i class="fas fa-user-nurse bar-icon"></i>
-                    </div>
-                    <div class="bar-col">
-                      <div class="bar green-bar bar-animate" data-bar-height="60"></div>
-                      <i class="fas fa-utensils bar-icon"></i>
-                    </div>
-                    <div class="bar-col">
-                      <div class="bar yellow-bar bar-animate" data-bar-height="80"></div>
-                      <i class="fas fa-hard-hat bar-icon"></i>
-                    </div>
-                    <div class="bar-col">
-                      <div class="bar navy-bar bar-animate" data-bar-height="100"></div>
-                      <i class="fas fa-seedling bar-icon"></i>
-                    </div>
-                  </div>
+
+                <div class="map-data-credit">
+                  Map: <a href="https://openfreemap.org/" target="_blank" rel="noopener noreferrer">OpenFreeMap</a>
+                  <span aria-hidden="true"> · </span>
+                  Boundaries: <a href="https://www.geoboundaries.org/" target="_blank" rel="noopener noreferrer">geoBoundaries</a>
                 </div>
               </div>
             </div>
