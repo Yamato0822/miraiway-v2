@@ -13,8 +13,6 @@ export const CompanyPage: FC = () => {
       <Header activePage="company" />
 
       <main id="page-main" class="company-page-main">
-        {/* Custom Interactive Cursor */}
-        <div id="custom-cursor" aria-hidden="true"></div>
 
         {/* ===== 1. Apple-Pro Minimalist Hero Section ===== */}
         <section class="company-hero-section">
@@ -164,124 +162,7 @@ export const CompanyPage: FC = () => {
           </div>
         </section>
 
-        {/* ===== 4. Infographic Metric Stats Section (Moved ABOVE Contact CTA) ===== */}
-        <section class="company-infographics-section">
-          <div class="company-container">
-            <div class="section-label-bar">
-              <span class="section-label-num">04</span>
-              <span class="section-label-title">KEY METRICS &amp; INFOGRAPHICS</span>
-            </div>
 
-            <div class="company-infographic-grid">
-              {/* Metric 1: Education Hours */}
-              <div class="infographic-card reveal">
-                <div class="card-metric-header">
-                  <span class="metric-tag">INTENSIVE TRAINING</span>
-                  <div class="metric-number-wrap">
-                    <span class="counter" data-target="600">0</span>
-                    <span class="metric-unit">時間+</span>
-                  </div>
-                </div>
-                <h3 class="metric-title">現地自社スクールでの直営徹底教育</h3>
-                <p class="metric-desc">
-                  日本語能力（N3〜N4相当）だけでなく、日本企業の商習慣・生活マナー・実務基礎まで妥協なくトレーニング。
-                </p>
-                <div class="metric-bar-bg">
-                  <div class="bar-animate" data-bar-height="88" style={{ width: '0%' }}></div>
-                </div>
-              </div>
-
-              {/* Metric 2: Time Difference & Dual Hub */}
-              <div class="infographic-card reveal">
-                <div class="card-metric-header">
-                  <span class="metric-tag">DUAL HUB SYNERGY</span>
-                  <div class="metric-number-wrap">
-                    <span class="counter" data-target="3">0</span>
-                    <span class="metric-decimal">.5</span>
-                    <span class="metric-unit">時間</span>
-                  </div>
-                </div>
-                <h3 class="metric-title">わずか3.5時間の時差が生むリアルタイム連携</h3>
-                <p class="metric-desc">
-                  東京とコロンボの二拠点が密に同期。面接のセッティングから各種ビザ申請、渡航手続きまでスピーディに対応。
-                </p>
-                <div class="metric-badge-list">
-                  <span class="infographic-badge"><i class="fas fa-location-dot"></i> TOKYO (JAPAN)</span>
-                  <span class="infographic-badge orange"><i class="fas fa-location-dot"></i> COLOMBO (SRI LANKA)</span>
-                </div>
-              </div>
-
-              {/* Metric 3: Core Sectors */}
-              <div class="infographic-card reveal">
-                <div class="card-metric-header">
-                  <span class="metric-tag">PRIMARY SECTORS</span>
-                  <div class="metric-number-wrap">
-                    <span class="counter" data-target="3">0</span>
-                    <span class="metric-unit">大主要分野</span>
-                  </div>
-                </div>
-                <h3 class="metric-title">建築 ・ 介護 ・ 農業 の特定技能に特化</h3>
-                <p class="metric-desc">
-                  人手不足が深刻な3大産業へ特化。専門知識を持った現地の即戦力候補者をスピーディに企業様へご紹介。
-                </p>
-                <div class="sector-icon-row">
-                  <div class="sector-chip"><i class="fas fa-building"></i> 建築</div>
-                  <div class="sector-chip"><i class="fas fa-heart-pulse"></i> 介護</div>
-                  <div class="sector-chip"><i class="fas fa-seedling"></i> 農業</div>
-                </div>
-              </div>
-
-              {/* Metric 4: Target Retention Rate */}
-              <div class="infographic-card highlight reveal">
-                <div class="card-metric-header">
-                  <span class="metric-tag orange">RETENTION TARGET</span>
-                  <div class="metric-number-wrap">
-                    <span class="counter" data-target="98">0</span>
-                    <span class="metric-decimal">.4</span>
-                    <span class="metric-unit">%</span>
-                  </div>
-                </div>
-                <h3 class="metric-title">来日後の手厚い生活＆キャリア伴走支援</h3>
-                <p class="metric-desc">
-                  入社後の生活相談・メンタルケア・キャリアアップ面談を実施。企業様と働く方の双方が長く満足できる環境を共創。
-                </p>
-                <div class="metric-gauge-indicator">
-                  <span class="gauge-fill"></span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ===== 5. Bottom Slogan & Contact CTA Banner ===== */}
-        <section class="company-cta-section">
-          <div class="company-container">
-            <div class="company-cta-banner reveal">
-              {/* Canvas for Shooting Star & Particle Animation */}
-              <canvas id="shooting-stars-canvas" class="shooting-star-canvas"></canvas>
-
-              <div class="cta-banner-content">
-                <div class="cta-logo-row">
-                  <LogoMark width={70} height={58} />
-                  <span class="cta-badge">JOIN THE FUTURE</span>
-                </div>
-                <h2 class="cta-main-title">
-                  確実な人材育成と、手厚い定着伴走。<br />
-                  MiraiWayとともに、新しい可能性を拓きませんか？
-                </h2>
-                <p class="cta-sub-desc">
-                  特定技能人材の活用計画のご相談から、現地教育の視察案内までお気軽にお問い合わせください。
-                </p>
-                <div class="cta-btn-wrap">
-                  <a href="/contact" class="btn btn-primary btn-cta-sparkle">
-                    <span>お問い合わせフォームへ</span>
-                    <i class="fas fa-arrow-right"></i>
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
       </main>
 
       <Footer />

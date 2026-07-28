@@ -32,15 +32,14 @@
       if (window.realMapLibreInstance) {
         window.realMapLibreInstance.resize();
       }
-    }, 850);
+    }, 480);
   }
 
   if (document.readyState === 'complete') {
-    setTimeout(hidePageLoader, 400);
+    setTimeout(hidePageLoader, 300);
   } else {
-    window.addEventListener('load', () => setTimeout(hidePageLoader, 400));
-    // Fallback timer to ensure page is unblocked after max 1.2s
-    setTimeout(hidePageLoader, 1200);
+    window.addEventListener('load', () => setTimeout(hidePageLoader, 300), { once: true });
+    setTimeout(hidePageLoader, 900);
   }
 
   /* ---------- Smooth Page Transitions ---------- */
@@ -94,44 +93,12 @@
     );
   }
 
-  /* ---------- Scroll reveal & Split Text ---------- */
-  document.querySelectorAll('h2, .hero-title').forEach(el => {
-    if (el.querySelector('.char')) return;
-    const text = el.innerHTML;
-    const tokens = text.split(/(<br[^>]*>)/i);
-    el.innerHTML = '';
-    tokens.forEach(token => {
-      if (token.toLowerCase().startsWith('<br')) {
-        el.innerHTML += token;
-      } else {
-        const chars = Array.from(token);
-        chars.forEach(char => {
-          if (char === ' ' || char === '\n') {
-            el.innerHTML += char;
-          } else {
-            const span = document.createElement('span');
-            span.className = 'char';
-            span.textContent = char;
-            el.appendChild(span);
-          }
-        });
-      }
-    });
-    el.classList.add('reveal-split');
-  });
-
+  /* ---------- Scroll reveal ---------- */
   const observer = new IntersectionObserver(
     (entries) => {
       entries.forEach((e) => {
         if (e.isIntersecting) {
           e.target.classList.add('visible');
-          
-          if (e.target.classList.contains('reveal-split')) {
-            const chars = e.target.querySelectorAll('.char');
-            chars.forEach((char, i) => {
-              char.style.transitionDelay = `${i * 0.035}s`;
-            });
-          }
           
           // Counter Animation
           if (e.target.classList.contains('counter')) {
@@ -161,9 +128,9 @@
         }
       });
     },
-    { threshold: 0.12 }
+    { threshold: 0.05 }
   );
-  document.querySelectorAll('.reveal, .reveal-split, .counter, .bar-animate, .reveal-glow').forEach((el) => observer.observe(el));
+  document.querySelectorAll('.reveal, .counter, .bar-animate, .reveal-glow').forEach((el) => observer.observe(el));
 
   /* ---------- Canvas 3D Typography Globe Engine (Optimized with IntersectionObserver) ---------- */
   const canvas = document.getElementById('typography-globe-canvas');
@@ -873,14 +840,31 @@
   }
 
   /* ---------- MapLibre GL precision scrollytelling ---------- */
-  const realMapWrapper = document.getElementById('real-map-scrolly-wrapper');
-  const vectorMapContainer = document.getElementById('maplibre-vector-map');
-  const panelSriLanka = document.getElementById('panel-srilanka');
-  const panelJapan = document.getElementById('panel-japan');
-  const phaseIndicatorText = document.getElementById('map-phase-text');
-  const routeProgressFill = document.getElementById('map-route-progress-fill');
+  function initMapLibreSection() {
+    const realMapWrapper = document.getElementById('real-map-scrolly-wrapper');
+    const vectorMapContainer = document.getElementById('maplibre-vector-map');
+    if (!realMapWrapper || !vectorMapContainer) return;
 
-  if (realMapWrapper && vectorMapContainer && window.maplibregl) {
+    if (!window.maplibregl) {
+      let attempts = 0;
+      const pollTimer = setInterval(() => {
+        attempts++;
+        if (window.maplibregl) {
+          clearInterval(pollTimer);
+          initMapLibreSection();
+        } else if (attempts > 50) {
+          clearInterval(pollTimer);
+          console.warn('MapLibre GL library load timeout.');
+        }
+      }, 100);
+      return;
+    }
+
+    const panelSriLanka = document.getElementById('panel-srilanka');
+    const panelJapan = document.getElementById('panel-japan');
+    const phaseIndicatorText = document.getElementById('map-phase-text');
+    const routeProgressFill = document.getElementById('map-route-progress-fill');
+
     if (window.realMapLibreInstance) {
       try {
         window.realMapLibreInstance.remove();
@@ -893,8 +877,6 @@
     const sriLankaLngLat = [79.8612, 6.9271];
     const japanLngLat = [139.6503, 35.6762];
     const sriLankaBounds = [[79.45, 5.72], [82.08, 10.08]];
-    // The visual story focuses on the main Japanese archipelago. Remote islands
-    // remain in the boundary data and render whenever they enter the viewport.
     const japanBounds = [[126.7, 25.3], [146.35, 45.75]];
     const routeBounds = [[76.4, 3.1], [143.1, 40.2]];
     const reduceMapMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -913,7 +895,6 @@
 
     window.realMapLibreInstance = map;
 
-    // 2. Custom Pulse Marker DOM Elements for Sri Lanka & Japan Only
     const createPulsingDOM = (isOrange = false) => {
       const el = document.createElement('div');
       el.className = 'custom-map-marker';
@@ -971,16 +952,15 @@
     map.on('load', () => {
       isMapLoaded = true;
 
-      // Clean up default basemap circle layers (e.g. China country dot, city place dots)
       try {
         const styleLayers = map.getStyle().layers || [];
         styleLayers.forEach(layer => {
-          if (layer.type === 'circle') {
+          if (layer.type === 'circle' || layer.type === 'symbol') {
             map.setLayoutProperty(layer.id, 'visibility', 'none');
           }
         });
       } catch (e) {
-        console.warn('Basemap circle cleanup notice:', e);
+        console.warn('Basemap layer cleanup notice:', e);
       }
       const firstLabelLayer = map.getStyle().layers.find(layer => layer.type === 'symbol');
 
@@ -1087,7 +1067,6 @@
     function calculateCameraKeyframes() {
       const width = vectorMapContainer.clientWidth || window.innerWidth;
       const isMobile = width < 900;
-      const isCompactDesktop = width < 1180;
       const headerClearance = 78;
       const sidePanelSpace = Math.min(460, Math.max(360, width * 0.27));
 
@@ -1096,62 +1075,58 @@
         : { top: headerClearance + 92, right: Math.max(64, width * 0.08), bottom: 64, left: sidePanelSpace };
       const routePadding = isMobile
         ? { top: headerClearance + 96, right: 22, bottom: 245, left: 22 }
-        : { top: headerClearance + 76, right: 72, bottom: 64, left: 72 };
+        : { top: headerClearance + 96, right: Math.max(48, width * 0.05), bottom: 56, left: Math.max(48, width * 0.05) };
       const japanPadding = isMobile
-        ? { top: headerClearance + 96, right: 22, bottom: 285, left: 22 }
-        : {
-            top: headerClearance + 88,
-            right: sidePanelSpace,
-            bottom: 54,
-            left: isCompactDesktop ? 48 : sidePanelSpace
-          };
+        ? { top: headerClearance + 92, right: 24, bottom: 250, left: 24 }
+        : { top: headerClearance + 92, right: Math.max(64, width * 0.08), bottom: 64, left: sidePanelSpace };
 
-      const sriCamera = normalizeCamera(
-        map.cameraForBounds(sriLankaBounds, { padding: sriPadding, maxZoom: 6.25 }),
-        { center: [80.9, 7.9], zoom: 5.8 }
-      );
-      const routeCamera = normalizeCamera(
-        map.cameraForBounds(routeBounds, { padding: routePadding, maxZoom: 4.05 }),
-        { center: [109.5, 21.5], zoom: 3.45 }
-      );
-      const japanCamera = normalizeCamera(
-        map.cameraForBounds(japanBounds, { padding: japanPadding, maxZoom: 5.15 }),
-        { center: [137.0, 36.0], zoom: 4.75 }
-      );
+      const fallbackSri = { center: [80.7718, 7.8731], zoom: isMobile ? 5.1 : 5.85 };
+      const fallbackRoute = { center: [109.8, 21.6], zoom: isMobile ? 2.3 : 3.05 };
+      const fallbackJapan = { center: [136.5, 36.2], zoom: isMobile ? 4.3 : 5.0 };
 
-      cameraKeyframes = [
-        { progress: 0, camera: sriCamera },
-        { progress: 0.14, camera: sriCamera },
-        { progress: 0.5, camera: routeCamera },
-        { progress: 0.88, camera: japanCamera },
-        { progress: 1, camera: japanCamera }
-      ];
+      try {
+        cameraKeyframes = [
+          normalizeCamera(map.cameraForBounds(sriLankaBounds, { padding: sriPadding, maxZoom: 6.4 }), fallbackSri),
+          normalizeCamera(map.cameraForBounds(routeBounds, { padding: routePadding, maxZoom: 3.4 }), fallbackRoute),
+          normalizeCamera(map.cameraForBounds(japanBounds, { padding: japanPadding, maxZoom: 5.3 }), fallbackJapan)
+        ];
+      } catch (e) {
+        cameraKeyframes = [fallbackSri, fallbackRoute, fallbackJapan];
+      }
     }
 
     function getCameraForProgress(progress) {
-      if (!cameraKeyframes.length) return null;
-      let nextIndex = cameraKeyframes.findIndex(frame => progress <= frame.progress);
-      if (nextIndex <= 0) return cameraKeyframes[0].camera;
-      if (nextIndex === -1) return cameraKeyframes[cameraKeyframes.length - 1].camera;
+      if (!cameraKeyframes || cameraKeyframes.length < 3) return null;
+      const clamped = clamp(progress);
+      let t = 0;
+      let startCam = cameraKeyframes[0];
+      let endCam = cameraKeyframes[1];
 
-      const previous = cameraKeyframes[nextIndex - 1];
-      const next = cameraKeyframes[nextIndex];
-      const localProgress = smootherStep((progress - previous.progress) / (next.progress - previous.progress));
+      if (clamped <= 0.5) {
+        t = smootherStep(clamped / 0.5);
+        startCam = cameraKeyframes[0];
+        endCam = cameraKeyframes[1];
+      } else {
+        t = smootherStep((clamped - 0.5) / 0.5);
+        startCam = cameraKeyframes[1];
+        endCam = cameraKeyframes[2];
+      }
+
       return {
         center: [
-          lerp(previous.camera.center[0], next.camera.center[0], localProgress),
-          lerp(previous.camera.center[1], next.camera.center[1], localProgress)
+          lerp(startCam.center[0], endCam.center[0], t),
+          lerp(startCam.center[1], endCam.center[1], t)
         ],
-        zoom: lerp(previous.camera.zoom, next.camera.zoom, localProgress)
+        zoom: lerp(startCam.zoom, endCam.zoom, t)
       };
     }
 
     let targetProgress = 0;
     let currentProgress = 0;
-    let animFrameId = null;
     let lastRenderedProgress = -1;
-    let lastVisibleCount = -1;
+    let animFrameId = null;
     let previousFrameTime = performance.now();
+    let lastVisibleCount = -1;
 
     function updateTargetProgress() {
       const rect = realMapWrapper.getBoundingClientRect();
@@ -1267,6 +1242,9 @@
     // Initial Trigger
     updateTargetProgress();
   }
+
+  initMapLibreSection();
+  window.addEventListener('load', initMapLibreSection);
 
   /* ---------- Infographics Counter Animation Engine ---------- */
   const counters = document.querySelectorAll('.counter');
@@ -1407,6 +1385,172 @@
     });
 
     renderShootingStars();
+  }
+
+  /* ---------- Card 01 Vision Globe 3D Canvas Renderer ---------- */
+  const visionGlobeCanvas = document.getElementById('vision-globe-canvas');
+  if (visionGlobeCanvas) {
+    const ctx = visionGlobeCanvas.getContext('2d');
+    let rotationY = 0;
+    let autoSpeed = 0.008;
+
+    // Define 3D dots for continents / sphere landmass
+    const dots = [];
+    const numDots = 280;
+    for (let i = 0; i < numDots; i++) {
+      const y = 1 - (i / (numDots - 1)) * 2;
+      const radius = Math.sqrt(1 - y * y);
+      const theta = i * 2.3999632; // Golden ratio angle
+      dots.push({
+        x: Math.cos(theta) * radius,
+        y: y,
+        z: Math.sin(theta) * radius,
+        isHighlight: i % 7 === 0
+      });
+    }
+
+    // Key Hub coordinates (Sri Lanka & Japan)
+    const colombo = { lat: 6.92 * (Math.PI / 180), lon: 79.86 * (Math.PI / 180) };
+    const tokyo = { lat: 35.67 * (Math.PI / 180), lon: 139.65 * (Math.PI / 180) };
+
+    function latLonTo3D(lat, lon, rad, rot) {
+      const cosLat = Math.cos(lat);
+      const effLon = lon + rot;
+      return {
+        x: rad * cosLat * Math.sin(effLon),
+        y: rad * -Math.sin(lat),
+        z: rad * cosLat * Math.cos(effLon)
+      };
+    }
+
+    function drawVisionGlobe() {
+      const w = visionGlobeCanvas.width;
+      const h = visionGlobeCanvas.height;
+      const cx = w / 2;
+      const cy = h / 2;
+      const R = 145;
+
+      ctx.clearRect(0, 0, w, h);
+
+      // Atmosphere Outer Halo Gradient
+      const atmosphereGrad = ctx.createRadialGradient(cx, cy, R * 0.7, cx, cy, R * 1.25);
+      atmosphereGrad.addColorStop(0, 'rgba(2, 132, 199, 0.25)');
+      atmosphereGrad.addColorStop(0.5, 'rgba(2, 132, 199, 0.12)');
+      atmosphereGrad.addColorStop(1, 'rgba(2, 132, 199, 0)');
+      ctx.fillStyle = atmosphereGrad;
+      ctx.beginPath();
+      ctx.arc(cx, cy, R * 1.25, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Globe Shading Base Sphere
+      const globeGrad = ctx.createRadialGradient(cx - R * 0.3, cy - R * 0.3, 10, cx, cy, R);
+      globeGrad.addColorStop(0, '#1e3a8a');
+      globeGrad.addColorStop(0.5, '#0f2b5c');
+      globeGrad.addColorStop(1, '#0b192e');
+      ctx.fillStyle = globeGrad;
+      ctx.beginPath();
+      ctx.arc(cx, cy, R, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Globe Outline Circle Glow
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.45)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      rotationY += autoSpeed;
+
+      // Draw Lat/Lon Grid Wireframe Lines
+      ctx.lineWidth = 0.8;
+      ctx.strokeStyle = 'rgba(147, 197, 253, 0.15)';
+      for (let latDeg = -60; latDeg <= 60; latDeg += 30) {
+        const rLat = R * Math.cos(latDeg * Math.PI / 180);
+        const yLat = cy - R * Math.sin(latDeg * Math.PI / 180);
+        ctx.beginPath();
+        ctx.ellipse(cx, yLat, rLat, rLat * 0.3, 0, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+
+      // Render 3D Dots by Z-depth
+      dots.forEach(dot => {
+        const cosR = Math.cos(rotationY);
+        const sinR = Math.sin(rotationY);
+        const rx = dot.x * cosR - dot.z * sinR;
+        const rz = dot.x * sinR + dot.z * cosR;
+
+        if (rz > -0.2) {
+          const px = cx + rx * R;
+          const py = cy + dot.y * R;
+          const alpha = Math.max(0.1, (rz + 0.3) / 1.3);
+          const size = dot.isHighlight ? 2.6 : 1.5;
+
+          ctx.fillStyle = dot.isHighlight
+            ? `rgba(245, 158, 11, ${alpha})`
+            : `rgba(186, 230, 253, ${alpha * 0.75})`;
+          ctx.beginPath();
+          ctx.arc(px, py, size, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      });
+
+      // Calculate Colombo & Tokyo 3D positions
+      const pColombo = latLonTo3D(colombo.lat, colombo.lon, R, rotationY);
+      const pTokyo = latLonTo3D(tokyo.lat, tokyo.lon, R, rotationY);
+
+      // Draw Sri Lanka -> Japan Connection Arc if visible
+      if (pColombo.z > -0.2 && pTokyo.z > -0.2) {
+        const cX1 = cx + pColombo.x;
+        const cY1 = cy + pColombo.y;
+        const cX2 = cx + pTokyo.x;
+        const cY2 = cy + pTokyo.y;
+        const midX = (cX1 + cX2) / 2;
+        const midY = (cY1 + cY2) / 2 - 45;
+
+        // Arc stroke
+        const arcGrad = ctx.createLinearGradient(cX1, cY1, cX2, cY2);
+        arcGrad.addColorStop(0, '#f59e0b');
+        arcGrad.addColorStop(0.5, '#ffffff');
+        arcGrad.addColorStop(1, '#38bdf8');
+
+        ctx.strokeStyle = arcGrad;
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(cX1, cY1);
+        ctx.quadraticCurveTo(midX, midY, cX2, cY2);
+        ctx.stroke();
+
+        // Traveling Pulse Light along Arc
+        const t = (Date.now() % 2200) / 2200;
+        const pulseX = (1 - t) * (1 - t) * cX1 + 2 * (1 - t) * t * midX + t * t * cX2;
+        const pulseY = (1 - t) * (1 - t) * cY1 + 2 * (1 - t) * t * midY + t * t * cY2;
+
+        ctx.fillStyle = '#ffffff';
+        ctx.shadowColor = '#f59e0b';
+        ctx.shadowBlur = 12;
+        ctx.beginPath();
+        ctx.arc(pulseX, pulseY, 4.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        // Colombo Pin
+        ctx.fillStyle = '#f59e0b';
+        ctx.beginPath();
+        ctx.arc(cX1, cY1, 5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Tokyo Pin
+        ctx.fillStyle = '#38bdf8';
+        ctx.beginPath();
+        ctx.arc(cX2, cY2, 5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      requestAnimationFrame(drawVisionGlobe);
+    }
+
+    visionGlobeCanvas.addEventListener('mouseenter', () => { autoSpeed = 0.02; });
+    visionGlobeCanvas.addEventListener('mouseleave', () => { autoSpeed = 0.008; });
+
+    drawVisionGlobe();
   }
 
 })();

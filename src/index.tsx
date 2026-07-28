@@ -5,6 +5,8 @@ import { ContactPage } from './pages/ContactPage'
 import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage'
 import { FAQPage } from './pages/FAQPage'
 import { CompanyPage } from './pages/CompanyPage'
+import { MessagePage } from './pages/MessagePage'
+import { NewsPage } from './pages/NewsPage'
 
 const app = new Hono()
 
@@ -83,6 +85,19 @@ app.get('/faq', (c) => {
 // ---- 会社概要 (Company) ページ ----
 app.get('/company', (c) => {
   return c.html(<CompanyPage />)
+})
+
+// ---- ビジョン・メッセージ (Message / Vision) ページ ----
+app.get('/message', (c) => {
+  return c.html(<MessagePage />)
+})
+app.get('/vision', (c) => {
+  return c.html(<MessagePage />)
+})
+
+// ---- お知らせ・ニュース一覧 (News) ページ ----
+app.get('/news', (c) => {
+  return c.html(<NewsPage />)
 })
 
 export default app

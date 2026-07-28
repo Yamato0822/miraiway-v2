@@ -12,8 +12,6 @@ export const PrivacyPolicyPage: FC = () => {
       <Header />
 
       <main id="page-main" class="privacy-page-main">
-        {/* Custom Interactive Cursor */}
-        <div id="custom-cursor" aria-hidden="true"></div>
 
         <section class="privacy-hero-section">
           <div class="privacy-container">

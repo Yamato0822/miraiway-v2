@@ -21,7 +21,7 @@ export const Layout: FC<PropsWithChildren<LayoutProps>> = ({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
         <link
-          href="https://fonts.googleapis.com/css2?family=M+PLUS+1p:wght@400;500;700;800&family=Shippori+Antique+B1&family=Outfit:wght@300;400;600;700;800&display=swap"
+          href="https://fonts.googleapis.com/css2?family=M+PLUS+1p:wght@400;500;700;800&family=Shippori+Antique+B1&family=Outfit:wght@300;400;600;700;800&family=Great+Vibes&family=Alex+Brush&display=swap"
           rel="stylesheet"
         />
         <link
@@ -32,7 +32,7 @@ export const Layout: FC<PropsWithChildren<LayoutProps>> = ({
           href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css"
           rel="stylesheet"
         />
-        <link href="https://unpkg.com/maplibre-gl/dist/maplibre-gl.css" rel="stylesheet" />
+        <link href="https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
         <link href="/static/style.css" rel="stylesheet" />
         <link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
       </head>
@@ -53,7 +53,7 @@ export const Layout: FC<PropsWithChildren<LayoutProps>> = ({
 
         {children}
         <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
-        <script src="https://unpkg.com/maplibre-gl/dist/maplibre-gl.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
         <script src="/static/app.js"></script>
       </body>
     </html>

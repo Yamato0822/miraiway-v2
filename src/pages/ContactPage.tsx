@@ -12,8 +12,6 @@ export const ContactPage: FC = () => {
       <Header activePage="contact" />
 
       <main id="page-main" class="contact-page-main">
-        {/* Custom Interactive Cursor */}
-        <div id="custom-cursor" aria-hidden="true"></div>
 
         <section class="contact-hero-section">
           <div class="contact-hero-inner">
@@ -93,6 +91,7 @@ export const ContactPage: FC = () => {
                       <option value="人材採用のご相談">特定技能・人材採用のご相談</option>
                       <option value="現地教育・育成について">現地日本語教育・育成プログラムについて</option>
                       <option value="企業サポートについて">受入企業サポート・コンサルティングについて</option>
+                      <option value="クリエイティブ・制作依頼">採用PR・クリエイティブ制作のご相談</option>
                       <option value="その他">その他のお問い合わせ</option>
                     </select>
                   </div>

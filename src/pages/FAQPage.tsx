@@ -98,8 +98,6 @@ export const FAQPage: FC = () => {
       <Header />
 
       <main id="page-main" class="faq-page-main">
-        {/* Custom Interactive Cursor */}
-        <div id="custom-cursor" aria-hidden="true"></div>
 
         <section class="faq-hero-section">
           <div class="faq-container">

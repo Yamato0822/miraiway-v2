@@ -2,7 +2,7 @@ import type { FC } from 'hono/jsx'
 import { LogoMark } from './LogoMark'
 
 interface HeaderProps {
-  activePage?: 'home' | 'contact' | 'company'
+  activePage?: 'home' | 'message' | 'company' | 'contact' | 'news'
 }
 
 export const Header: FC<HeaderProps> = ({ activePage = 'home' }) => {
@@ -10,13 +10,13 @@ export const Header: FC<HeaderProps> = ({ activePage = 'home' }) => {
     <header id="site-header">
       <div class="header-inner">
         <a href="/" class="brand" id="brand-logo" aria-label="MiraiWay ホーム">
-          <LogoMark width={68} height={56} />
+          <LogoMark width={76} height={54} />
         </a>
         <nav id="global-nav" aria-label="グローバルナビゲーション">
-          <a href="/#about-section">MiraiWayについて</a>
-          <a href="/#services-section">サービス</a>
-          <a href="/#process-section">ご利用の流れ</a>
-          <a href="/company">会社情報</a>
+          <a href="/message" class={activePage === 'message' ? 'is-active' : ''}>ビジョン</a>
+          <a href="/#services-section">事業内容</a>
+          <a href="/company" class={activePage === 'company' ? 'is-active' : ''}>会社情報</a>
+          <a href="/news" class={activePage === 'news' ? 'is-active' : ''}>ニュース</a>
         </nav>
         <div class="header-actions">
           <a href="/contact" class={`btn btn-primary btn-sm ${activePage === 'contact' ? 'is-active' : ''}`}>
@@ -31,10 +31,10 @@ export const Header: FC<HeaderProps> = ({ activePage = 'home' }) => {
         </div>
       </div>
       <nav id="mobile-nav" aria-label="モバイルナビゲーション">
-        <a href="/#about-section">MiraiWayについて</a>
-        <a href="/#services-section">サービス</a>
-        <a href="/#process-section">ご利用の流れ</a>
+        <a href="/message">ビジョン</a>
+        <a href="/#services-section">事業内容</a>
         <a href="/company">会社情報</a>
+        <a href="/news">ニュース</a>
         <a href="/contact" class="mobile-cta">
           お問い合わせ
         </a>
