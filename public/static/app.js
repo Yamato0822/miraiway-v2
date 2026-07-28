@@ -12,22 +12,27 @@
   }
 
   const pageLoader = document.getElementById('page-loader');
+  const loaderReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  let loaderHasOpened = false;
   
   function hidePageLoader() {
+    if (loaderHasOpened) return;
+    loaderHasOpened = true;
     if (pageLoader) pageLoader.classList.add('is-loaded');
     document.body.classList.remove('is-loading');
+    const openingDuration = loaderReducedMotion.matches ? 180 : 1020;
     setTimeout(() => {
       if (pageLoader) pageLoader.style.display = 'none';
       if (window.realMapLibreInstance) {
         window.realMapLibreInstance.resize();
       }
-    }, 480);
+    }, openingDuration);
   }
 
   if (document.readyState === 'complete') {
-    setTimeout(hidePageLoader, 300);
+    setTimeout(hidePageLoader, 280);
   } else {
-    window.addEventListener('load', () => setTimeout(hidePageLoader, 300), { once: true });
+    window.addEventListener('load', () => setTimeout(hidePageLoader, 220), { once: true });
     setTimeout(hidePageLoader, 900);
   }
 
@@ -43,13 +48,16 @@
         e.preventDefault();
         if (pageLoader) {
           pageLoader.style.display = 'flex';
+          pageLoader.getBoundingClientRect();
           requestAnimationFrame(() => {
             pageLoader.classList.remove('is-loaded');
+            document.body.classList.add('is-loading');
           });
         }
+        const closingDuration = loaderReducedMotion.matches ? 160 : 680;
         setTimeout(() => {
           window.location.href = href;
-        }, 400);
+        }, closingDuration);
       }
     });
   });

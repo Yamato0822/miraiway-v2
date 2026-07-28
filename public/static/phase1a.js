@@ -9,85 +9,169 @@
     const viewport = rail.querySelector('[data-rail-viewport]');
     const previousButton = rail.querySelector('[data-rail-prev]');
     const nextButton = rail.querySelector('[data-rail-next]');
-    if (!viewport || !previousButton || !nextButton) return;
+    const slides = Array.from(viewport?.querySelectorAll('.activity-card') || []);
+    const dots = Array.from(rail.querySelectorAll('[data-rail-dot]'));
+    const status = rail.querySelector('[data-rail-status]');
+    const desktopQuery = window.matchMedia('(min-width: 1024px)');
+    if (!viewport || !previousButton || !nextButton || !slides.length) return;
 
-    const getStep = () => {
-      const card = viewport.querySelector('.activity-card');
-      if (!card) return viewport.clientWidth * 0.8;
+    let currentIndex = 0;
+    let isDragging = false;
+    let dragStartX = 0;
+    let dragStartScroll = 0;
+    let wheelTotal = 0;
+    let wheelLocked = false;
+
+    const wrapIndex = (index) => (index + slides.length) % slides.length;
+
+    const updateIndicators = () => {
+      dots.forEach((dot, index) => {
+        const isCurrent = index === currentIndex;
+        dot.classList.toggle('is-active', isCurrent);
+        dot.setAttribute('aria-current', isCurrent ? 'true' : 'false');
+      });
+      if (status) status.textContent = `活動${currentIndex + 1} / ${slides.length}`;
+    };
+
+    const renderDesktop = () => {
+      const previousIndex = wrapIndex(currentIndex - 1);
+      const nextIndex = wrapIndex(currentIndex + 1);
+      slides.forEach((slide, index) => {
+        slide.classList.toggle('is-active', index === currentIndex);
+        slide.classList.toggle('is-prev', index === previousIndex);
+        slide.classList.toggle('is-next', index === nextIndex);
+        const isVisible = index === currentIndex || index === previousIndex || index === nextIndex;
+        slide.setAttribute('aria-hidden', String(!isVisible));
+      });
+      updateIndicators();
+    };
+
+    const getMobileStep = () => {
+      const card = slides[0];
       const styles = window.getComputedStyle(viewport);
       const gap = parseFloat(styles.columnGap || styles.gap || '0');
       return card.getBoundingClientRect().width + gap;
     };
 
-    const scrollRail = (direction) => {
-      viewport.scrollBy({
-        left: getStep() * direction,
-        behavior: prefersReducedMotion.matches ? 'auto' : 'smooth'
+    const goTo = (index, shouldFocus = false) => {
+      currentIndex = wrapIndex(index);
+      if (desktopQuery.matches) {
+        renderDesktop();
+      } else {
+        slides.forEach((slide) => slide.setAttribute('aria-hidden', 'false'));
+        viewport.scrollTo({
+          left: getMobileStep() * currentIndex,
+          behavior: prefersReducedMotion.matches ? 'auto' : 'smooth'
+        });
+        updateIndicators();
+      }
+      if (shouldFocus) viewport.focus({ preventScroll: true });
+    };
+
+    const changeSlide = (direction) => goTo(currentIndex + direction);
+
+    previousButton.addEventListener('click', () => changeSlide(-1));
+    nextButton.addEventListener('click', () => changeSlide(1));
+    dots.forEach((dot, index) => dot.addEventListener('click', () => goTo(index)));
+    slides.forEach((slide) => {
+      slide.addEventListener('click', () => {
+        if (!desktopQuery.matches) return;
+        if (slide.classList.contains('is-prev')) changeSlide(-1);
+        if (slide.classList.contains('is-next')) changeSlide(1);
       });
-    };
+    });
 
-    const updateControls = () => {
-      const maxScroll = Math.max(0, viewport.scrollWidth - viewport.clientWidth);
-      previousButton.disabled = viewport.scrollLeft <= 2;
-      nextButton.disabled = viewport.scrollLeft >= maxScroll - 2;
-    };
-
-    previousButton.addEventListener('click', () => scrollRail(-1));
-    nextButton.addEventListener('click', () => scrollRail(1));
     viewport.addEventListener('keydown', (event) => {
       if (event.key === 'ArrowLeft') {
         event.preventDefault();
-        scrollRail(-1);
+        changeSlide(-1);
       }
       if (event.key === 'ArrowRight') {
         event.preventDefault();
-        scrollRail(1);
+        changeSlide(1);
       }
       if (event.key === 'Home') {
         event.preventDefault();
-        viewport.scrollTo({ left: 0, behavior: prefersReducedMotion.matches ? 'auto' : 'smooth' });
+        goTo(0);
       }
       if (event.key === 'End') {
         event.preventDefault();
-        viewport.scrollTo({
-          left: viewport.scrollWidth,
-          behavior: prefersReducedMotion.matches ? 'auto' : 'smooth'
-        });
+        goTo(slides.length - 1);
       }
     });
 
-    let isDragging = false;
-    let dragStartX = 0;
-    let dragStartScroll = 0;
+    viewport.querySelectorAll('img').forEach((image) => image.setAttribute('draggable', 'false'));
 
-    viewport.addEventListener('pointerdown', (event) => {
-      if (event.pointerType !== 'mouse' || event.button !== 0) return;
+    viewport.addEventListener('mousedown', (event) => {
+      if (event.button !== 0) return;
+      event.preventDefault();
       isDragging = true;
       dragStartX = event.clientX;
       dragStartScroll = viewport.scrollLeft;
       viewport.classList.add('is-dragging');
-      viewport.setPointerCapture(event.pointerId);
     });
 
-    viewport.addEventListener('pointermove', (event) => {
+    window.addEventListener('mousemove', (event) => {
       if (!isDragging) return;
-      viewport.scrollLeft = dragStartScroll - (event.clientX - dragStartX);
+      if (!desktopQuery.matches) {
+        viewport.scrollLeft = dragStartScroll - (event.clientX - dragStartX);
+      }
     });
 
     const endDrag = (event) => {
       if (!isDragging) return;
+      const distance = event.clientX - dragStartX;
       isDragging = false;
       viewport.classList.remove('is-dragging');
-      if (viewport.hasPointerCapture(event.pointerId)) {
-        viewport.releasePointerCapture(event.pointerId);
+      if (desktopQuery.matches && Math.abs(distance) >= 48) {
+        changeSlide(distance < 0 ? 1 : -1);
       }
     };
 
-    viewport.addEventListener('pointerup', endDrag);
-    viewport.addEventListener('pointercancel', endDrag);
-    viewport.addEventListener('scroll', updateControls, { passive: true });
-    window.addEventListener('resize', updateControls, { passive: true });
-    updateControls();
+    window.addEventListener('mouseup', endDrag);
+
+    viewport.addEventListener('wheel', (event) => {
+      if (!desktopQuery.matches || Math.abs(event.deltaX) <= Math.abs(event.deltaY)) return;
+      event.preventDefault();
+      if (wheelLocked) return;
+      wheelTotal += event.deltaX;
+      if (Math.abs(wheelTotal) < 36) return;
+      changeSlide(wheelTotal > 0 ? 1 : -1);
+      wheelTotal = 0;
+      wheelLocked = true;
+      window.setTimeout(() => {
+        wheelLocked = false;
+      }, 360);
+    }, { passive: false });
+
+    let mobileScrollFrame = 0;
+    viewport.addEventListener('scroll', () => {
+      if (desktopQuery.matches || mobileScrollFrame) return;
+      mobileScrollFrame = window.requestAnimationFrame(() => {
+        mobileScrollFrame = 0;
+        const step = getMobileStep();
+        currentIndex = Math.max(0, Math.min(slides.length - 1, Math.round(viewport.scrollLeft / step)));
+        updateIndicators();
+      });
+    }, { passive: true });
+
+    const syncMode = () => {
+      rail.classList.add('is-carousel-ready');
+      if (desktopQuery.matches) {
+        viewport.scrollLeft = 0;
+        renderDesktop();
+      } else {
+        slides.forEach((slide) => {
+          slide.classList.remove('is-active', 'is-prev', 'is-next');
+          slide.setAttribute('aria-hidden', 'false');
+        });
+        viewport.scrollLeft = getMobileStep() * currentIndex;
+        updateIndicators();
+      }
+    };
+
+    desktopQuery.addEventListener('change', syncMode);
+    syncMode();
   });
 
   /* ---------- FAQ category + accordion ---------- */

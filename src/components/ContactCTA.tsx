@@ -10,17 +10,20 @@ export const ContactCTA: FC<ContactCTAProps> = ({ compact = false }) => (
     class={`contact-cta ${compact ? 'contact-cta--compact' : ''}`.trim()}
     aria-labelledby={compact ? 'compact-contact-title' : 'contact-cta-title'}
   >
-    <div class="contact-cta__glow contact-cta__glow--gold" aria-hidden="true"></div>
-    <div class="contact-cta__glow contact-cta__glow--sky" aria-hidden="true"></div>
-    <div class="contact-cta__connection" aria-hidden="true">
-      <span></span><span></span><span></span>
-    </div>
+    {!compact && (
+      <div class="contact-cta__visual" aria-hidden="true">
+        <img src="/static/images/contact-handshake-bg.png" alt="" loading="lazy" />
+      </div>
+    )}
+    {!compact && <div class="contact-cta__texture" aria-hidden="true"></div>}
+    {!compact && <div class="contact-cta__shade" aria-hidden="true"></div>}
 
     <div class="contact-cta__content">
       <p class="contact-cta__eyebrow">LET'S BUILD THE NEXT PATH</p>
       <h2 id={compact ? 'compact-contact-title' : 'contact-cta-title'}>
-        採用と定着の次の一歩を、<br />
-        一緒に整理しませんか。
+        <span>採用と定着の</span>
+        <span>次の一歩を、</span>
+        <span>一緒に整理しませんか。</span>
       </h2>
       <p class="contact-cta__lead">
         スリランカ人材の採用や受け入れに関する状況を伺い、必要な支援をご案内します。
@@ -42,19 +45,5 @@ export const ContactCTA: FC<ContactCTAProps> = ({ compact = false }) => (
       </div>
     </div>
 
-    {!compact && (
-      <div class="contact-cta__visual">
-        <img
-          src="/static/images/contact-handshake-bg.png"
-          alt="MiraiWayのスタッフ"
-          loading="lazy"
-        />
-        <div class="contact-cta__visual-label" aria-hidden="true">
-          <span>SRI LANKA</span>
-          <i class="fas fa-arrow-right"></i>
-          <span>JAPAN</span>
-        </div>
-      </div>
-    )}
   </section>
 )

@@ -152,6 +152,7 @@ export const Home: FC = () => {
               number="01"
               eyebrow="ABOUT US"
               title="日本とスリランカを、可能性でつなぐ。"
+              titleLines={['日本とスリランカを、', '可能性でつなぐ。']}
               description="教育から就労、来日後の支援まで。国境を越えた挑戦を、一気通貫で支えます。"
               align="center"
               className="about-section-heading reveal"
@@ -161,15 +162,7 @@ export const Home: FC = () => {
               <div class="activity-rail__header">
                 <div>
                   <span>OUR ACTIVITIES</span>
-                  <p>両国でつながる、6つの取り組み</p>
-                </div>
-                <div class="activity-rail__controls">
-                  <button type="button" data-rail-prev aria-label="前の活動を見る">
-                    <i class="fas fa-arrow-left" aria-hidden="true"></i>
-                  </button>
-                  <button type="button" data-rail-next aria-label="次の活動を見る">
-                    <i class="fas fa-arrow-right" aria-hidden="true"></i>
-                  </button>
+                  <p>両国でつながる、<span>6つの取り組み</span></p>
                 </div>
               </div>
               <div
@@ -177,10 +170,11 @@ export const Home: FC = () => {
                 data-rail-viewport
                 tabindex="0"
                 role="region"
+                aria-roledescription="カルーセル"
                 aria-label="MiraiWayの6つの取り組み。左右の矢印キーでも操作できます。"
               >
                 {/* Set 1 */}
-                <article class="activity-card">
+                <article class="activity-card" data-slide-index="0" role="group" aria-label="1 / 6">
                   <img src="/static/images/activity-education.jpg" alt="現地直営スクールでの高度日本語教育" loading="lazy" />
                   <div class="marquee-card-overlay">
                     <span class="marquee-badge">EDUCATION &bull; SRI LANKA</span>
@@ -188,7 +182,7 @@ export const Home: FC = () => {
                   </div>
                 </article>
 
-                <article class="activity-card">
+                <article class="activity-card" data-slide-index="1" role="group" aria-label="2 / 6">
                   <img src="/static/images/activity-collaboration.jpg" alt="日本企業とスリランカ人材の選考・交流" loading="lazy" />
                   <div class="marquee-card-overlay">
                     <span class="marquee-badge">MATCHING &bull; INTERVIEW</span>
@@ -196,7 +190,7 @@ export const Home: FC = () => {
                   </div>
                 </article>
 
-                <article class="activity-card">
+                <article class="activity-card" data-slide-index="2" role="group" aria-label="3 / 6">
                   <img src="/static/images/about-hills.jpg" alt="スリランカ現地の自然環境" loading="lazy" />
                   <div class="marquee-card-overlay">
                     <span class="marquee-badge">HUB &bull; COLOMBO</span>
@@ -204,7 +198,7 @@ export const Home: FC = () => {
                   </div>
                 </article>
 
-                <article class="activity-card">
+                <article class="activity-card" data-slide-index="3" role="group" aria-label="4 / 6">
                   <img src="/static/images/tokyo-skyline.jpg" alt="日本拠点・東京での就労＆定着支援" loading="lazy" />
                   <div class="marquee-card-overlay">
                     <span class="marquee-badge">CAREER &bull; TOKYO</span>
@@ -212,7 +206,7 @@ export const Home: FC = () => {
                   </div>
                 </article>
 
-                <article class="activity-card">
+                <article class="activity-card" data-slide-index="4" role="group" aria-label="5 / 6">
                   <img src="/static/images/about-feature.png" alt="特定技能教育・実務トレーニング" loading="lazy" />
                   <div class="marquee-card-overlay">
                     <span class="marquee-badge">TRAINING &bull; SKILLS</span>
@@ -220,7 +214,7 @@ export const Home: FC = () => {
                   </div>
                 </article>
 
-                <article class="activity-card">
+                <article class="activity-card" data-slide-index="5" role="group" aria-label="6 / 6">
                   <img src="/static/images/miraiway-pathway.jpg" alt="日ス両国をつなぐ国際パートナーシップ" loading="lazy" />
                   <div class="marquee-card-overlay">
                     <span class="marquee-badge">BRIDGE &bull; FUTURE</span>
@@ -229,6 +223,23 @@ export const Home: FC = () => {
                 </article>
 
               </div>
+              <div class="activity-rail__navigation" aria-label="活動スライド操作">
+                <button type="button" class="activity-rail__arrow" data-rail-prev aria-label="前の活動を見る">
+                  <i class="fas fa-arrow-left" aria-hidden="true"></i>
+                </button>
+                <div class="activity-rail__dots" role="group" aria-label="活動を選択">
+                  <button type="button" data-rail-dot="0" aria-label="活動1を表示"></button>
+                  <button type="button" data-rail-dot="1" aria-label="活動2を表示"></button>
+                  <button type="button" data-rail-dot="2" aria-label="活動3を表示"></button>
+                  <button type="button" data-rail-dot="3" aria-label="活動4を表示"></button>
+                  <button type="button" data-rail-dot="4" aria-label="活動5を表示"></button>
+                  <button type="button" data-rail-dot="5" aria-label="活動6を表示"></button>
+                </div>
+                <button type="button" class="activity-rail__arrow" data-rail-next aria-label="次の活動を見る">
+                  <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                </button>
+              </div>
+              <p class="sr-only" data-rail-status aria-live="polite">活動1 / 6</p>
               <p class="activity-rail__hint">
                 <i class="fas fa-arrows-left-right" aria-hidden="true"></i>
                 ドラッグ、スワイプ、左右キーで移動

@@ -134,7 +134,7 @@ The **MiraiWay Digital Interface System** is engineered to express **global auth
 1. **Apple-Inspired Sharp Flat Precision**: Replaces generic rounded corners with crisp 0px flat geometry, delivering a sharp, sophisticated corporate profile.
 2. **High-Contrast Typography & Kinetic Overlay**: Combines clean Japanese Noto Sans JP headlines with bold Inter numbers and kinetic background text for dynamic energy.
 3. **Structured Infographic Hierarchy**: Employs color-coded step cards (`STEP 01-03`), executive philosophy banners, and interactive outline stroke keyframes (`-webkit-text-stroke`).
-4. **User-Controlled Activity Rail**: Presents six real-world activities in a non-autoplay horizontal rail with buttons, drag, trackpad, keyboard, and mobile scroll-snap support.
+4. **User-Controlled Activity Carousel**: Presents six real-world activities without autoplay. Desktop shows a three-card perspective composition with an emphasized center card; mobile uses scroll-snap.
 
 ---
 
@@ -194,7 +194,7 @@ Typography operates on a **dual-path standard**:
   - `02 | NEWS & TOPICS`: Full-bleed flat container with 26vw background typography `"NEWS"` & grid news rows (`240px 1fr 40px`).
   - `03 | SERVICES`: 人材マッチング、日本語・技能教育、企業サポート、定着支援の4本柱と、それらを横断するCreative支援。
   - `04 | PROCESS`: PCはsticky横ジャーニー、1024px未満とreduced motionは静的な縦タイムライン。
-  - `CONTACT`: Deep Navyの2カラムCTA。人物写真、Gold主導線、FAQ補助導線を明確に分離。
+  - `CONTACT`: 人物写真を全面背景に使い、薄いBlueテクスチャとDeep Navyグラデーション上へGold主導線とFAQ補助導線を配置。
 
 ---
 
@@ -235,10 +235,11 @@ Full-width dark executive card establishing corporate credibility and core missi
 
 ---
 
-### 6.3 User-Controlled Activity Rail
+### 6.3 User-Controlled Activity Carousel
 - **Structure**: Six unique cards in a single DOM set (`.activity-rail__viewport`); no autoplay and no duplicated loop content.
-- **Input**: Previous/next controls, mouse drag, trackpad, Left/Right/Home/End keys, and mobile scroll-snap.
-- **Visuals**: Real-world operational photographs with crisp 0px borders and clear overlay labels.
+- **Desktop Visuals**: Exactly three cards are visible at once. The center card is full scale while the previous and next cards use reduced height, muted color, and subtle Y-axis perspective.
+- **Input**: Bottom arrows, six position dots with an active pill, mouse drag, trackpad, Left/Right/Home/End keys, and mobile scroll-snap.
+- **Fallback**: Without JavaScript, the original readable horizontal rail remains available.
 
 ---
 
