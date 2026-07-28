@@ -40,14 +40,13 @@ export const Layout: FC<PropsWithChildren<LayoutProps>> = ({
       </head>
       <body class="is-loading">
         <a class="skip-link" href="#page-main">本文へ移動</a>
-        {/* White-Base Curtain Shutter Preloader */}
+        {/* White-base curtain preloader */}
         <div id="page-loader" class="page-loader" aria-hidden="true">
           <div class="loader-curtain top"></div>
           <div class="loader-curtain bottom"></div>
-          <div class="loader-seam"></div>
           <div class="loader-content">
             <div class="loader-logo-wrap">
-              <LogoMark width={96} height={78} invert={true} idPrefix="loader" />
+              <LogoMark width={96} height={78} idPrefix="loader" />
             </div>
             <div class="loader-line-bar">
               <div class="loader-line-progress"></div>

@@ -13,14 +13,27 @@
 
   const pageLoader = document.getElementById('page-loader');
   const loaderReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const loaderStartedAt = performance.now();
   let loaderHasOpened = false;
+  let loaderOpenTimer = null;
   
   function hidePageLoader() {
     if (loaderHasOpened) return;
     loaderHasOpened = true;
-    if (pageLoader) pageLoader.classList.add('is-loaded');
-    document.body.classList.remove('is-loading');
-    const openingDuration = loaderReducedMotion.matches ? 180 : 1020;
+
+    if (pageLoader) {
+      pageLoader.classList.remove('is-closing');
+      pageLoader.classList.add('is-complete');
+    }
+
+    const progressSettleDuration = loaderReducedMotion.matches ? 0 : 120;
+    setTimeout(() => {
+      if (pageLoader) pageLoader.classList.add('is-loaded');
+      document.body.classList.remove('is-loading');
+      document.body.classList.add('intro-revealed');
+    }, progressSettleDuration);
+
+    const openingDuration = loaderReducedMotion.matches ? 200 : 1040;
     setTimeout(() => {
       if (pageLoader) pageLoader.style.display = 'none';
       if (window.realMapLibreInstance) {
@@ -29,11 +42,21 @@
     }, openingDuration);
   }
 
+  function schedulePageLoaderOpen(delay = 0) {
+    if (loaderHasOpened || loaderOpenTimer) return;
+    const minimumVisibleDuration = loaderReducedMotion.matches ? 80 : 620;
+    const elapsed = performance.now() - loaderStartedAt;
+    loaderOpenTimer = setTimeout(
+      hidePageLoader,
+      Math.max(delay, minimumVisibleDuration - elapsed)
+    );
+  }
+
   if (document.readyState === 'complete') {
-    setTimeout(hidePageLoader, 280);
+    schedulePageLoaderOpen(80);
   } else {
-    window.addEventListener('load', () => setTimeout(hidePageLoader, 220), { once: true });
-    setTimeout(hidePageLoader, 900);
+    window.addEventListener('load', () => schedulePageLoaderOpen(80), { once: true });
+    setTimeout(() => schedulePageLoaderOpen(), 1000);
   }
 
   /* ---------- Smooth Page Transitions ---------- */
@@ -48,13 +71,14 @@
         e.preventDefault();
         if (pageLoader) {
           pageLoader.style.display = 'flex';
+          pageLoader.classList.add('is-complete', 'is-closing');
           pageLoader.getBoundingClientRect();
           requestAnimationFrame(() => {
             pageLoader.classList.remove('is-loaded');
             document.body.classList.add('is-loading');
           });
         }
-        const closingDuration = loaderReducedMotion.matches ? 160 : 680;
+        const closingDuration = loaderReducedMotion.matches ? 160 : 550;
         setTimeout(() => {
           window.location.href = href;
         }, closingDuration);
@@ -157,12 +181,15 @@
     let currentTiltX = baseTiltX;
     let currentTiltZ = baseTiltZ;
 
-    window.addEventListener('mousemove', (e) => {
-      const x = (e.clientX / window.innerWidth) * 2 - 1;
-      const y = (e.clientY / window.innerHeight) * 2 - 1;
-      targetTiltZ = baseTiltZ + (x * 0.2);
-      targetTiltX = baseTiltX + (y * 0.2);
-    });
+    const globeReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (!globeReducedMotion.matches) {
+      window.addEventListener('mousemove', (e) => {
+        const x = (e.clientX / window.innerWidth) * 2 - 1;
+        const y = (e.clientY / window.innerHeight) * 2 - 1;
+        targetTiltZ = baseTiltZ + (x * 0.08);
+        targetTiltX = baseTiltX + (y * 0.08);
+      }, { passive: true });
+    }
     const fontFamily = "'Outfit', 'Noto Sans JP', sans-serif";
     
     const bands = [
@@ -183,7 +210,7 @@
     let points = [];
     let angleOffsetBase = 0;
     
-    bands.forEach((band) => {
+    bands.forEach((band, bandIndex) => {
       ctx.font = `${band.weight} ${band.fontSize}px ${fontFamily}`;
       let str = band.text.repeat(8); 
       let y = Math.sin(band.lat) * globeRadius;
@@ -208,7 +235,9 @@
           fontSize: band.fontSize,
           color: band.color,
           weight: band.weight,
-          speed: band.speed
+          speed: band.speed,
+          bandIndex,
+          revealDelay: Math.abs(band.lat) * 390
         });
         currentX += charWidth + tracking;
       }
@@ -216,6 +245,9 @@
 
     let time = 0;
     let isGlobeVisible = false;
+    let revealStartedAt = null;
+    let firstFrameRendered = false;
+    const globeElement = canvas.closest('.typography-globe');
 
     function applyTilt(v) {
       let y1 = v.y * Math.cos(currentTiltX) - v.z * Math.sin(currentTiltX);
@@ -225,11 +257,24 @@
       return { x: x2, y: y2, z: z1 };
     }
 
-    function renderGlobe() {
+    function renderGlobe(timestamp = performance.now()) {
       if (!isGlobeVisible) return;
 
-      currentTiltX += (targetTiltX - currentTiltX) * 0.05;
-      currentTiltZ += (targetTiltZ - currentTiltZ) * 0.05;
+      const introHasStarted =
+        globeReducedMotion.matches || document.body.classList.contains('intro-revealed');
+      if (introHasStarted && revealStartedAt === null) {
+        revealStartedAt = timestamp;
+      }
+      const revealElapsed = globeReducedMotion.matches
+        ? Number.POSITIVE_INFINITY
+        : revealStartedAt === null
+          ? 0
+          : timestamp - revealStartedAt;
+
+      if (!globeReducedMotion.matches) {
+        currentTiltX += (targetTiltX - currentTiltX) * 0.035;
+        currentTiltZ += (targetTiltZ - currentTiltZ) * 0.035;
+      }
 
       ctx.clearRect(0, 0, logicalWidth, logicalHeight);
       
@@ -245,10 +290,14 @@
 
       let renderList = [];
       points.forEach(p => {
+        const rawReveal = globeReducedMotion.matches
+          ? 1
+          : Math.min(1, Math.max(0, (revealElapsed - p.revealDelay) / 760));
+        const bandReveal = 1 - Math.pow(1 - rawReveal, 3);
         let theta = p.angle + time * p.speed;
         let x = p.baseR * Math.cos(theta);
         let z = p.baseR * Math.sin(theta);
-        let y = p.baseY;
+        let y = p.baseY + (1 - bandReveal) * (p.baseY >= 0 ? 18 : -18);
         
         let Nx = x / globeRadius, Ny = y / globeRadius, Nz = z / globeRadius;
         let Tx = -Math.sin(theta), Ty = 0, Tz = Math.cos(theta);
@@ -274,7 +323,8 @@
           fontSize: p.fontSize,
           color: p.color,
           weight: p.weight,
-          isBack: P_tilt.z > 0
+          isBack: P_tilt.z > 0,
+          reveal: bandReveal
         });
       });
 
@@ -297,15 +347,17 @@
         let d = -p.Uy * s;
 
         if (p.isBack) {
-          ctx.globalAlpha = 0.07; 
+          ctx.globalAlpha = 0.07 * p.reveal;
           ctx.transform(a, b, c, d, 0, 0);
         } else {
-          ctx.globalAlpha = 0.1 + 0.9 * Math.pow(tLen, 0.5); 
+          ctx.globalAlpha = (0.1 + 0.9 * Math.pow(tLen, 0.5)) * p.reveal;
           ctx.transform(a, b, c, d, 0, 0);
         }
 
         ctx.font = `${p.weight} ${p.fontSize}px ${fontFamily}`;
         ctx.fillStyle = p.color;
+        ctx.shadowColor = p.color;
+        ctx.shadowBlur = (1 - p.reveal) * 9;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         
@@ -315,6 +367,10 @@
 
       // Orbit Rings
       ctx.save();
+      const orbitReveal = globeReducedMotion.matches
+        ? 1
+        : Math.min(1, Math.max(0, (revealElapsed - 1040) / 320));
+      ctx.globalAlpha = orbitReveal;
       ctx.translate(centerX, centerY);
       ctx.rotate(currentTiltZ);
       ctx.scale(1, 0.35);
@@ -335,7 +391,11 @@
       
       ctx.restore();
 
-      time += 1;
+      if (!globeReducedMotion.matches) time += 1;
+      if (!firstFrameRendered) {
+        firstFrameRendered = true;
+        if (globeElement) globeElement.classList.add('is-globe-ready');
+      }
       requestAnimationFrame(renderGlobe);
     }
 
@@ -350,6 +410,8 @@
       }
     }, { threshold: 0.05 });
     globeObserver.observe(canvas);
+    isGlobeVisible = true;
+    requestAnimationFrame(renderGlobe);
   }
 
   /* ---------- Interactive Scroll Path ---------- */

@@ -255,12 +255,10 @@ export const Home: FC = () => {
                     <span class="step-badge">STEP 01</span>
                     <span class="step-eyebrow">LOCAL EDUCATION</span>
                   </div>
-                  <span class="num-display">01</span>
                   <h3 class="step-card-title">現地教育</h3>
                   <p class="step-card-desc">
                     日本語・文化・技能を体系的に学び、来日前の不安を減らします。
                   </p>
-                  <span class="step-corner" aria-hidden="true">01</span>
                 </div>
 
                 {/* STEP 02 */}
@@ -269,12 +267,10 @@ export const Home: FC = () => {
                     <span class="step-badge">STEP 02</span>
                     <span class="step-eyebrow">MATCHING</span>
                   </div>
-                  <span class="num-display">02</span>
                   <h3 class="step-card-title">人材紹介</h3>
                   <p class="step-card-desc">
                     企業と人材の希望を丁寧に結び、納得感のある選考を支えます。
                   </p>
-                  <span class="step-corner" aria-hidden="true">02</span>
                 </div>
 
                 {/* STEP 03 */}
@@ -283,31 +279,15 @@ export const Home: FC = () => {
                     <span class="step-badge">STEP 03</span>
                     <span class="step-eyebrow">SETTLEMENT SUPPORT</span>
                   </div>
-                  <span class="num-display">03</span>
                   <h3 class="step-card-title">来日・定着支援</h3>
                   <p class="step-card-desc">
                     行政手続きから生活相談まで、就労後も切れ目なく伴走します。
                   </p>
-                  <span class="step-corner" aria-hidden="true">03</span>
                 </div>
               </div>
             </div>
           </div>
         </section>
-
-        {/* ===== Dual-Line Counter-Flowing Kinetic Marquee Divider ===== */}
-        <div class="dual-kinetic-divider" aria-hidden="true">
-          <div class="kinetic-line line-left">
-            <div class="line-track">
-              MIRAIWAY CONNECTING FUTURES &bull; EMPOWERING TALENT &bull; SUSTAINABLE GROWTH &bull; MIRAIWAY CONNECTING FUTURES &bull; EMPOWERING TALENT &bull; SUSTAINABLE GROWTH &bull;
-            </div>
-          </div>
-          <div class="kinetic-line line-right">
-            <div class="line-track">
-              BRIDGING NATIONS &bull; CREATING OPPORTUNITIES &bull; BORDERLESS PATHWAY &bull; BRIDGING NATIONS &bull; CREATING OPPORTUNITIES &bull; BORDERLESS PATHWAY &bull;
-            </div>
-          </div>
-        </div>
 
         {/* ===== 02 News Section ===== */}
         <section id="news-section" class="news-split-section">
