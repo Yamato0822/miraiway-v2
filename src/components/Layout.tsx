@@ -33,17 +33,20 @@ export const Layout: FC<PropsWithChildren<LayoutProps>> = ({
           rel="stylesheet"
         />
         <link href="https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
+        <link href="/static/tokens.css" rel="stylesheet" />
         <link href="/static/style.css" rel="stylesheet" />
+        <link href="/static/phase1a.css" rel="stylesheet" />
         <link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
       </head>
       <body class="is-loading">
+        <a class="skip-link" href="#page-main">本文へ移動</a>
         {/* White-Base Curtain Shutter Preloader */}
         <div id="page-loader" class="page-loader" aria-hidden="true">
           <div class="loader-curtain top"></div>
           <div class="loader-curtain bottom"></div>
           <div class="loader-content">
             <div class="loader-logo-wrap">
-              <LogoMark width={80} height={66} />
+              <LogoMark width={80} height={66} idPrefix="loader" />
             </div>
             <div class="loader-line-bar">
               <div class="loader-line-progress"></div>
@@ -55,6 +58,7 @@ export const Layout: FC<PropsWithChildren<LayoutProps>> = ({
         <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
         <script src="/static/app.js"></script>
+        <script src="/static/phase1a.js"></script>
       </body>
     </html>
   )

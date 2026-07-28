@@ -1,7 +1,7 @@
 ---
 name: MiraiWay Digital Interface
 colors:
-  surface: '#f8fafc'
+  surface: '#f5f8fc'
   surface-dim: '#e2e8f0'
   surface-bright: '#ffffff'
   surface-container-lowest: '#ffffff'
@@ -9,14 +9,14 @@ colors:
   surface-container: '#e2e8f0'
   surface-container-high: '#cbd5e1'
   surface-container-highest: '#94a3b8'
-  on-surface: '#0f172a'
-  on-surface-variant: '#475569'
-  inverse-surface: '#0f172a'
+  on-surface: '#0d1b2f'
+  on-surface-variant: '#31445f'
+  inverse-surface: '#021f54'
   inverse-on-surface: '#f8fafc'
   outline: '#cbd5e1'
   outline-variant: '#e2e8f0'
   surface-tint: '#0284c7'
-  primary: '#0f172a'
+  primary: '#042158'
   on-primary: '#ffffff'
   primary-container: '#042158'
   on-primary-container: '#38bdf8'
@@ -48,64 +48,64 @@ colors:
   background: '#ffffff'
   on-background: '#0f172a'
   surface-variant: '#f1f5f9'
-  navy-deep: '#042158'
-  navy-dark: '#0f172a'
+  navy-deep: '#021f54'
+  navy-dark: '#042158'
   blue-corporate: '#1155a9'
   blue-sky: '#0284c7'
   emerald-accent: '#059669'
   gold-accent: '#f59c1a'
   gold-decorative: '#efa004'
   gold-star: '#fcb30c'
-  surface-light: '#f8fafc'
-  border-subtle: '#e2e8f0'
+  surface-light: '#f5f8fc'
+  border-subtle: '#d9e2ee'
   border-hairline: 'rgba(255, 255, 255, 0.12)'
-  text-primary: '#0f172a'
-  text-sub: '#475569'
+  text-primary: '#0d1b2f'
+  text-sub: '#31445f'
 typography:
   headline-xl:
-    fontFamily: Noto Sans JP
+    fontFamily: M PLUS 1p
     fontSize: 48px
     fontWeight: '800'
     lineHeight: '1.2'
     letterSpacing: -0.02em
   headline-lg:
-    fontFamily: Noto Sans JP
+    fontFamily: M PLUS 1p
     fontSize: 32px
     fontWeight: '800'
     lineHeight: '1.3'
   headline-lg-mobile:
-    fontFamily: Noto Sans JP
+    fontFamily: M PLUS 1p
     fontSize: 24px
     fontWeight: '800'
     lineHeight: '1.3'
   headline-md:
-    fontFamily: Noto Sans JP
+    fontFamily: M PLUS 1p
     fontSize: 24px
     fontWeight: '700'
     lineHeight: '1.4'
   body-lg:
-    fontFamily: Noto Sans JP
+    fontFamily: M PLUS 1p
     fontSize: 18px
     fontWeight: '400'
     lineHeight: '1.6'
   body-md:
-    fontFamily: Noto Sans JP
+    fontFamily: M PLUS 1p
     fontSize: 16px
     fontWeight: '400'
     lineHeight: '1.6'
   label-md:
-    fontFamily: Inter
+    fontFamily: Outfit
     fontSize: 14px
     fontWeight: '700'
     lineHeight: '1'
     letterSpacing: 0.08em
   label-sm:
-    fontFamily: Inter
+    fontFamily: Outfit
     fontSize: 12px
     fontWeight: '800'
     lineHeight: '1'
   data-numeric:
-    fontFamily: Inter
+    fontFamily: Outfit
     fontSize: 16px
     fontWeight: '800'
     lineHeight: '1'
@@ -134,7 +134,7 @@ The **MiraiWay Digital Interface System** is engineered to express **global auth
 1. **Apple-Inspired Sharp Flat Precision**: Replaces generic rounded corners with crisp 0px flat geometry, delivering a sharp, sophisticated corporate profile.
 2. **High-Contrast Typography & Kinetic Overlay**: Combines clean Japanese Noto Sans JP headlines with bold Inter numbers and kinetic background text for dynamic energy.
 3. **Structured Infographic Hierarchy**: Employs color-coded step cards (`STEP 01-03`), executive philosophy banners, and interactive outline stroke keyframes (`-webkit-text-stroke`).
-4. **Infinite Activity Marquee**: Incorporates seamless 60fps horizontal marquee scrolling to showcase real-world operational activities beneath key brand messaging.
+4. **User-Controlled Activity Rail**: Presents six real-world activities in a non-autoplay horizontal rail with buttons, drag, trackpad, keyboard, and mobile scroll-snap support.
 
 ---
 
@@ -144,15 +144,15 @@ The color strategy is built on **"Trust & Prosperity"**.
 
 | Role | Color Name | Hex / Value | Usage Scope |
 | :--- | :--- | :--- | :--- |
-| **Primary Navy** | Deep Titanium Navy | `#0F172A` / `#042158` | Dark hero canvas, executive banners, dark footers, high-contrast headings |
+| **Primary Navy** | Deep Navy | `#021F54` / `#042158` | Dark CTA canvas, process background, footer, high-contrast headings |
 | **Corporate Blue** | Sky Blue Accent | `#0284C7` / `#1155A9` | Active UI states, STEP 02 badges, category tags, link hovers |
 | **Emerald Accent** | Settlement Support Emerald | `#059669` / `#34D399` | STEP 03 badges, settlement support highlights, checkmark accents |
 | **Gold Accent** | Radiant Amber | `#F59C1A` / `#EFA004` | Logo star mark, CTA highlights, diagonal background ribbon, hero accents |
-| **Surface Light** | Off-White Slate | `#F8FAFC` | Section card backgrounds, container fills, zebra rows |
+| **Surface Light** | Off-White Blue | `#F5F8FC` | Section card backgrounds, container fills, empty states |
 | **Surface Pure** | Crisp Pure White | `#FFFFFF` | News flat section background, main content cards, input fields |
-| **Border Subtle** | Hairline Border | `#E2E8F0` / `rgba(255,255,255,0.12)` | Component separation, outline cards, flat list dividers |
-| **Text Main** | Solid Dark Slate | `#0F172A` | Primary body text and headlines on white backgrounds (100% legibility) |
-| **Text Muted** | Slate Gray | `#475569` | Dates, captions, subtitle descriptions |
+| **Border Subtle** | Hairline Border | `#D9E2EE` / `rgba(255,255,255,0.12)` | Component separation, outline cards, flat list dividers |
+| **Text Main** | Deep Ink | `#0D1B2F` | Primary body text and headlines on white backgrounds |
+| **Text Muted** | Blue Gray | `#31445F` / `#697A91` | Dates, captions, subtitle descriptions |
 
 ---
 
@@ -160,8 +160,8 @@ The color strategy is built on **"Trust & Prosperity"**.
 
 Typography operates on a **dual-path standard**:
 
-1. **Noto Sans JP** (Primary Body & Headings): Ensures seamless legibility across Japanese titles, body text, and executive messages with tight headline letter spacing (`-0.02em`) and generous body line heights (`1.6`).
-2. **Inter** (Technical & Numeric Layer): Applied to all numeric data, step counters (`01`, `02`, `03`), section badges (`STEP 01`), category labels (`PRESS RELEASE`, `お知らせ`), and metrics.
+1. **M PLUS 1p / Shippori Antique B1** (Japanese Body & Editorial Headings): Maintain legibility while preserving the existing brand's distinctive Japanese hero typography.
+2. **Outfit** (Technical & Numeric Layer): Applied to numeric data, step counters, section badges, category labels, and compact English metadata.
 
 ### Typography Hierarchy
 
@@ -192,10 +192,9 @@ Typography operates on a **dual-path standard**:
 - **Section Grid Structure**:
   - `01 | ABOUT US`: 3-Column Infographic Step Grid + Full-width Executive Mission Banner.
   - `02 | NEWS & TOPICS`: Full-bleed flat container with 26vw background typography `"NEWS"` & grid news rows (`240px 1fr 40px`).
-  - `03 | SERVICES`: 5 Core Services (`Global HR`, `DX Support`, `Offshore Development`, `BPO`, `Creative`).
-  - `04 | PROCESS`: 6-Step Flow Panels with pure white legibility (`#FFFFFF`).
-  - `05 | COMPANY`: Company Overview Table & Message Link.
-  - `06 | CONTACT`: Dark Navy CTAs with high-contrast inquiry form.
+  - `03 | SERVICES`: 人材マッチング、日本語・技能教育、企業サポート、定着支援の4本柱と、それらを横断するCreative支援。
+  - `04 | PROCESS`: PCはsticky横ジャーニー、1024px未満とreduced motionは静的な縦タイムライン。
+  - `CONTACT`: Deep Navyの2カラムCTA。人物写真、Gold主導線、FAQ補助導線を明確に分離。
 
 ---
 
@@ -236,26 +235,26 @@ Full-width dark executive card establishing corporate credibility and core missi
 
 ---
 
-### 6.3 Infinite Activity Marquee
-- **Structure**: Continuous 60fps horizontal marquee track (`.marquee-track`).
-- **Placement**: Situated directly beneath Section 01 body copy.
-- **Visuals**: Real-world operational photographs with crisp 0px borders and subtle shadow elevation.
+### 6.3 User-Controlled Activity Rail
+- **Structure**: Six unique cards in a single DOM set (`.activity-rail__viewport`); no autoplay and no duplicated loop content.
+- **Input**: Previous/next controls, mouse drag, trackpad, Left/Right/Home/End keys, and mobile scroll-snap.
+- **Visuals**: Real-world operational photographs with crisp 0px borders and clear overlay labels.
 
 ---
 
-### 6.4 News & Topics Flat Section (`02 | NEWS & TOPICS`)
-- **Background**: Pure Crisp White (`#FFFFFF`) with semi-transparent background typography `"NEWS"` (`rgba(15, 23, 42, 0.04)`).
-- **Row Cards**: 3-Column Grid (`240px` date & tag, `1fr` headline, `40px` arrow icon).
-- **Hover Action**: Background shifts to `#F8FAFC`, title turns `#0284C7`, arrow translates `+6px` right.
+### 6.4 News & Topics Flat Section (`02 | NEWS`)
+- **Data Source**: Top and list pages share `src/data/news.ts`; Phase 1A starts with an empty array.
+- **Empty State**: Uses one honest, reusable message without dummy links or pagination.
+- **Future Compatibility**: Published items can use the same `NewsItem` display contract after CMS integration.
 
 ---
 
-### 6.5 Core Service Grid (`03 | SERVICES`)
-- Service 1: **特定技能・登録支援 / Global HR**
-- Service 2: **DX支援・エンジニア育成 / DX Support**
-- Service 3: **オフショア開発 / Offshore Development**
-- Service 4: **BPO・業務アウトソーシング / BPO**
-- Service 5: **クリエイティブ制作 / Creative** (Renamed from legacy "動画制作")
+### 6.5 Core Service Sequence (`03 | SERVICES`)
+- Service 1: **人材マッチング**
+- Service 2: **日本語・技能教育**
+- Service 3: **企業サポート**
+- Service 4: **定着支援**
+- Cross-functional support: **Creative**（採用広報・企業ブランディング・母集団形成）
 
 ---
 

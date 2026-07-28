@@ -2,6 +2,7 @@ import type { FC } from 'hono/jsx'
 import { Layout } from '../components/Layout'
 import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
+import { SectionHeading } from '../components/SectionHeading'
 
 export const ContactPage: FC = () => {
   return (
@@ -16,16 +17,17 @@ export const ContactPage: FC = () => {
         <section class="contact-hero-section">
           <div class="contact-hero-inner">
             <div class="contact-header-content">
-              <span class="eyebrow">CONTACT US</span>
-              <h1 class="contact-page-title">お問い合わせ</h1>
-              <p class="contact-page-lead">
-                スリランカ人材の活用、受け入れ支援、日本語教育に関するご質問やご相談など、<br />
-                下記フォームよりお気軽にお問い合わせください。専門スタッフが迅速にご回答いたします。
-              </p>
+              <SectionHeading
+                eyebrow="CONTACT US"
+                title="お問い合わせ"
+                description="スリランカ人材の採用、受け入れ支援、日本語・技能教育について、下記フォームよりご相談ください。"
+                headingLevel={1}
+                align="center"
+              />
             </div>
 
             <div class="contact-form-card">
-              <div id="form-alert" class="form-alert" style={{ display: 'none' }}></div>
+              <div id="form-alert" class="form-alert" role="status" aria-live="polite" style={{ display: 'none' }}></div>
 
               <form id="contact-form" novalidate>
                 <div class="form-grid">

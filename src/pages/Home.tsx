@@ -2,25 +2,15 @@ import type { FC } from 'hono/jsx'
 import { Layout } from '../components/Layout'
 import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
-import { LogoMark } from '../components/LogoMark'
+import { SectionHeading } from '../components/SectionHeading'
+import { ActionLink } from '../components/ActionLink'
+import { ContactCTA } from '../components/ContactCTA'
+import { NewsList } from '../components/NewsList'
+import { newsItems } from '../data/news'
 
 export const Home: FC = () => {
   return (
     <Layout>
-      {/* ===== Loading Screen ===== */}
-      <div id="loading-screen">
-        <div class="loader-content">
-          <div class="loader-logo">
-            <LogoMark width={72} height={72} />
-          </div>
-          <div class="loader-brand">MiraiWay</div>
-          <p class="loader-tagline">国境を越えて、可能性はつながる。</p>
-          <div class="loader-bar-track">
-            <div class="loader-bar-fill" id="loader-bar-fill"></div>
-          </div>
-        </div>
-      </div>
-
       <Header activePage="home" />
 
       <main id="page-main">
@@ -108,12 +98,10 @@ export const Home: FC = () => {
                 {/* Apple-Style Precision Top Indicator Bar */}
                 <div class="map-top-bar">
                   <div class="map-bar-left">
-                    <span class="bar-num">04</span>
-                    <span class="bar-sep">|</span>
                     <span class="bar-title">GLOBAL BRIDGE &amp; PATHWAY</span>
                   </div>
                   <div class="map-bar-right">
-                    <span class="bar-phase-indicator" id="map-phase-text">PHASE 1: SRI LANKA HUB FOCUS</span>
+                    <span class="bar-phase-indicator" id="map-phase-text">PHASE 1: 現地教育・人材選定</span>
                     <span class="map-route-progress" aria-hidden="true">
                       <span class="map-route-progress-fill" id="map-route-progress-fill"></span>
                     </span>
@@ -160,125 +148,91 @@ export const Home: FC = () => {
               </div>
             </div>
 
-            {/* ===== 01 ABOUT US Section (Text + Infinite Marquee Slider) ===== */}
-            <div class="about-hero-header-block reveal" style={{ marginTop: '70px', textAlign: 'center' }}>
-              <div class="about-label" style={{ justifyContent: 'center' }}>
-                <span class="label-num">01</span>
-                <span class="label-divider">|</span>
-                <span class="label-text">ABOUT US</span>
-              </div>
-              <h2 class="about-title">
-                日本とスリランカを、<br />
-                可能性でつなぐ。
-              </h2>
-              <div class="about-title-line" style={{ margin: '16px auto' }}></div>
-              <p class="about-desc" style={{ margin: '0 auto', maxWidth: '680px' }}>
-                教育から就労、来日後の支援まで、<br />
-                国境を越えた挑戦を、一気通貫で支えます。
-              </p>
-            </div>
+            <SectionHeading
+              number="01"
+              eyebrow="ABOUT US"
+              title="日本とスリランカを、可能性でつなぐ。"
+              description="教育から就労、来日後の支援まで。国境を越えた挑戦を、一気通貫で支えます。"
+              align="center"
+              className="about-section-heading reveal"
+            />
 
-            {/* ===== Infinite Horizontal Rightward Scrolling Marquee Gallery Slider ===== */}
-            <div class="about-marquee-wrapper reveal">
-              <div class="about-marquee-track">
+            <div class="activity-rail reveal" id="activity-rail" data-activity-rail>
+              <div class="activity-rail__header">
+                <div>
+                  <span>OUR ACTIVITIES</span>
+                  <p>両国でつながる、6つの取り組み</p>
+                </div>
+                <div class="activity-rail__controls">
+                  <button type="button" data-rail-prev aria-label="前の活動を見る">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i>
+                  </button>
+                  <button type="button" data-rail-next aria-label="次の活動を見る">
+                    <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                  </button>
+                </div>
+              </div>
+              <div
+                class="activity-rail__viewport"
+                data-rail-viewport
+                tabindex="0"
+                role="region"
+                aria-label="MiraiWayの6つの取り組み。左右の矢印キーでも操作できます。"
+              >
                 {/* Set 1 */}
-                <div class="marquee-card">
+                <article class="activity-card">
                   <img src="/static/images/activity-education.jpg" alt="現地直営スクールでの高度日本語教育" loading="lazy" />
                   <div class="marquee-card-overlay">
                     <span class="marquee-badge">EDUCATION &bull; SRI LANKA</span>
                     <h3 class="marquee-card-title">現地直営スクールでの高度日本語・技能研修</h3>
                   </div>
-                </div>
+                </article>
 
-                <div class="marquee-card">
+                <article class="activity-card">
                   <img src="/static/images/activity-collaboration.jpg" alt="日本企業とスリランカ人材の選考・交流" loading="lazy" />
                   <div class="marquee-card-overlay">
                     <span class="marquee-badge">MATCHING &bull; INTERVIEW</span>
                     <h3 class="marquee-card-title">日本企業と志の高い人材の厳選マッチング</h3>
                   </div>
-                </div>
+                </article>
 
-                <div class="marquee-card">
+                <article class="activity-card">
                   <img src="/static/images/about-hills.jpg" alt="スリランカ現地の自然環境" loading="lazy" />
                   <div class="marquee-card-overlay">
                     <span class="marquee-badge">HUB &bull; COLOMBO</span>
                     <h3 class="marquee-card-title">豊かな文化と教育基盤を持つスリランカ拠点</h3>
                   </div>
-                </div>
+                </article>
 
-                <div class="marquee-card">
+                <article class="activity-card">
                   <img src="/static/images/tokyo-skyline.jpg" alt="日本拠点・東京での就労＆定着支援" loading="lazy" />
                   <div class="marquee-card-overlay">
                     <span class="marquee-badge">CAREER &bull; TOKYO</span>
                     <h3 class="marquee-card-title">東京拠点での生活立ち上げ・定着伴走サポート</h3>
                   </div>
-                </div>
+                </article>
 
-                <div class="marquee-card">
+                <article class="activity-card">
                   <img src="/static/images/about-feature.png" alt="特定技能教育・実務トレーニング" loading="lazy" />
                   <div class="marquee-card-overlay">
                     <span class="marquee-badge">TRAINING &bull; SKILLS</span>
                     <h3 class="marquee-card-title">建築・介護・農業の専門実務トレーニング</h3>
                   </div>
-                </div>
+                </article>
 
-                <div class="marquee-card">
+                <article class="activity-card">
                   <img src="/static/images/miraiway-pathway.jpg" alt="日ス両国をつなぐ国際パートナーシップ" loading="lazy" />
                   <div class="marquee-card-overlay">
                     <span class="marquee-badge">BRIDGE &bull; FUTURE</span>
                     <h3 class="marquee-card-title">国境を越えた挑戦を育む持続可能なエコシステム</h3>
                   </div>
-                </div>
+                </article>
 
-                {/* Set 2 (Duplicate for Seamless Loop) */}
-                <div class="marquee-card">
-                  <img src="/static/images/activity-education.jpg" alt="現地直営スクールでの高度日本語教育" loading="lazy" />
-                  <div class="marquee-card-overlay">
-                    <span class="marquee-badge">EDUCATION &bull; SRI LANKA</span>
-                    <h3 class="marquee-card-title">現地直営スクールでの高度日本語・技能研修</h3>
-                  </div>
-                </div>
-
-                <div class="marquee-card">
-                  <img src="/static/images/activity-collaboration.jpg" alt="日本企業とスリランカ人材の選考・交流" loading="lazy" />
-                  <div class="marquee-card-overlay">
-                    <span class="marquee-badge">MATCHING &bull; INTERVIEW</span>
-                    <h3 class="marquee-card-title">日本企業と志の高い人材の厳選マッチング</h3>
-                  </div>
-                </div>
-
-                <div class="marquee-card">
-                  <img src="/static/images/about-hills.jpg" alt="スリランカ現地の自然環境" loading="lazy" />
-                  <div class="marquee-card-overlay">
-                    <span class="marquee-badge">HUB &bull; COLOMBO</span>
-                    <h3 class="marquee-card-title">豊かな文化と教育基盤を持つスリランカ拠点</h3>
-                  </div>
-                </div>
-
-                <div class="marquee-card">
-                  <img src="/static/images/tokyo-skyline.jpg" alt="日本拠点・東京での就労＆定着支援" loading="lazy" />
-                  <div class="marquee-card-overlay">
-                    <span class="marquee-badge">CAREER &bull; TOKYO</span>
-                    <h3 class="marquee-card-title">東京拠点での生活立ち上げ・定着伴走サポート</h3>
-                  </div>
-                </div>
-
-                <div class="marquee-card">
-                  <img src="/static/images/about-feature.png" alt="特定技能教育・実務トレーニング" loading="lazy" />
-                  <div class="marquee-card-overlay">
-                    <span class="marquee-badge">TRAINING &bull; SKILLS</span>
-                    <h3 class="marquee-card-title">建築・介護・農業の専門実務トレーニング</h3>
-                  </div>
-                </div>
-
-                <div class="marquee-card">
-                  <img src="/static/images/miraiway-pathway.jpg" alt="日ス両国をつなぐ国際パートナーシップ" loading="lazy" />
-                  <div class="marquee-card-overlay">
-                    <span class="marquee-badge">BRIDGE &bull; FUTURE</span>
-                    <h3 class="marquee-card-title">国境を越えた挑戦を育む持続可能なエコシステム</h3>
-                  </div>
-                </div>
               </div>
+              <p class="activity-rail__hint">
+                <i class="fas fa-arrows-left-right" aria-hidden="true"></i>
+                ドラッグ、スワイプ、左右キーで移動
+              </p>
             </div>
 
             {/* ===== Corporate Infographic Architecture (Miraiway2 Clean 3-Step Cards) ===== */}
@@ -347,46 +301,14 @@ export const Home: FC = () => {
         {/* ===== 02 News Section ===== */}
         <section id="news-section" class="news-split-section">
           <div class="news-split-container">
-            {/* Left Column: Heading & Action */}
             <div class="news-left-col reveal">
-              <div class="news-heading-group">
-                <h2 class="news-title-en">News</h2>
-                <p class="news-title-jp">お知らせ</p>
-              </div>
+              <SectionHeading number="02" eyebrow="NEWS" title="お知らせ" />
               <div class="news-action-wrap">
-                <a href="/news" class="btn-news-more">
-                  More
-                </a>
+                <ActionLink href="/news" variant="text">お知らせ一覧へ</ActionLink>
               </div>
             </div>
-
-            {/* Right Column: News List */}
             <div class="news-right-col reveal">
-              <div class="news-list-clean">
-                {/* Item 1 */}
-                <a href="/news/1" class="news-clean-item">
-                  <div class="news-clean-date">2026 / 05 / 15</div>
-                  <div class="news-clean-title">
-                    Web Designingにて弊社のインタビュー記事が掲載されました。
-                  </div>
-                </a>
-
-                {/* Item 2 */}
-                <a href="/news/2" class="news-clean-item">
-                  <div class="news-clean-date">2026 / 01 / 08</div>
-                  <div class="news-clean-title">
-                    Web幹事にて弊社サービスをご紹介いただきました。
-                  </div>
-                </a>
-
-                {/* Item 3 */}
-                <a href="/news/3" class="news-clean-item">
-                  <div class="news-clean-date">2026 / 07 / 22</div>
-                  <div class="news-clean-title">
-                    MiraiWay 公式Webサイトを公開いたしました。日ス両拠点での特定技能人材支援を本格始動します。
-                  </div>
-                </a>
-              </div>
+              <NewsList items={newsItems.slice(0, 3)} variant="home" />
             </div>
           </div>
         </section>
@@ -400,39 +322,26 @@ export const Home: FC = () => {
             </div>
           </div>
           <div class="section-inner">
-            <div class="num-head reveal">
-              <span class="big-num">03</span>
-              <div class="num-titles">
-                <span class="eyebrow">SERVICES</span>
-                <h2>5つの支援で、未来へつなぐ。</h2>
-                <p class="num-lead-desc">採用前の準備から、就労後の定着まで。必要な支援をひとつの窓口で。</p>
-              </div>
-            </div>
-
-            <svg aria-hidden="true" style={{ position: 'absolute', width: 0, height: 0 }}>
-              <defs>
-                <linearGradient id="premium-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stop-color="#E8B95A" />
-                  <stop offset="100%" stop-color="#102F52" />
-                </linearGradient>
-              </defs>
-            </svg>
+            <SectionHeading
+              number="03"
+              eyebrow="SERVICES"
+              title="採用前から、就労後の定着まで。"
+              description="人材・企業の双方に必要な支援をつなぎ、ひとつの窓口から伴走します。"
+              className="services-section-heading reveal"
+            />
 
             <div class="service-showcase-list">
               {/* Service 1 */}
               <div class="service-showcase-item split reveal animated-icon-card">
                 <div class="service-text">
+                  <span class="service-index">01 / MATCHING</span>
                   <h3 class="service-title">人材マッチング</h3>
                   <p class="service-desc">
-                    スリランカの優秀な特定技能人材と日本企業を、圧倒的な精度でマッチングします。
-                    単なるスキルだけでなく、企業の文化や社風、人材のキャリアプランまでを深く考慮。
-                    採用後のミスマッチを極限まで減らし、長期的な戦力となる人材をご紹介します。
+                    候補者の技能や経験だけでなく、希望する働き方や企業側の受け入れ条件も確認します。
+                    面談までの情報共有を丁寧に行い、双方が納得できる選考を支えます。
                   </p>
                   <div class="card-action-bottom">
-                    <a href="/contact" class="btn-link-animated magnetic">
-                      <span>詳しくはこちら</span>
-                      <i class="fas fa-arrow-right"></i>
-                    </a>
+                    <ActionLink href="/contact" variant="text">人材採用について相談する</ActionLink>
                   </div>
                 </div>
                 <div class="service-visual glass-card-large service-image-card">
@@ -446,17 +355,14 @@ export const Home: FC = () => {
                   <img src="/static/images/service-education.jpg" alt="日本語教育" class="service-img" />
                 </div>
                 <div class="service-text">
-                  <h3 class="service-title">日本語教育</h3>
+                  <span class="service-index">02 / EDUCATION</span>
+                  <h3 class="service-title">日本語・技能教育</h3>
                   <p class="service-desc">
-                    来日前から、徹底した日本語教育と日本文化の理解を深めるプログラムを提供します。
-                    語学力だけでなく、日本のビジネスにおけるマナーや習慣までを実践的にカバーすることで、
-                    配属初日から即戦力として、スムーズに現場へ溶け込むことができる体制を整えています。
+                    来日前から日本語、日本での生活ルール、職場で必要な報告・連絡・相談を学びます。
+                    対応分野に合わせた技能学習とあわせて、就労開始に向けた準備を進めます。
                   </p>
                   <div class="card-action-bottom">
-                    <a href="/contact" class="btn-link-animated magnetic">
-                      <span>詳しくはこちら</span>
-                      <i class="fas fa-arrow-right"></i>
-                    </a>
+                    <ActionLink href="/contact" variant="text">教育内容について相談する</ActionLink>
                   </div>
                 </div>
               </div>
@@ -464,17 +370,14 @@ export const Home: FC = () => {
               {/* Service 3 */}
               <div class="service-showcase-item split reveal animated-icon-card">
                 <div class="service-text">
+                  <span class="service-index">03 / CORPORATE SUPPORT</span>
                   <h3 class="service-title">企業サポート</h3>
                   <p class="service-desc">
-                    受け入れ企業様向けに、スリランカ人材の特性を熟知したコンサルティングを提供します。
-                    法務手続きの代行から、異文化コミュニケーションのコツ、社内体制の構築アドバイスまで、
-                    初めて外国人材を雇用する企業様でも安心して受け入れられるよう全面的にバックアップします。
+                    受け入れに必要な確認事項を整理し、提携機関と連携しながら手続きや社内準備をご案内します。
+                    異文化コミュニケーションや受け入れ体制づくりも、企業の状況に合わせて支援します。
                   </p>
                   <div class="card-action-bottom">
-                    <a href="/contact" class="btn-link-animated magnetic">
-                      <span>詳しくはこちら</span>
-                      <i class="fas fa-arrow-right"></i>
-                    </a>
+                    <ActionLink href="/contact" variant="text">受け入れ準備について相談する</ActionLink>
                   </div>
                 </div>
                 <div class="service-visual glass-card-large service-image-card">
@@ -488,35 +391,29 @@ export const Home: FC = () => {
                   <img src="/static/images/service-retention.png" alt="定着支援" class="service-img" />
                 </div>
                 <div class="service-text">
+                  <span class="service-index">04 / RETENTION</span>
                   <h3 class="service-title">定着支援</h3>
                   <p class="service-desc">
-                    就労開始後も、定期的な面談や生活サポートを通じて、人材の長期的な活躍を支援します。
-                    些細な悩みやキャリア相談に母国語で対応し、企業様と人材双方の懸け橋となります。
-                    単なる労働力の提供ではなく、「人と人との絆」を育む定着支援をお約束します。
+                    就労開始後も定期面談や生活相談を通じて、職場・生活上の課題を早期に把握します。
+                    人材と企業の双方と連絡を取りながら、継続して働ける環境づくりを支援します。
                   </p>
                   <div class="card-action-bottom">
-                    <a href="/contact" class="btn-link-animated magnetic">
-                      <span>詳しくはこちら</span>
-                      <i class="fas fa-arrow-right"></i>
-                    </a>
+                    <ActionLink href="/contact" variant="text">定着支援について相談する</ActionLink>
                   </div>
                 </div>
               </div>
 
               {/* Service 5 (Creative) */}
-              <div class="service-showcase-item split reveal animated-icon-card">
+              <div class="service-showcase-item service-showcase-item--creative split reveal animated-icon-card">
                 <div class="service-text">
-                  <h3 class="service-title">Creative</h3>
+                  <span class="service-index">05 / CROSS-FUNCTIONAL SUPPORT</span>
+                  <h3 class="service-title">Creative <small>採用活動を横断して支える</small></h3>
                   <p class="service-desc">
-                    スリランカ現地での採用PRや企業ブランディング、デジタルコンテンツ制作に特化したクリエイティブソリューションを提供します。
-                    言葉や文化の壁を越え、企業の魅力や実際の職場環境、現場のリアリティを直感的に伝えることで、
-                    応募意欲を高め、質の高い人材の母集団形成を強力に推進します。
+                    採用広報、企業ブランディング、写真・動画などのコンテンツ制作を通じて、01〜04の支援を横断的に補完します。
+                    企業や職場の情報を分かりやすく届け、候補者との接点づくりと母集団形成を支えます。
                   </p>
                   <div class="card-action-bottom">
-                    <a href="/contact" class="btn-link-animated magnetic">
-                      <span>詳しくはこちら</span>
-                      <i class="fas fa-arrow-right"></i>
-                    </a>
+                    <ActionLink href="/contact" variant="text">採用広報について相談する</ActionLink>
                   </div>
                 </div>
                 <div class="service-visual glass-card-large service-image-card">
@@ -536,17 +433,12 @@ export const Home: FC = () => {
             <div class="horizontal-scroll-track" id="process-track">
               {/* Intro Panel */}
               <div class="journey-panel intro-panel">
-                <div class="num-head">
-                  <span class="big-num">04</span>
-                  <div class="num-titles">
-                    <span class="eyebrow">PROCESS</span>
-                    <h2>ご利用の流れ</h2>
-                  </div>
-                </div>
-                <p class="section-desc">
-                  スリランカの優秀な人材が、<br />
-                  あなたの企業で活躍するまでの道のり。
-                </p>
+                <SectionHeading
+                  number="04"
+                  eyebrow="PROCESS"
+                  title="ご利用の流れ"
+                  description="ご相談から就労開始、その後の定着支援までを一つずつ進めます。"
+                />
               </div>
 
               {/* Progress Line */}
@@ -653,57 +545,9 @@ export const Home: FC = () => {
           </div>
         </section>
 
-        {/* ===== 04 Contact ===== */}
-        <section id="contact-section" class="num-section dark-contact-section">
-          <div class="contact-glow-bg"></div>
-          <div class="contact-bg-image" aria-hidden="true"></div>
-
-          <div class="contact-inner-wrap reveal">
-            <div class="contact-glass-container">
-              <div class="num-head center-head">
-                <span class="big-num">04</span>
-                <div class="num-titles">
-                  <span class="eyebrow">CONTACT</span>
-                </div>
-              </div>
-
-              <h2 class="contact-title">
-                未来への第一歩を、<br />
-                ここから始めましょう。
-              </h2>
-              <p class="contact-desc">
-                スリランカ人材の採用に関するご相談や、<br />
-                サービスに関するご質問など、まずはお気軽にお問い合わせください。
-              </p>
-
-              <div class="contact-features-mini">
-                <div class="c-feature-item">
-                  <i class="fas fa-check-circle"></i>
-                  <span>ご相談・資料請求無料</span>
-                </div>
-                <div class="c-feature-item">
-                  <i class="fas fa-bolt"></i>
-                  <span>スピーディな回答</span>
-                </div>
-                <div class="c-feature-item">
-                  <i class="fas fa-shield-alt"></i>
-                  <span>現地～来日後も一括支援</span>
-                </div>
-              </div>
-
-              <div class="contact-cta-wrapper">
-                <a href="/contact" class="btn-ultra-cta magnetic">
-                  <span class="btn-content">
-                    <span class="btn-text">お問い合わせフォームへ</span>
-                    <span class="arrow-wrap">
-                      <i class="fas fa-arrow-right"></i>
-                    </span>
-                  </span>
-                </a>
-              </div>
-            </div>
-          </div>
-        </section>
+        <div id="contact-section" class="home-contact-wrap reveal">
+          <ContactCTA />
+        </div>
       </main>
 
       <Footer />

@@ -1,0 +1,40 @@
+:root {
+  --mw-deep-navy: #021f54;
+  --mw-navy: #042158;
+  --mw-royal: #1155a9;
+  --mw-sky: #0284c7;
+  --mw-sky-soft: #e8f5fb;
+  --mw-gold: #f59c1a;
+  --mw-gold-soft: #fff3dc;
+  --mw-ink: #0d1b2f;
+  --mw-text: #31445f;
+  --mw-muted: #697a91;
+  --mw-line: #d9e2ee;
+  --mw-surface: #ffffff;
+  --mw-surface-alt: #f5f8fc;
+  --mw-focus: #f59c1a;
+  --mw-radius: 0px;
+  --mw-shadow-sm: 0 12px 36px rgba(2, 31, 84, 0.08);
+  --mw-shadow-lg: 0 30px 80px rgba(2, 31, 84, 0.18);
+  --mw-container: min(1200px, calc(100% - 48px));
+  --mw-section-space: clamp(88px, 10vw, 152px);
+  --mw-transition: 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  /* Legacy aliases keep unaffected pages visually consistent. */
+  --navy-deep: var(--mw-deep-navy);
+  --navy: var(--mw-navy);
+  --accent: var(--mw-royal);
+  --accent-light: var(--mw-sky);
+  --gold: var(--mw-gold);
+  --white: var(--mw-surface);
+  --bg-light: var(--mw-surface-alt);
+  --text: var(--mw-ink);
+  --text-sub: var(--mw-text);
+}
+
+@media (max-width: 640px) {
+  :root {
+    --mw-container: min(100% - 32px, 1200px);
+    --mw-section-space: 76px;
+  }
+}

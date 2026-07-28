@@ -6,6 +6,7 @@ interface LogoMarkProps {
   class?: string
   invert?: boolean
   variant?: 'full' | 'markOnly'
+  idPrefix?: string
 }
 
 export const LogoMark: FC<LogoMarkProps> = ({
@@ -13,10 +14,11 @@ export const LogoMark: FC<LogoMarkProps> = ({
   height,
   class: className = '',
   invert = false,
-  variant = 'full'
+  variant = 'full',
+  idPrefix = 'logo'
 }) => {
   const navyFill = invert ? '#FFFFFF' : '#021F54'
-  const idSuffix = invert ? 'inv' : 'norm'
+  const idSuffix = `${idPrefix}-${invert ? 'inv' : 'norm'}`
 
   if (variant === 'markOnly') {
     return (

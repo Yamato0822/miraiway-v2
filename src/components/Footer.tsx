@@ -39,7 +39,7 @@ export const Footer: FC = () => {
       <div class="footer-inner" id="company-section">
         <div class="footer-brand">
           <a href="/" class="brand brand-invert" aria-label="MiraiWay ホーム">
-            <LogoMark width={84} height={69} invert={true} />
+            <LogoMark width={84} height={69} invert={true} idPrefix="footer" />
           </a>
           <p class="footer-slogan">
             スリランカと日本をつなぎ、<br />

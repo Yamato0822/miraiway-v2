@@ -11,24 +11,13 @@
     };
   }
 
-  /* Force scroll to top on fresh load — clear any hash & override browser restore */
-  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
-  window.scrollTo(0, 0);
-  if (window.location.hash) {
-    history.replaceState('', document.title, window.location.pathname + window.location.search);
-  }
-
   const pageLoader = document.getElementById('page-loader');
-  const loadingScreen = document.getElementById('loading-screen');
-  const loaderBar = document.getElementById('loader-bar-fill');
   
   function hidePageLoader() {
     if (pageLoader) pageLoader.classList.add('is-loaded');
-    if (loadingScreen) loadingScreen.classList.add('fade-out');
     document.body.classList.remove('is-loading');
     setTimeout(() => {
       if (pageLoader) pageLoader.style.display = 'none';
-      if (loadingScreen) loadingScreen.style.display = 'none';
       if (window.realMapLibreInstance) {
         window.realMapLibreInstance.resize();
       }
@@ -79,14 +68,19 @@
   if (menuToggle && mobileNav) {
     menuToggle.addEventListener('click', () => {
       mobileNav.classList.toggle('open');
+      const isOpen = mobileNav.classList.contains('open');
+      menuToggle.setAttribute('aria-expanded', String(isOpen));
+      menuToggle.setAttribute('aria-label', isOpen ? 'メニューを閉じる' : 'メニューを開く');
       const icon = menuToggle.querySelector('i');
       if (icon) {
-        icon.className = mobileNav.classList.contains('open') ? 'fas fa-xmark' : 'fas fa-bars';
+        icon.className = isOpen ? 'fas fa-xmark' : 'fas fa-bars';
       }
     });
     mobileNav.querySelectorAll('a').forEach((a) =>
       a.addEventListener('click', () => {
         mobileNav.classList.remove('open');
+        menuToggle.setAttribute('aria-expanded', 'false');
+        menuToggle.setAttribute('aria-label', 'メニューを開く');
         const icon = menuToggle.querySelector('i');
         if (icon) icon.className = 'fas fa-bars';
       })
@@ -392,100 +386,6 @@
     });
   });
 
-  /* ---------- Scrollytelling Engine for Services ---------- */
-  const serviceItems = document.querySelectorAll('.service-showcase-item');
-  const svgPaths = [];
-
-  serviceItems.forEach((item) => {
-    const strokes = item.querySelectorAll('.dynamic-svg-stroke');
-    const itemData = {
-      el: item,
-      textEl: item.querySelector('.service-text'),
-      strokes: []
-    };
-    strokes.forEach((stroke) => {
-      const length = stroke.getTotalLength ? stroke.getTotalLength() : 400;
-      const seq = parseInt(stroke.getAttribute('data-seq') || '0', 10);
-      stroke.style.strokeDasharray = length;
-      stroke.style.strokeDashoffset = length;
-      
-      itemData.maxSeq = Math.max(itemData.maxSeq || 0, seq);
-      itemData.strokes.push({
-        el: stroke,
-        length: length,
-        seq: seq,
-        currentOffset: length,
-        targetOffset: length
-      });
-    });
-    
-    if (itemData.textEl) {
-      itemData.textEl.style.opacity = 0;
-      itemData.textEl.style.transform = 'translateY(40px)';
-      itemData.currentTextProgress = 0;
-      itemData.targetTextProgress = 0;
-    }
-
-    svgPaths.push(itemData);
-  });
-
-  function renderScrollytelling() {
-    const windowHeight = window.innerHeight;
-    
-    svgPaths.forEach(data => {
-      const rect = data.el.getBoundingClientRect();
-      const startTrigger = windowHeight * 0.85;
-      const endTrigger = windowHeight * 0.35;
-      
-      let rawProgress = 0;
-      if (rect.top > startTrigger) {
-        rawProgress = 0;
-      } else if (rect.top < endTrigger) {
-        rawProgress = 1;
-      } else {
-        rawProgress = 1 - ((rect.top - endTrigger) / (startTrigger - endTrigger));
-      }
-      
-      data.targetTextProgress = rawProgress;
-      const maxSeq = data.maxSeq || 0;
-      const stepSize = 1 / (maxSeq + 1);
-
-      data.strokes.forEach(strokeData => {
-        let pathProgress = rawProgress;
-        if (maxSeq > 0) {
-          const strokeStart = strokeData.seq * stepSize;
-          const strokeEnd = (strokeData.seq + 1) * stepSize;
-          if (rawProgress <= strokeStart) {
-            pathProgress = 0;
-          } else if (rawProgress >= strokeEnd) {
-            pathProgress = 1;
-          } else {
-            pathProgress = (rawProgress - strokeStart) / stepSize;
-          }
-        }
-        strokeData.targetOffset = strokeData.length * (1 - pathProgress);
-      });
-      
-      if (data.textEl) {
-        data.currentTextProgress += (data.targetTextProgress - data.currentTextProgress) * 0.1;
-        data.textEl.style.opacity = data.currentTextProgress;
-        const yOffset = 40 * (1 - data.currentTextProgress);
-        data.textEl.style.transform = `translateY(${yOffset}px)`;
-      }
-
-      data.strokes.forEach(strokeData => {
-        strokeData.currentOffset += (strokeData.targetOffset - strokeData.currentOffset) * 0.1;
-        strokeData.el.style.strokeDashoffset = strokeData.currentOffset;
-      });
-    });
-    
-    requestAnimationFrame(renderScrollytelling);
-  }
-  
-  if (svgPaths.length > 0) {
-    renderScrollytelling();
-  }
-
   /* ---------- Floating Particles Canvas (Optimized) ---------- */
   const pCanvas = document.getElementById('particles-canvas');
   if (pCanvas) {
@@ -610,85 +510,88 @@
   const processSection = document.getElementById('process-section');
   const processTrack = document.getElementById('process-track');
   const journeyLineFill = document.getElementById('journey-line-fill');
-  const parallaxBgs = document.querySelectorAll('.parallax-bg');
   const watermarkNums = document.querySelectorAll('.watermark-num');
-  const parallaxCards = document.querySelectorAll('.parallax-card');
+  const processStepPanels = document.querySelectorAll('#process-track .step-panel');
+  const processStaticMedia = window.matchMedia('(max-width: 1023px), (prefers-reduced-motion: reduce)');
 
   function calculateProcessHeight() {
     if (processSection && processTrack) {
-      const maxTranslate = processTrack.scrollWidth - window.innerWidth;
-      processSection.style.height = `calc(100vh + ${maxTranslate}px + 50vh)`;
+      if (processStaticMedia.matches) {
+        processSection.style.height = 'auto';
+        processTrack.style.transform = 'none';
+        return;
+      }
+      const maxTranslate = Math.max(0, processTrack.scrollWidth - window.innerWidth);
+      processSection.style.height = `calc(100vh + ${maxTranslate}px + 35vh)`;
     }
   }
 
   if (processSection && processTrack) {
-    let panelCache = [];
-    function cachePanels() {
-      panelCache = [];
-      parallaxCards.forEach(card => {
-        const panel = card.parentElement;
-        panelCache.push({
-          card: card,
-          left: panel.offsetLeft,
-          width: panel.offsetWidth
-        });
+    let processFrame = null;
+
+    function setActiveProcessStep(progress) {
+      if (!processStepPanels.length) return;
+      const activeIndex = Math.min(
+        processStepPanels.length - 1,
+        Math.max(0, Math.round(progress * (processStepPanels.length - 1)))
+      );
+      processStepPanels.forEach((panel, index) => {
+        panel.classList.toggle('is-active', index === activeIndex);
       });
     }
-    
-    calculateProcessHeight();
-    cachePanels();
-    
-    window.addEventListener('resize', debounce(() => {
-      calculateProcessHeight();
-      cachePanels();
-    }, 150), { passive: true });
 
-    window.addEventListener('scroll', () => {
+    function renderProcessJourney() {
+      processFrame = null;
       const rect = processSection.getBoundingClientRect();
       const dissolveOverlay = document.getElementById('dark-dissolve-overlay');
 
-      if (dissolveOverlay) {
-        if (rect.top > window.innerHeight) {
-          dissolveOverlay.style.opacity = 0;
-        } else if (rect.top <= 0) {
-          dissolveOverlay.style.opacity = 1;
-        } else {
-          dissolveOverlay.style.opacity = 1 - (rect.top / window.innerHeight);
-        }
-      }
-
-      if (rect.top <= 0 && rect.bottom >= window.innerHeight) {
-        const maxScroll = rect.height - window.innerHeight;
-        const currentScroll = Math.abs(rect.top);
-        const scrollPercent = currentScroll / maxScroll;
-        
-        const maxTranslate = processTrack.scrollWidth - window.innerWidth;
-        const translateX = -(maxTranslate * scrollPercent);
-        processTrack.style.transform = `translateX(${translateX}px)`;
-
-        if (journeyLineFill) {
-          journeyLineFill.style.width = `${Math.min(100, scrollPercent * 110)}%`;
-        }
-
-        watermarkNums.forEach(num => {
-          const speed = parseFloat(num.getAttribute('data-speed') || '0.8');
-          num.style.transform = `translate(-50%, -50%) translateX(${translateX * (1 - speed)}px)`;
-        });
-
-        panelCache.forEach(data => {
-          data.card.style.transform = 'scale(1)';
-          data.card.style.opacity = '1';
-        });
-
-      } else if (rect.top > 0) {
-        processTrack.style.transform = `translateX(0px)`;
-        if (journeyLineFill) journeyLineFill.style.width = '0%';
-      } else if (rect.bottom < window.innerHeight) {
-        const maxTranslate = processTrack.scrollWidth - window.innerWidth;
-        processTrack.style.transform = `translateX(${-maxTranslate}px)`;
+      if (processStaticMedia.matches) {
+        processTrack.style.transform = 'none';
         if (journeyLineFill) journeyLineFill.style.width = '100%';
+        watermarkNums.forEach(num => { num.style.transform = ''; });
+        processStepPanels.forEach(panel => panel.classList.remove('is-active'));
+        if (dissolveOverlay) dissolveOverlay.style.opacity = '1';
+        return;
       }
-    }, { passive: true });
+
+      if (dissolveOverlay) {
+        const revealProgress = Math.max(0, Math.min(1, 1 - rect.top / window.innerHeight));
+        dissolveOverlay.style.opacity = String(revealProgress);
+      }
+
+      const maxScroll = Math.max(1, rect.height - window.innerHeight);
+      const scrollProgress = Math.max(0, Math.min(1, -rect.top / maxScroll));
+      const maxTranslate = Math.max(0, processTrack.scrollWidth - window.innerWidth);
+      const translateX = -(maxTranslate * scrollProgress);
+
+      processTrack.style.transform = `translate3d(${translateX}px, 0, 0)`;
+      if (journeyLineFill) journeyLineFill.style.width = `${scrollProgress * 100}%`;
+
+      watermarkNums.forEach(num => {
+        const speed = parseFloat(num.getAttribute('data-speed') || '0.8');
+        num.style.transform = `translate(-50%, -50%) translateX(${translateX * (1 - speed)}px)`;
+      });
+
+      setActiveProcessStep(scrollProgress);
+    }
+
+    function scheduleProcessRender() {
+      if (processFrame === null) {
+        processFrame = requestAnimationFrame(renderProcessJourney);
+      }
+    }
+
+    calculateProcessHeight();
+    window.addEventListener('resize', debounce(() => {
+      calculateProcessHeight();
+      scheduleProcessRender();
+    }, 150), { passive: true });
+    window.addEventListener('scroll', scheduleProcessRender, { passive: true });
+    processStaticMedia.addEventListener('change', () => {
+      calculateProcessHeight();
+      scheduleProcessRender();
+    });
+    scheduleProcessRender();
   }
 
   /* ---------- Dynamic Background SVG Path ---------- */
@@ -816,34 +719,18 @@
     }
   }
 
-  /* ---------- FAQ Tab Filter ---------- */
-  const faqTabs = document.querySelectorAll('.faq-tab-btn');
-  const faqCards = document.querySelectorAll('.faq-card-item');
-
-  if (faqTabs.length > 0 && faqCards.length > 0) {
-    faqTabs.forEach(tab => {
-      tab.addEventListener('click', () => {
-        const cat = tab.getAttribute('data-category');
-        faqTabs.forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-
-        faqCards.forEach(card => {
-          const cardCat = card.getAttribute('data-category');
-          if (cat === 'all' || cardCat === cat) {
-            card.style.display = 'flex';
-          } else {
-            card.style.display = 'none';
-          }
-        });
-      });
-    });
-  }
-
   /* ---------- MapLibre GL precision scrollytelling ---------- */
   function initMapLibreSection() {
     const realMapWrapper = document.getElementById('real-map-scrolly-wrapper');
     const vectorMapContainer = document.getElementById('maplibre-vector-map');
     if (!realMapWrapper || !vectorMapContainer) return;
+
+    if (window.realMapLibreInstance) {
+      window.realMapLibreInstance.resize();
+      return;
+    }
+    if (window.__miraiwayMapInitializing) return;
+    window.__miraiwayMapInitializing = true;
 
     if (!window.maplibregl) {
       let attempts = 0;
@@ -851,9 +738,11 @@
         attempts++;
         if (window.maplibregl) {
           clearInterval(pollTimer);
+          window.__miraiwayMapInitializing = false;
           initMapLibreSection();
         } else if (attempts > 50) {
           clearInterval(pollTimer);
+          window.__miraiwayMapInitializing = false;
           console.warn('MapLibre GL library load timeout.');
         }
       }, 100);
@@ -864,15 +753,6 @@
     const panelJapan = document.getElementById('panel-japan');
     const phaseIndicatorText = document.getElementById('map-phase-text');
     const routeProgressFill = document.getElementById('map-route-progress-fill');
-
-    if (window.realMapLibreInstance) {
-      try {
-        window.realMapLibreInstance.remove();
-      } catch (e) {
-        console.warn('MapLibre cleanup notice:', e);
-      }
-      window.realMapLibreInstance = null;
-    }
 
     const sriLankaLngLat = [79.8612, 6.9271];
     const japanLngLat = [139.6503, 35.6762];
@@ -951,6 +831,7 @@
 
     map.on('load', () => {
       isMapLoaded = true;
+      window.__miraiwayMapInitializing = false;
 
       try {
         const styleLayers = map.getStyle().layers || [];
@@ -1176,7 +1057,7 @@
         if (panelSriLanka) panelSriLanka.classList.remove('is-dimmed');
         if (panelJapan) panelJapan.classList.remove('is-visible');
         if (phaseIndicatorText) {
-          phaseIndicatorText.textContent = 'PHASE 1: SRI LANKA HUB FOCUS';
+          phaseIndicatorText.textContent = 'PHASE 1: 現地教育・人材選定';
           phaseIndicatorText.style.color = '#0284c7';
         }
         if (isMapLoaded && map.getSource('flight-arc-src') && lastVisibleCount !== 0) {
@@ -1203,7 +1084,7 @@
         if (isMapLoaded && map.getLayer('sri-lanka-fill')) map.setPaintProperty('sri-lanka-fill', 'fill-opacity', lerp(0.50, 0.30, t));
         if (isMapLoaded && map.getLayer('japan-fill')) map.setPaintProperty('japan-fill', 'fill-opacity', lerp(0.16, 0.52, smootherStep(t)));
         if (phaseIndicatorText) {
-          phaseIndicatorText.textContent = 'PHASE 2: REAL-TIME GLOBAL PATHWAY';
+          phaseIndicatorText.textContent = 'PHASE 2: 渡航準備・両拠点連携';
           phaseIndicatorText.style.color = '#f59e0b';
         }
       } else {
@@ -1222,7 +1103,7 @@
         if (isMapLoaded && map.getLayer('sri-lanka-fill')) map.setPaintProperty('sri-lanka-fill', 'fill-opacity', 0.30);
         if (isMapLoaded && map.getLayer('japan-fill')) map.setPaintProperty('japan-fill', 'fill-opacity', 0.52);
         if (phaseIndicatorText) {
-          phaseIndicatorText.textContent = 'PHASE 3: JAPAN ARRIVAL & SUPPORT';
+          phaseIndicatorText.textContent = 'PHASE 3: 就労・定着支援';
           phaseIndicatorText.style.color = '#f97316';
         }
       }
@@ -1244,7 +1125,6 @@
   }
 
   initMapLibreSection();
-  window.addEventListener('load', initMapLibreSection);
 
   /* ---------- Infographics Counter Animation Engine ---------- */
   const counters = document.querySelectorAll('.counter');
@@ -1554,7 +1434,3 @@
   }
 
 })();
-
-
-
-
