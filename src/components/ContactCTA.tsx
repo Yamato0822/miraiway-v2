@@ -11,6 +11,16 @@ export const ContactCTA: FC<ContactCTAProps> = ({ compact = false }) => (
     aria-labelledby={compact ? 'compact-contact-title' : 'contact-cta-title'}
   >
     {!compact && (
+      <div class="cta-aurora" aria-hidden="true">
+        <span class="cta-aurora__glow cta-aurora__glow--gold"></span>
+        <span class="cta-aurora__glow cta-aurora__glow--sky"></span>
+        <span class="cta-aurora__glow cta-aurora__glow--royal"></span>
+      </div>
+    )}
+    {!compact && (
+      <div class="contact-cta__wordmark" aria-hidden="true">MiraiWay</div>
+    )}
+    {!compact && (
       <div class="contact-cta__visual" aria-hidden="true">
         <img src="/static/images/contact-handshake-bg.png" alt="" loading="lazy" />
       </div>

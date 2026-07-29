@@ -13,7 +13,7 @@
     const dots = Array.from(rail.querySelectorAll('[data-rail-dot]'));
     const status = rail.querySelector('[data-rail-status]');
     const desktopQuery = window.matchMedia('(min-width: 1024px)');
-    if (!viewport || !previousButton || !nextButton || !slides.length) return;
+    if (!viewport || !slides.length) return;
 
     let currentIndex = 0;
     let isDragging = false;
@@ -21,6 +21,7 @@
     let dragStartScroll = 0;
     let wheelTotal = 0;
     let wheelLocked = false;
+    let autoPlayTimer = null;
 
     const wrapIndex = (index) => (index + slides.length) % slides.length;
 
@@ -53,6 +54,21 @@
       return card.getBoundingClientRect().width + gap;
     };
 
+    const stopAutoPlay = () => {
+      if (autoPlayTimer) {
+        clearInterval(autoPlayTimer);
+        autoPlayTimer = null;
+      }
+    };
+
+    const startAutoPlay = () => {
+      stopAutoPlay();
+      if (prefersReducedMotion.matches) return;
+      autoPlayTimer = setInterval(() => {
+        changeSlide(1);
+      }, 5000);
+    };
+
     const goTo = (index, shouldFocus = false) => {
       currentIndex = wrapIndex(index);
       if (desktopQuery.matches) {
@@ -66,12 +82,13 @@
         updateIndicators();
       }
       if (shouldFocus) viewport.focus({ preventScroll: true });
+      startAutoPlay();
     };
 
     const changeSlide = (direction) => goTo(currentIndex + direction);
 
-    previousButton.addEventListener('click', () => changeSlide(-1));
-    nextButton.addEventListener('click', () => changeSlide(1));
+    previousButton?.addEventListener('click', () => changeSlide(-1));
+    nextButton?.addEventListener('click', () => changeSlide(1));
     dots.forEach((dot, index) => dot.addEventListener('click', () => goTo(index)));
     slides.forEach((slide) => {
       slide.addEventListener('click', () => {
@@ -80,6 +97,13 @@
         if (slide.classList.contains('is-next')) changeSlide(1);
       });
     });
+
+    rail.addEventListener('mouseenter', stopAutoPlay);
+    rail.addEventListener('mouseleave', startAutoPlay);
+    rail.addEventListener('touchstart', stopAutoPlay, { passive: true });
+    rail.addEventListener('touchend', startAutoPlay, { passive: true });
+
+    startAutoPlay();
 
     viewport.addEventListener('keydown', (event) => {
       if (event.key === 'ArrowLeft') {
@@ -211,6 +235,12 @@
       const syncExpandedState = () => summary.setAttribute('aria-expanded', String(item.open));
       item.addEventListener('toggle', syncExpandedState);
       syncExpandedState();
+
+      summary.addEventListener('click', (e) => {
+        if (!item.open) return;
+        e.preventDefault();
+        item.removeAttribute('open');
+      });
     });
 
     const revealHashTarget = () => {
@@ -233,6 +263,361 @@
     revealHashTarget();
     window.addEventListener('hashchange', revealHashTarget);
   }
+
+  /* ---------- FOOTER BACKGROUND & AURORA DYNAMIC INTERACTION ---------- */
+  (function initFooterBackgroundInteraction() {
+    const footer = document.getElementById('site-footer');
+    if (!footer) return;
+
+    let mouseX = 50;
+    let mouseY = 50;
+    let targetScrollY = 0;
+    let currentScrollY = 0;
+    let targetGlowX = 0;
+    let targetGlowY = 0;
+    let currentGlowX = 0;
+    let currentGlowY = 0;
+    let rafId = null;
+
+    const updateFooter = () => {
+      currentGlowX += (targetGlowX - currentGlowX) * 0.08;
+      currentGlowY += (targetGlowY - currentGlowY) * 0.08;
+      currentScrollY += (targetScrollY - currentScrollY) * 0.08;
+
+      footer.style.setProperty('--footer-mouse-x', `${mouseX.toFixed(2)}%`);
+      footer.style.setProperty('--footer-mouse-y', `${mouseY.toFixed(2)}%`);
+
+      footer.style.setProperty('--footer-glow-x', `${currentGlowX.toFixed(2)}px`);
+      footer.style.setProperty('--footer-glow-y', `${currentGlowY.toFixed(2)}px`);
+
+      footer.style.setProperty('--footer-scroll-x', `${(currentScrollY * 0.12).toFixed(2)}px`);
+      footer.style.setProperty('--footer-scroll-y', `${(currentScrollY * -0.18).toFixed(2)}px`);
+      footer.style.setProperty('--footer-scroll-angle', `${(currentScrollY * 0.05).toFixed(2)}deg`);
+
+      const glowDiffX = Math.abs(targetGlowX - currentGlowX);
+      const glowDiffY = Math.abs(targetGlowY - currentGlowY);
+      const scrollDiff = Math.abs(targetScrollY - currentScrollY);
+
+      if (glowDiffX > 0.05 || glowDiffY > 0.05 || scrollDiff > 0.05) {
+        rafId = requestAnimationFrame(updateFooter);
+      } else {
+        rafId = null;
+      }
+    };
+
+    const scheduleUpdate = () => {
+      if (!rafId) {
+        rafId = requestAnimationFrame(updateFooter);
+      }
+    };
+
+    const handleScroll = () => {
+      if (prefersReducedMotion.matches) return;
+      const rect = footer.getBoundingClientRect();
+      const windowHeight = window.innerHeight;
+
+      if (rect.top < windowHeight + 200 && rect.bottom > -200) {
+        const scrollOffset = windowHeight - rect.top;
+        targetScrollY = scrollOffset;
+        scheduleUpdate();
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+
+    footer.addEventListener('mousemove', (e) => {
+      if (prefersReducedMotion.matches) return;
+      const rect = footer.getBoundingClientRect();
+      const xPct = ((e.clientX - rect.left) / rect.width) * 100;
+      const yPct = ((e.clientY - rect.top) / rect.height) * 100;
+
+      mouseX = Math.max(0, Math.min(100, xPct));
+      mouseY = Math.max(0, Math.min(100, yPct));
+
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+      targetGlowX = (e.clientX - rect.left - centerX) * 0.15;
+      targetGlowY = (e.clientY - rect.top - centerY) * 0.15;
+
+      scheduleUpdate();
+    });
+
+    footer.addEventListener('mouseleave', () => {
+      targetGlowX = 0;
+      targetGlowY = 0;
+      mouseX = 50;
+      mouseY = 50;
+      scheduleUpdate();
+    });
+  })();
+
+  /* ---------- CONTACT CTA DYNAMIC INTERACTION ---------- */
+  (function initCTAInteraction() {
+    const cta = document.querySelector('.contact-cta');
+    if (!cta) return;
+
+    let mouseX = 30;
+    let mouseY = 50;
+    let targetScrollY = 0;
+    let currentScrollY = 0;
+    let targetGlowX = 0;
+    let targetGlowY = 0;
+    let currentGlowX = 0;
+    let currentGlowY = 0;
+    let rafId = null;
+
+    const updateCTA = () => {
+      currentGlowX += (targetGlowX - currentGlowX) * 0.08;
+      currentGlowY += (targetGlowY - currentGlowY) * 0.08;
+      currentScrollY += (targetScrollY - currentScrollY) * 0.08;
+
+      cta.style.setProperty('--cta-mouse-x', `${mouseX.toFixed(2)}%`);
+      cta.style.setProperty('--cta-mouse-y', `${mouseY.toFixed(2)}%`);
+
+      cta.style.setProperty('--cta-glow-x', `${currentGlowX.toFixed(2)}px`);
+      cta.style.setProperty('--cta-glow-y', `${currentGlowY.toFixed(2)}px`);
+
+      cta.style.setProperty('--cta-scroll-x', `${(currentScrollY * 0.14).toFixed(2)}px`);
+      cta.style.setProperty('--cta-scroll-y', `${(currentScrollY * -0.16).toFixed(2)}px`);
+      cta.style.setProperty('--cta-scroll-angle', `${(currentScrollY * 0.04).toFixed(2)}deg`);
+
+      const glowDiffX = Math.abs(targetGlowX - currentGlowX);
+      const glowDiffY = Math.abs(targetGlowY - currentGlowY);
+      const scrollDiff = Math.abs(targetScrollY - currentScrollY);
+
+      if (glowDiffX > 0.05 || glowDiffY > 0.05 || scrollDiff > 0.05) {
+        rafId = requestAnimationFrame(updateCTA);
+      } else {
+        rafId = null;
+      }
+    };
+
+    const scheduleUpdate = () => {
+      if (!rafId) {
+        rafId = requestAnimationFrame(updateCTA);
+      }
+    };
+
+    const handleScroll = () => {
+      if (prefersReducedMotion.matches) return;
+      const rect = cta.getBoundingClientRect();
+      const windowHeight = window.innerHeight;
+
+      if (rect.top < windowHeight + 200 && rect.bottom > -200) {
+        const scrollOffset = windowHeight - rect.top;
+        targetScrollY = scrollOffset;
+        scheduleUpdate();
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+
+    cta.addEventListener('mousemove', (e) => {
+      if (prefersReducedMotion.matches) return;
+      const rect = cta.getBoundingClientRect();
+      const xPct = ((e.clientX - rect.left) / rect.width) * 100;
+      const yPct = ((e.clientY - rect.top) / rect.height) * 100;
+
+      mouseX = Math.max(0, Math.min(100, xPct));
+      mouseY = Math.max(0, Math.min(100, yPct));
+
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+      targetGlowX = (e.clientX - rect.left - centerX) * 0.18;
+      targetGlowY = (e.clientY - rect.top - centerY) * 0.18;
+
+      scheduleUpdate();
+    });
+
+    cta.addEventListener('mouseleave', () => {
+      targetGlowX = 0;
+      targetGlowY = 0;
+      mouseX = 30;
+      mouseY = 50;
+      scheduleUpdate();
+    });
+  })();
+
+  /* ---------- SERVICE CREATIVE DYNAMIC INTERACTION ---------- */
+  (function initCreativeInteraction() {
+    const item = document.querySelector('.service-showcase-item--creative');
+    if (!item) return;
+
+    let mouseX = 70;
+    let mouseY = 50;
+    let targetScrollY = 0;
+    let currentScrollY = 0;
+    let targetGlowX = 0;
+    let targetGlowY = 0;
+    let currentGlowX = 0;
+    let currentGlowY = 0;
+    let rafId = null;
+    let lastScrollPos = window.scrollY;
+    let lastScrollTime = Date.now();
+    let scrollVelocity = 0;
+
+    const updateCreative = () => {
+      currentGlowX += (targetGlowX - currentGlowX) * 0.08;
+      currentGlowY += (targetGlowY - currentGlowY) * 0.08;
+      currentScrollY += (targetScrollY - currentScrollY) * 0.08;
+      scrollVelocity *= 0.92;
+
+      item.style.setProperty('--creative-mouse-x', `${mouseX.toFixed(2)}%`);
+      item.style.setProperty('--creative-mouse-y', `${mouseY.toFixed(2)}%`);
+
+      item.style.setProperty('--creative-glow-x', `${currentGlowX.toFixed(2)}px`);
+      item.style.setProperty('--creative-glow-y', `${currentGlowY.toFixed(2)}px`);
+
+      item.style.setProperty('--creative-scroll-x', `${(currentScrollY * 0.14).toFixed(2)}px`);
+      item.style.setProperty('--creative-scroll-y', `${(currentScrollY * -0.16).toFixed(2)}px`);
+      item.style.setProperty('--creative-scroll-angle', `${(currentScrollY * 0.04).toFixed(2)}deg`);
+      item.style.setProperty('--creative-scroll-velocity', `${scrollVelocity.toFixed(2)}px`);
+
+      item.style.setProperty('--creative-phone-rotate-y', `${(currentGlowX * 0.08).toFixed(2)}deg`);
+      item.style.setProperty('--creative-phone-rotate-x', `${(currentGlowY * -0.08).toFixed(2)}deg`);
+
+      const rect = item.getBoundingClientRect();
+      const windowHeight = window.innerHeight;
+
+      // Viewport Center Sync: All reveals progress as user scrolls section to viewport center (user's screenshot position)
+      // Triggers start at rect.top = 82% window height, and reach 100% completion exactly when section is fully centered at rect.top = 28% window height
+      const startPoint = windowHeight * 0.82;
+      const endPoint = windowHeight * 0.28;
+      const centerSyncProgress = Math.max(0, Math.min(1, (startPoint - rect.top) / (startPoint - endPoint)));
+
+      item.style.setProperty('--creative-scroll-progress', centerSyncProgress.toFixed(3));
+      item.style.setProperty('--creative-phone-flip-progress', centerSyncProgress.toFixed(3));
+      item.style.setProperty('--creative-text-reveal-progress', centerSyncProgress.toFixed(3));
+      item.style.setProperty('--creative-dissolve-opacity', centerSyncProgress.toFixed(3));
+
+      const glowDiffX = Math.abs(targetGlowX - currentGlowX);
+      const glowDiffY = Math.abs(targetGlowY - currentGlowY);
+      const scrollDiff = Math.abs(targetScrollY - currentScrollY);
+
+      if (glowDiffX > 0.05 || glowDiffY > 0.05 || scrollDiff > 0.05 || scrollVelocity > 0.1) {
+        rafId = requestAnimationFrame(updateCreative);
+      } else {
+        rafId = null;
+      }
+    };
+
+    const scheduleUpdate = () => {
+      if (!rafId) {
+        rafId = requestAnimationFrame(updateCreative);
+      }
+    };
+
+    const handleScroll = () => {
+      if (prefersReducedMotion.matches) return;
+      const rect = item.getBoundingClientRect();
+      const windowHeight = window.innerHeight;
+
+      const now = Date.now();
+      const timeDiff = Math.max(16, now - lastScrollTime);
+      const posDiff = Math.abs(window.scrollY - lastScrollPos);
+      scrollVelocity = (posDiff / timeDiff) * 12;
+      lastScrollPos = window.scrollY;
+      lastScrollTime = now;
+
+      if (rect.top < windowHeight + 200 && rect.bottom > -200) {
+        const scrollOffset = windowHeight - rect.top;
+        targetScrollY = scrollOffset;
+        scheduleUpdate();
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+
+    item.addEventListener('mousemove', (e) => {
+      if (prefersReducedMotion.matches) return;
+      const rect = item.getBoundingClientRect();
+      const xPct = ((e.clientX - rect.left) / rect.width) * 100;
+      const yPct = ((e.clientY - rect.top) / rect.height) * 100;
+
+      mouseX = Math.max(0, Math.min(100, xPct));
+      mouseY = Math.max(0, Math.min(100, yPct));
+
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+      targetGlowX = (e.clientX - rect.left - centerX) * 0.18;
+      targetGlowY = (e.clientY - rect.top - centerY) * 0.18;
+
+      scheduleUpdate();
+    });
+
+    const invertBox = item.querySelector('.interactive-invert-box');
+    if (invertBox) {
+      invertBox.addEventListener('mousemove', (e) => {
+        const boxRect = invertBox.getBoundingClientRect();
+        const lensX = e.clientX - boxRect.left;
+        const lensY = e.clientY - boxRect.top;
+        invertBox.style.setProperty('--text-lens-x', `${lensX.toFixed(1)}px`);
+        invertBox.style.setProperty('--text-lens-y', `${lensY.toFixed(1)}px`);
+      });
+    }
+
+    item.addEventListener('mouseleave', () => {
+      targetGlowX = 0;
+      targetGlowY = 0;
+      mouseX = 70;
+      mouseY = 50;
+      scheduleUpdate();
+    });
+  })();
+
+  /* ---------- FOOTER WORDMARK SCROLL-DRIVEN REALTIME SYNC ---------- */
+  (function initWordmarkScrollSync() {
+    const wordmark = document.querySelector('.footer-wordmark');
+    const footer = document.getElementById('site-footer') || document.querySelector('.footer-shell');
+    if (!wordmark || !footer) return;
+
+    if (prefersReducedMotion.matches) {
+      wordmark.style.opacity = '0.72';
+      wordmark.style.transform = 'none';
+      wordmark.style.filter = 'none';
+      return;
+    }
+
+    let ticking = false;
+    function updateWordmarkOnScroll() {
+      const rect = footer.getBoundingClientRect();
+      const windowHeight = window.innerHeight;
+
+      // フッターが画面下端に入ってから、画面中央〜底に現れるまでの進行率 (0.0 ～ 1.0)
+      const startThreshold = windowHeight;
+      const endThreshold = windowHeight * 0.15;
+      const rawProgress = (startThreshold - rect.top) / (startThreshold - endThreshold);
+      const progress = Math.min(1, Math.max(0, rawProgress));
+
+      // スクロール量と完全1:1連動して変形・不透明度・ボカシ・字間をリアルタイム計算
+      const opacity = progress * 0.72;
+      const translateY = (1 - progress) * 56;
+      const scale = 0.92 + progress * 0.08;
+      const blur = (1 - progress) * 12;
+      const letterSpacing = -0.055 + progress * 0.03;
+
+      wordmark.style.opacity = opacity.toFixed(3);
+      wordmark.style.transform = `translate3d(0, ${translateY.toFixed(1)}px, 0) scale(${scale.toFixed(3)})`;
+      wordmark.style.filter = `blur(${blur.toFixed(1)}px)`;
+      wordmark.style.letterSpacing = `${letterSpacing.toFixed(3)}em`;
+
+      ticking = false;
+    }
+
+    function onScroll() {
+      if (!ticking) {
+        requestAnimationFrame(updateWordmarkOnScroll);
+        ticking = true;
+      }
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll, { passive: true });
+    updateWordmarkOnScroll();
+  })();
 
   /* ---------- Small global keyboard refinements ---------- */
   document.addEventListener('keydown', (event) => {

@@ -144,14 +144,16 @@ export const FAQPage: FC = () => (
                   <span class="faq-accordion__question">{item.question}</span>
                   <span class="faq-accordion__toggle" aria-hidden="true"></span>
                 </summary>
-                <div
-                  class="faq-accordion__answer"
-                  id={`${item.id}-answer`}
-                  role="region"
-                  aria-labelledby={`${item.id}-question`}
-                >
-                  <span aria-hidden="true">A</span>
-                  <p>{item.answer}</p>
+                <div class="faq-accordion__answer-outer">
+                  <div
+                    class="faq-accordion__answer"
+                    id={`${item.id}-answer`}
+                    role="region"
+                    aria-labelledby={`${item.id}-question`}
+                  >
+                    <span class="faq-accordion__ans-label" aria-hidden="true">A</span>
+                    <p>{item.answer}</p>
+                  </div>
                 </div>
               </details>
             ))}

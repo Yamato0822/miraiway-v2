@@ -15,14 +15,6 @@ export const Home: FC = () => {
 
       <main id="page-main">
 
-        {/* Kinetic Typography Background */}
-        <div class="kinetic-bg" aria-hidden="true">
-          <div class="kinetic-track">
-            <span>MIRAI WAY &mdash; CONNECTING THE FUTURE &mdash; BEYOND BORDERS &mdash; </span>
-            <span>MIRAI WAY &mdash; CONNECTING THE FUTURE &mdash; BEYOND BORDERS &mdash; </span>
-          </div>
-        </div>
-
         {/* Floating Particles Canvas */}
         <canvas id="particles-canvas" aria-hidden="true"></canvas>
 
@@ -31,23 +23,17 @@ export const Home: FC = () => {
           <svg id="global-path-svg" class="global-path" viewBox="0 0 1440 6000" preserveAspectRatio="xMidYMin slice">
             <defs>
               <linearGradient id="globalPathGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#e8b95a" />
-                <stop offset="5%" stop-color="#f2e3c4" />
+                <stop offset="0%" stop-color="#38bdf8" stop-opacity="0" />
+                <stop offset="5%" stop-color="#9bbde0" />
                 <stop offset="15%" stop-color="#9bbde0" />
-                <stop offset="35%" stop-color="#e8b95a" />
+                <stop offset="35%" stop-color="#38bdf8" />
                 <stop offset="60%" stop-color="#9bbde0" />
-                <stop offset="85%" stop-color="#e8b95a" />
+                <stop offset="85%" stop-color="#1d4ed8" />
                 <stop offset="100%" stop-color="#0b2039" />
               </linearGradient>
-              <radialGradient id="globeGlow" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.95" />
-                <stop offset="50%" stop-color="#e8b95a" stop-opacity="0.5" />
-                <stop offset="100%" stop-color="#e8b95a" stop-opacity="0" />
-              </radialGradient>
             </defs>
             <path id="animated-path" d="" fill="none" stroke="url(#globalPathGrad)" stroke-width="80" stroke-linecap="round" opacity="0.85" />
             <path id="animated-path-highlight" d="" fill="none" stroke="#ffffff" stroke-width="20" stroke-linecap="round" opacity="0.3" />
-            <circle id="globe-glow-circle" cx="985" cy="385" r="50" fill="url(#globeGlow)" />
           </svg>
         </div>
 
@@ -57,7 +43,10 @@ export const Home: FC = () => {
             <div class="hero-copy reveal">
               <h1 class="hero-title">
                 国境を越えて、<br />
-                可能性はつながる。
+                <span class="animated-marker-wrap">
+                  <span class="animated-marker-bg"></span>
+                  <span class="animated-marker-text">可能性は</span>
+                </span>つながる。
               </h1>
               <p class="hero-lead">
                 スリランカと日本をつなぎ、<br />
@@ -71,6 +60,14 @@ export const Home: FC = () => {
               <div class="typography-globe" aria-hidden="true">
                 <canvas id="typography-globe-canvas" width="1000" height="1000" role="presentation"></canvas>
               </div>
+            </div>
+          </div>
+
+          {/* Kinetic Typography Background - Positioned below 'サービスを見る' */}
+          <div class="kinetic-bg" aria-hidden="true">
+            <div class="kinetic-track">
+              <span>MIRAI WAY &mdash; CONNECTING THE FUTURE &mdash; BEYOND BORDERS &mdash;&nbsp;</span>
+              <span>MIRAI WAY &mdash; CONNECTING THE FUTURE &mdash; BEYOND BORDERS &mdash;&nbsp;</span>
             </div>
           </div>
         </section>
@@ -88,57 +85,72 @@ export const Home: FC = () => {
                   aria-label="スリランカのコロンボから日本の東京へつながる支援ルート"
                 ></div>
 
-                {/* Background Kinetic Typography for Map Section */}
-                <div class="map-kinetic-text-wrap" aria-hidden="true">
-                  <div class="map-kinetic-text-track">
-                    SRI LANKA &mdash;&mdash;&mdash;&mdash; TO &mdash;&mdash;&mdash;&mdash; JAPAN &bull; BORDERLESS CAREER PATHWAY &bull; SRI LANKA &mdash;&mdash;&mdash;&mdash; TO &mdash;&mdash;&mdash;&mdash; JAPAN &bull; BORDERLESS CAREER PATHWAY &bull;
-                  </div>
-                </div>
+                {/* Cinematic Ocean Video Overlay (Plays during Sri Lanka / Step 01 Phase) */}
+                <video
+                  id="srilanka-ocean-video"
+                  class="srilanka-ocean-video-bg"
+                  autoplay
+                  loop
+                  muted
+                  playsinline
+                  aria-hidden="true"
+                >
+                  <source src="/static/videos/srilanka-education-bg.mp4" type="video/mp4" />
+                </video>
 
-                {/* Apple-Style Precision Top Indicator Bar */}
-                <div class="map-top-bar">
-                  <div class="map-bar-left">
-                    <span class="bar-title">GLOBAL BRIDGE &amp; PATHWAY</span>
-                  </div>
-                  <div class="map-bar-right">
-                    <span class="bar-phase-indicator" id="map-phase-text">PHASE 1: 現地教育・人材選定</span>
-                    <span class="map-route-progress" aria-hidden="true">
-                      <span class="map-route-progress-fill" id="map-route-progress-fill"></span>
-                    </span>
-                  </div>
-                </div>
+                {/* Cinematic Ocean Video Overlay (Plays during Japan / Step 03 Phase) */}
+                <video
+                  id="japan-ocean-video"
+                  class="japan-ocean-video-bg"
+                  autoplay
+                  loop
+                  muted
+                  playsinline
+                  aria-hidden="true"
+                >
+                  <source src="/static/videos/japan-work-bg.mp4" type="video/mp4" />
+                </video>
 
-                {/* Floating Role Information Panels */}
-                {/* 1. Sri Lanka Hub Panel */}
-                <div class="map-info-floating-panel srilanka-floating" id="panel-srilanka">
-                  <div class="panel-inner">
-                    <span class="float-badge">START / 01</span>
-                    <h3 class="float-title">スリランカ拠点 (Colombo)</h3>
-                    <div class="float-coords">6.9271° N &bull; 79.8612° E</div>
-                    <p class="float-desc">
-                      自社直営スクールでの高度日本語教育、日本文化習得、技能・マナー研修を実施。企業様との厳選面接・内定まで一気通貫で伴走します。
+                {/* 3-Step Horizontal Process Flow (Restored Clean Sharp Flat Design) */}
+                <div class="map-steps-horizontal-flow" id="map-steps-flow">
+                  <div class="step-flow-connecting-line" aria-hidden="true">
+                    <div class="step-flow-line-fill" id="step-flow-line-fill"></div>
+                  </div>
+
+                  {/* Step 01 */}
+                  <div class="map-step-card is-active" data-step="1" id="step-card-1">
+                    <div class="step-badge">STEP 01</div>
+                    <span class="step-en-sub">LOCAL EDUCATION</span>
+                    <h3 class="step-jp-title">現地教育</h3>
+                    <p class="step-desc">
+                      日本語・文化・技能を体系的に学び、来日前の不安を減らします。
+                    </p>
+                  </div>
+
+                  {/* Step 02 */}
+                  <div class="map-step-card" data-step="2" id="step-card-2">
+                    <div class="step-badge">STEP 02</div>
+                    <span class="step-en-sub">MATCHING</span>
+                    <h3 class="step-jp-title">人材紹介</h3>
+                    <p class="step-desc">
+                      企業と人材の希望を丁寧に結び、納得感のある選考を支えます。
+                    </p>
+                  </div>
+
+                  {/* Step 03 */}
+                  <div class="map-step-card" data-step="3" id="step-card-3">
+                    <div class="step-badge">STEP 03</div>
+                    <span class="step-en-sub">SETTLEMENT SUPPORT</span>
+                    <h3 class="step-jp-title">来日・定着支援</h3>
+                    <p class="step-desc">
+                      行政手続きから生活相談まで、就労後も切れ目なく伴走します。
                     </p>
                   </div>
                 </div>
 
-                {/* 2. Japan Hub Panel */}
-                <div class="map-info-floating-panel japan-floating" id="panel-japan">
-                  <div class="panel-inner">
-                    <span class="float-badge orange">ARRIVAL / 02</span>
-                    <h3 class="float-title">日本拠点 (Tokyo)</h3>
-                    <div class="float-coords">35.6762° N &bull; 139.6503° E</div>
-                    <p class="float-desc">
-                      在留資格手続き、空港出迎え、住居手配、就労開始後の生活サポートから中長期的なキャリア形成・WORK &amp; RETENTIONまで全面支援。
-                    </p>
-                    <div class="float-photo-box">
-                      <img src="/static/images/tokyo-skyline.jpg" alt="東京の都市景観" loading="lazy" />
-                      <div class="float-photo-caption">
-                        <strong>WORK &amp; RETENTION</strong>
-                        <span>東京タワーから見た、革新の街並み</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+
+
+
 
                 <div class="map-data-credit">
                   Map: <a href="https://openfreemap.org/" target="_blank" rel="noopener noreferrer">OpenFreeMap</a>
@@ -224,9 +236,6 @@ export const Home: FC = () => {
 
               </div>
               <div class="activity-rail__navigation" aria-label="活動スライド操作">
-                <button type="button" class="activity-rail__arrow" data-rail-prev aria-label="前の活動を見る">
-                  <i class="fas fa-arrow-left" aria-hidden="true"></i>
-                </button>
                 <div class="activity-rail__dots" role="group" aria-label="活動を選択">
                   <button type="button" data-rail-dot="0" aria-label="活動1を表示"></button>
                   <button type="button" data-rail-dot="1" aria-label="活動2を表示"></button>
@@ -235,57 +244,11 @@ export const Home: FC = () => {
                   <button type="button" data-rail-dot="4" aria-label="活動5を表示"></button>
                   <button type="button" data-rail-dot="5" aria-label="活動6を表示"></button>
                 </div>
-                <button type="button" class="activity-rail__arrow" data-rail-next aria-label="次の活動を見る">
-                  <i class="fas fa-arrow-right" aria-hidden="true"></i>
-                </button>
               </div>
               <p class="sr-only" data-rail-status aria-live="polite">活動1 / 6</p>
-              <p class="activity-rail__hint">
-                <i class="fas fa-arrows-left-right" aria-hidden="true"></i>
-                ドラッグ、スワイプ、左右キーで移動
-              </p>
             </div>
 
-            {/* ===== Corporate Infographic Architecture (Miraiway2 Clean 3-Step Cards) ===== */}
-            <div class="corp-infographic-wrapper">
-              <div class="corp-infographic-grid">
-                {/* STEP 01 */}
-                <div class="corp-step-card reveal">
-                  <div class="step-card-header">
-                    <span class="step-badge">STEP 01</span>
-                    <span class="step-eyebrow">LOCAL EDUCATION</span>
-                  </div>
-                  <h3 class="step-card-title">現地教育</h3>
-                  <p class="step-card-desc">
-                    日本語・文化・技能を体系的に学び、来日前の不安を減らします。
-                  </p>
-                </div>
 
-                {/* STEP 02 */}
-                <div class="corp-step-card reveal reveal-delay-1">
-                  <div class="step-card-header">
-                    <span class="step-badge">STEP 02</span>
-                    <span class="step-eyebrow">MATCHING</span>
-                  </div>
-                  <h3 class="step-card-title">人材紹介</h3>
-                  <p class="step-card-desc">
-                    企業と人材の希望を丁寧に結び、納得感のある選考を支えます。
-                  </p>
-                </div>
-
-                {/* STEP 03 */}
-                <div class="corp-step-card reveal reveal-delay-2">
-                  <div class="step-card-header">
-                    <span class="step-badge">STEP 03</span>
-                    <span class="step-eyebrow">SETTLEMENT SUPPORT</span>
-                  </div>
-                  <h3 class="step-card-title">来日・定着支援</h3>
-                  <p class="step-card-desc">
-                    行政手続きから生活相談まで、就労後も切れ目なく伴走します。
-                  </p>
-                </div>
-              </div>
-            </div>
           </div>
         </section>
 
@@ -394,21 +357,92 @@ export const Home: FC = () => {
                 </div>
               </div>
 
-              {/* Service 5 (Creative) */}
+              {/* Service 5 (Creative - Full Width Seamless Canvas with Double 3D Devices) */}
               <div class="service-showcase-item service-showcase-item--creative split reveal animated-icon-card">
-                <div class="service-text">
-                  <span class="service-index">05 / CROSS-FUNCTIONAL SUPPORT</span>
-                  <h3 class="service-title">Creative <small>採用活動を横断して支える</small></h3>
+                {/* Dark Dissolve Overlay (Fades in from white background as user scrolls) */}
+                <div class="creative-dissolve-overlay" aria-hidden="true"></div>
+
+                {/* Creative Camera HUD Overlay */}
+                <div class="creative-hud" aria-hidden="true">
+                  <span class="hud-corner top-left">+</span>
+                </div>
+
+                {/* Hyper 5-Track Dynamic Kinetic Typography Background */}
+                <div class="creative-marquee-bg" aria-hidden="true">
+                  <div class="creative-marquee-track track-1">
+                    <span>CREATIVE &bull; BRANDING &bull; CONTENT &bull; VIDEO &bull; DESIGN &bull; MEDIA &bull; INNOVATION &bull;&nbsp;</span>
+                    <span>CREATIVE &bull; BRANDING &bull; CONTENT &bull; VIDEO &bull; DESIGN &bull; MEDIA &bull; INNOVATION &bull;&nbsp;</span>
+                  </div>
+                  <div class="creative-marquee-track track-2">
+                    <span>PRODUCTION &bull; STORYTELLING &bull; VISUAL &bull; MOTION &bull; STUDIO 4K &bull; CINEMATOGRAPHY &bull;&nbsp;</span>
+                    <span>PRODUCTION &bull; STORYTELLING &bull; VISUAL &bull; MOTION &bull; STUDIO 4K &bull; CINEMATOGRAPHY &bull;&nbsp;</span>
+                  </div>
+                  <div class="creative-marquee-track track-3">
+                    <span>12K CINEMA &bull; DIRECTION &bull; RECRUITMENT &bull; GLOBAL MEDIA &bull; CREATIVE STUDIO &bull;&nbsp;</span>
+                    <span>12K CINEMA &bull; DIRECTION &bull; RECRUITMENT &bull; GLOBAL MEDIA &bull; CREATIVE STUDIO &bull;&nbsp;</span>
+                  </div>
+                  <div class="creative-marquee-track track-4">
+                    <span>DIGITAL ART &bull; BRAND STRATEGY &bull; ENGAGEMENT &bull; HIGH IMPACT &bull; VISUAL STORY &bull;&nbsp;</span>
+                    <span>DIGITAL ART &bull; BRAND STRATEGY &bull; ENGAGEMENT &bull; HIGH IMPACT &bull; VISUAL STORY &bull;&nbsp;</span>
+                  </div>
+                  <div class="creative-marquee-track track-5">
+                    <span>CREATIVE DIRECTION &bull; MOTION GRAPHICS &bull; 60FPS &bull; PREMIUM PRODUCTION &bull;&nbsp;</span>
+                    <span>CREATIVE DIRECTION &bull; MOTION GRAPHICS &bull; 60FPS &bull; PREMIUM PRODUCTION &bull;&nbsp;</span>
+                  </div>
+                </div>
+
+                {/* Aurora Glows */}
+                <div class="creative-aurora" aria-hidden="true">
+                  <span class="creative-aurora__glow creative-aurora__glow--gold"></span>
+                  <span class="creative-aurora__glow creative-aurora__glow--sky"></span>
+                  <span class="creative-aurora__glow creative-aurora__glow--purple"></span>
+                  <span class="creative-aurora__glow creative-aurora__glow--cyan"></span>
+                </div>
+
+                <div class="service-text interactive-invert-box lens-projected-text">
+                  <div class="text-spotlight-lens" aria-hidden="true"></div>
+                  <span class="service-index"><i class="fas fa-video" aria-hidden="true"></i> CROSS-FUNCTIONAL SUPPORT</span>
+                  <h3 class="service-title">Creative</h3>
                   <p class="service-desc">
                     採用広報、企業ブランディング、写真・動画などのコンテンツ制作を通じて、01〜04の支援を横断的に補完します。
                     企業や職場の情報を分かりやすく届け、候補者との接点づくりと母集団形成を支えます。
                   </p>
-                  <div class="card-action-bottom">
-                    <ActionLink href="/contact" variant="text">採用広報について相談する</ActionLink>
-                  </div>
                 </div>
-                <div class="service-visual glass-card-large service-image-card">
-                  <img src="/static/images/service-creative.jpg" alt="Creative" class="service-img" />
+
+                {/* Double 3D Devices Stage (Transparent User Camera PNG + Smartphone with Video) */}
+                <div class="creative-devices-stage">
+                  {/* Real Photorealistic 3D Cinema Camera Device Mockup (User Transparent PNG) */}
+                  <div class="creative-camera-real-3d" aria-hidden="true">
+                    <div class="camera-img-wrap">
+                      <div class="camera-lens-flare"></div>
+                      <div class="camera-lens-beam"></div>
+                      <img src="/static/images/transparent-cinema-camera.png" alt="Cinema Camera" class="camera-real-img" />
+                      <div class="camera-glow-ring"></div>
+                    </div>
+                  </div>
+
+                  {/* 3D Pop-out Smartphone with Real Video */}
+                  <div class="creative-phone-3d">
+                    <div class="phone-body">
+                      <div class="phone-notch"></div>
+                      <div class="phone-button power"></div>
+                      <div class="phone-button vol-up"></div>
+                      <div class="phone-button vol-down"></div>
+                      <div class="phone-screen">
+                        <video
+                          autoplay
+                          loop
+                          muted
+                          playsinline
+                          poster="/static/images/service-creative.jpg"
+                          class="phone-video"
+                        >
+                          <source src="/static/videos/vertical-promo-video.mp4" type="video/mp4" />
+                          <source src="/static/videos/vertical-promo-video.mov" type="video/quicktime" />
+                        </video>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -417,7 +451,6 @@ export const Home: FC = () => {
 
         {/* ===== 04 Process ===== */}
         <section id="process-section" class="num-section transparent-section sticky-scroll-section">
-          <div class="dark-dissolve-overlay" id="dark-dissolve-overlay"></div>
           <div class="sticky-container">
             <div class="process-bg-image parallax-bg" aria-hidden="true"></div>
 
@@ -444,8 +477,8 @@ export const Home: FC = () => {
                   01
                 </div>
                 <div class="glass-card parallax-card" data-speed="1.2">
-                  <div class="card-image-placeholder">
-                    <i class="far fa-image placeholder-icon"></i>
+                  <div class="card-image-wrap">
+                    <img src="/static/images/flow-step1-consultation.jpg" alt="お問い合わせ" class="flow-card-img" />
                   </div>
                   <div class="card-content">
                     <div class="step-icon-hz">
@@ -463,8 +496,8 @@ export const Home: FC = () => {
                   02
                 </div>
                 <div class="glass-card parallax-card" data-speed="1.2">
-                  <div class="card-image-placeholder">
-                    <i class="far fa-image placeholder-icon"></i>
+                  <div class="card-image-wrap">
+                    <img src="/static/images/flow-step2-selection.jpg" alt="人材選定" class="flow-card-img" />
                   </div>
                   <div class="card-content">
                     <div class="step-icon-hz">
@@ -482,8 +515,8 @@ export const Home: FC = () => {
                   03
                 </div>
                 <div class="glass-card parallax-card" data-speed="1.2">
-                  <div class="card-image-placeholder">
-                    <i class="far fa-image placeholder-icon"></i>
+                  <div class="card-image-wrap">
+                    <img src="/static/images/flow-step3-interview.jpg" alt="面接・選考" class="flow-card-img" />
                   </div>
                   <div class="card-content">
                     <div class="step-icon-hz">
@@ -501,8 +534,8 @@ export const Home: FC = () => {
                   04
                 </div>
                 <div class="glass-card parallax-card" data-speed="1.2">
-                  <div class="card-image-placeholder">
-                    <i class="far fa-image placeholder-icon"></i>
+                  <div class="card-image-wrap">
+                    <img src="/static/images/flow-step4-visa-prep.jpg" alt="入国準備" class="flow-card-img" />
                   </div>
                   <div class="card-content">
                     <div class="step-icon-hz">
@@ -521,7 +554,7 @@ export const Home: FC = () => {
                 </div>
                 <div class="glass-card parallax-card" data-speed="1.2">
                   <div class="card-image-wrap">
-                    <img src="/static/images/flow-employment.png" alt="就労開始" class="flow-card-img" />
+                    <img src="/static/images/flow-step5-employment.jpg" alt="就労開始" class="flow-card-img" />
                   </div>
                   <div class="card-content">
                     <div class="step-icon-hz">

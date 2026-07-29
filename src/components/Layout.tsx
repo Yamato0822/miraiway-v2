@@ -21,7 +21,7 @@ export const Layout: FC<PropsWithChildren<LayoutProps>> = ({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
         <link
-          href="https://fonts.googleapis.com/css2?family=M+PLUS+1p:wght@400;500;700;800&family=Shippori+Antique+B1&family=Outfit:wght@300;400;600;700;800&family=Great+Vibes&family=Alex+Brush&display=swap"
+          href="https://fonts.googleapis.com/css2?family=M+PLUS+1p:wght@400;500;700;800&family=Shippori+Antique+B1&family=Outfit:wght@300;400;600;700;800&family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@700;800;900&family=Great+Vibes&family=Alex+Brush&display=swap"
           rel="stylesheet"
         />
         <link
@@ -55,10 +55,28 @@ export const Layout: FC<PropsWithChildren<LayoutProps>> = ({
         </div>
 
         {children}
-        <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
         <script src="/static/app.js"></script>
         <script src="/static/phase1a.js"></script>
+        <script dangerouslySetInnerHTML={{ __html: `
+          (function() {
+            function forceUnlock() {
+              var loader = document.getElementById('page-loader');
+              if (loader && loader.style.display !== 'none') {
+                loader.classList.add('is-complete', 'is-loaded');
+                document.body.classList.remove('is-loading');
+                document.body.classList.add('intro-revealed');
+                setTimeout(function() { loader.style.display = 'none'; }, 600);
+              }
+            }
+            if (document.readyState === 'complete') {
+              setTimeout(forceUnlock, 400);
+            } else {
+              window.addEventListener('load', function() { setTimeout(forceUnlock, 400); });
+              setTimeout(forceUnlock, 900);
+            }
+          })();
+        ` }} />
       </body>
     </html>
   )

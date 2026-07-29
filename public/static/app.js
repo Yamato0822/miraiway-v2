@@ -31,6 +31,12 @@
       if (pageLoader) pageLoader.classList.add('is-loaded');
       document.body.classList.remove('is-loading');
       document.body.classList.add('intro-revealed');
+
+      // Trigger animated marker line drawing
+      const markerWrap = document.querySelector('.animated-marker-wrap');
+      if (markerWrap) {
+        setTimeout(() => markerWrap.classList.add('is-drawing'), 250);
+      }
     }, progressSettleDuration);
 
     const openingDuration = loaderReducedMotion.matches ? 200 : 1040;
@@ -125,38 +131,13 @@
       entries.forEach((e) => {
         if (e.isIntersecting) {
           e.target.classList.add('visible');
-          
-          // Counter Animation
-          if (e.target.classList.contains('counter')) {
-            const target = parseInt(e.target.getAttribute('data-target'), 10);
-            const duration = 1500; // ms
-            const stepTime = Math.abs(Math.floor(duration / target));
-            let current = 0;
-            const timer = setInterval(() => {
-              current += 1;
-              e.target.textContent = current;
-              if (current >= target) {
-                e.target.textContent = target;
-                clearInterval(timer);
-              }
-            }, stepTime);
-          }
-
-          // Bar chart grow animation
-          if (e.target.classList.contains('bar-animate')) {
-            const targetHeight = e.target.getAttribute('data-bar-height');
-            setTimeout(() => {
-              e.target.style.height = targetHeight + '%';
-            }, 300);
-          }
-
           observer.unobserve(e.target);
         }
       });
     },
     { threshold: 0.05 }
   );
-  document.querySelectorAll('.reveal, .counter, .bar-animate, .reveal-glow').forEach((el) => observer.observe(el));
+  document.querySelectorAll('.reveal, .reveal-glow').forEach((el) => observer.observe(el));
 
   /* ---------- Canvas 3D Typography Globe Engine (Optimized with IntersectionObserver) ---------- */
   const canvas = document.getElementById('typography-globe-canvas');
@@ -227,6 +208,12 @@
         
         if ((charCenter / r) > Math.PI * 2) break;
         
+        const angleRad = angle;
+        const dirX = Math.cos(band.lat) * Math.cos(angleRad);
+        const dirY = Math.sin(band.lat);
+        const dirZ = Math.cos(band.lat) * Math.sin(angleRad);
+        const spreadDist = 750 + Math.random() * 1100;
+
         points.push({
           char: char,
           angle: angle,
@@ -237,7 +224,12 @@
           weight: band.weight,
           speed: band.speed,
           bandIndex,
-          revealDelay: Math.abs(band.lat) * 390
+          revealDelay: Math.abs(band.lat) * 390,
+          // High-Velocity 3D Dispersion Physics & Spin
+          disperseVx: dirX * spreadDist + (Math.random() - 0.5) * 450,
+          disperseVy: dirY * spreadDist + (Math.random() - 0.5) * 550,
+          disperseVz: dirZ * spreadDist + (Math.random() - 0.5) * 650,
+          spinAngle: (Math.random() - 0.5) * Math.PI * 7.5
         });
         currentX += charWidth + tracking;
       }
@@ -247,7 +239,16 @@
     let isGlobeVisible = false;
     let revealStartedAt = null;
     let firstFrameRendered = false;
+    let targetDisperseProgress = 0;
+    let currentDisperseProgress = 0;
     const globeElement = canvas.closest('.typography-globe');
+
+    // Scroll listener for 3D text scattering dispersion progress
+    window.addEventListener('scroll', () => {
+      const scrollY = window.scrollY;
+      const triggerHeight = window.innerHeight * 0.48;
+      targetDisperseProgress = Math.max(0, Math.min(1, scrollY / triggerHeight));
+    }, { passive: true });
 
     function applyTilt(v) {
       let y1 = v.y * Math.cos(currentTiltX) - v.z * Math.sin(currentTiltX);
@@ -276,17 +277,24 @@
         currentTiltZ += (targetTiltZ - currentTiltZ) * 0.035;
       }
 
+      // Lerp 3D text scatter dispersion progress with responsive easing
+      currentDisperseProgress += (targetDisperseProgress - currentDisperseProgress) * 0.1;
+      const dispProgress = Math.pow(currentDisperseProgress, 1.25);
+
       ctx.clearRect(0, 0, logicalWidth, logicalHeight);
       
-      let bgGrad = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, globeRadius);
-      bgGrad.addColorStop(0, "rgba(255, 255, 255, 0.95)");
-      bgGrad.addColorStop(0.6, "rgba(240, 246, 252, 0.35)");
-      bgGrad.addColorStop(1, "rgba(255, 255, 255, 0)");
-      
-      ctx.beginPath();
-      ctx.arc(centerX, centerY, globeRadius, 0, Math.PI * 2);
-      ctx.fillStyle = bgGrad;
-      ctx.fill();
+      const bgOpacity = Math.max(0, 1 - dispProgress * 1.3);
+      if (bgOpacity > 0.01) {
+        let bgGrad = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, globeRadius * (1 + dispProgress * 0.6));
+        bgGrad.addColorStop(0, `rgba(255, 255, 255, ${0.95 * bgOpacity})`);
+        bgGrad.addColorStop(0.6, `rgba(240, 246, 252, ${0.35 * bgOpacity})`);
+        bgGrad.addColorStop(1, "rgba(255, 255, 255, 0)");
+        
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, globeRadius * (1 + dispProgress * 0.5), 0, Math.PI * 2);
+        ctx.fillStyle = bgGrad;
+        ctx.fill();
+      }
 
       let renderList = [];
       points.forEach(p => {
@@ -295,9 +303,11 @@
           : Math.min(1, Math.max(0, (revealElapsed - p.revealDelay) / 760));
         const bandReveal = 1 - Math.pow(1 - rawReveal, 3);
         let theta = p.angle + time * p.speed;
-        let x = p.baseR * Math.cos(theta);
-        let z = p.baseR * Math.sin(theta);
-        let y = p.baseY + (1 - bandReveal) * (p.baseY >= 0 ? 18 : -18);
+
+        // Apply High-Impact 3D Scatter Dispersal Offset on Scroll
+        let x = p.baseR * Math.cos(theta) + p.disperseVx * dispProgress;
+        let z = p.baseR * Math.sin(theta) + p.disperseVz * dispProgress;
+        let y = p.baseY + (1 - bandReveal) * (p.baseY >= 0 ? 18 : -18) + p.disperseVy * dispProgress;
         
         let Nx = x / globeRadius, Ny = y / globeRadius, Nz = z / globeRadius;
         let Tx = -Math.sin(theta), Ty = 0, Tz = Math.cos(theta);
@@ -324,13 +334,18 @@
           color: p.color,
           weight: p.weight,
           isBack: P_tilt.z > 0,
-          reveal: bandReveal
+          reveal: bandReveal,
+          spinAngle: p.spinAngle
         });
       });
 
       renderList.sort((a, b) => b.z - a.z);
 
+      const alphaFade = Math.max(0, 1 - dispProgress * 0.88);
+
       renderList.forEach(p => {
+        if (alphaFade <= 0.005) return;
+
         ctx.save();
         ctx.translate(p.x, p.y);
         let s = p.scale;
@@ -346,11 +361,16 @@
         let c = -p.Ux * s;
         let d = -p.Uy * s;
 
+        // Apply individual character 3D spin angle during scroll dispersal
+        if (dispProgress > 0.001) {
+          ctx.rotate(p.spinAngle * dispProgress);
+        }
+
         if (p.isBack) {
-          ctx.globalAlpha = 0.07 * p.reveal;
+          ctx.globalAlpha = 0.07 * p.reveal * alphaFade;
           ctx.transform(a, b, c, d, 0, 0);
         } else {
-          ctx.globalAlpha = (0.1 + 0.9 * Math.pow(tLen, 0.5)) * p.reveal;
+          ctx.globalAlpha = (0.1 + 0.9 * Math.pow(tLen, 0.5)) * p.reveal * alphaFade;
           ctx.transform(a, b, c, d, 0, 0);
         }
 
@@ -365,15 +385,15 @@
         ctx.restore();
       });
 
-      // Orbit Rings
+      // Orbit Rings Dispersal
       ctx.save();
       const orbitReveal = globeReducedMotion.matches
         ? 1
         : Math.min(1, Math.max(0, (revealElapsed - 1040) / 320));
-      ctx.globalAlpha = orbitReveal;
+      ctx.globalAlpha = orbitReveal * alphaFade;
       ctx.translate(centerX, centerY);
       ctx.rotate(currentTiltZ);
-      ctx.scale(1, 0.35);
+      ctx.scale(1 + dispProgress * 0.5, (1 + dispProgress * 0.5) * 0.35);
       
       ctx.beginPath();
       ctx.arc(0, 0, globeRadius + 60, 0, Math.PI * 2);
@@ -789,6 +809,18 @@
     }
   }
 
+  function lerp(a, b, t) { return a + (b - a) * t; }
+  function clamp(value, min = 0, max = 1) { return Math.max(min, Math.min(max, value)); }
+  function smootherStep(value) {
+    const x = clamp(value);
+    return x * x * x * (x * (x * 6 - 15) + 10);
+  }
+  function normalizeCamera(camera, fallback) {
+    if (!camera) return fallback;
+    const center = camera.center.toArray ? camera.center.toArray() : camera.center;
+    return { center, zoom: camera.zoom };
+  }
+
   /* ---------- MapLibre GL precision scrollytelling ---------- */
   function initMapLibreSection() {
     const realMapWrapper = document.getElementById('real-map-scrolly-wrapper');
@@ -819,10 +851,7 @@
       return;
     }
 
-    const panelSriLanka = document.getElementById('panel-srilanka');
-    const panelJapan = document.getElementById('panel-japan');
-    const phaseIndicatorText = document.getElementById('map-phase-text');
-    const routeProgressFill = document.getElementById('map-route-progress-fill');
+
 
     const sriLankaLngLat = [79.8612, 6.9271];
     const japanLngLat = [139.6503, 35.6762];
@@ -855,7 +884,6 @@
     };
 
     new maplibregl.Marker({ element: createPulsingDOM(false) }).setLngLat(sriLankaLngLat).addTo(map);
-    new maplibregl.Marker({ element: createPulsingDOM(true) }).setLngLat(japanLngLat).addTo(map);
 
     function generateGreatCircleCoordinates(start, end, numPoints = 240) {
       const coords = [];
@@ -906,8 +934,35 @@
       try {
         const styleLayers = map.getStyle().layers || [];
         styleLayers.forEach(layer => {
-          if (layer.type === 'circle' || layer.type === 'symbol') {
+          if (layer.type === 'circle' || (layer.type === 'symbol' && !layer.id.includes('country'))) {
             map.setLayoutProperty(layer.id, 'visibility', 'none');
+          }
+
+          // 海・水域レイヤー（water）はベース背景カラーと同じ純白（#ffffff）
+          if (layer.id.includes('water') || layer.sourceLayer === 'water') {
+            if (layer.type === 'fill') {
+              map.setPaintProperty(layer.id, 'fill-color', '#ffffff');
+              map.setPaintProperty(layer.id, 'fill-opacity', 1);
+            }
+          }
+
+          // 一般大陸・島々の陸地（background / land / landuse）をスタイリッシュなライトグレー（#e5e9ee）に設定
+          if (layer.id === 'background' || layer.id.includes('land') || layer.sourceLayer === 'landcover' || layer.sourceLayer === 'landuse') {
+            if (layer.type === 'background') {
+              map.setPaintProperty(layer.id, 'background-color', '#e5e9ee');
+            } else if (layer.type === 'fill') {
+              map.setPaintProperty(layer.id, 'fill-color', '#e5e9ee');
+              map.setPaintProperty(layer.id, 'fill-opacity', 0.95);
+            }
+          }
+
+          // 国境・海岸線・行政区画線をクッキリと上品なグレー（#cbd5e1）でグラフィック強調
+          if (layer.id.includes('admin') || layer.id.includes('boundary') || layer.sourceLayer === 'boundary') {
+            if (layer.type === 'line') {
+              map.setPaintProperty(layer.id, 'line-color', '#cbd5e1');
+              map.setPaintProperty(layer.id, 'line-width', 1.2);
+              map.setPaintProperty(layer.id, 'line-opacity', 0.85);
+            }
           }
         });
       } catch (e) {
@@ -928,18 +983,23 @@
         buffer: 64
       });
 
-      const addBoundaryLayers = (country, color) => {
+      // 主役拠点国（スリランカ ＆ 日本）を際立たせるグラフィック描画
+      const addHighlightCountryGraphics = (country, color, glowColor) => {
         const beforeId = firstLabelLayer ? firstLabelLayer.id : undefined;
+
+        // 1. ソリッド鮮やか塗り
         map.addLayer({
           id: `${country}-fill`,
           type: 'fill',
           source: `${country}-src`,
           paint: {
             'fill-color': color,
-            'fill-opacity': country === 'sri-lanka' ? 0.52 : 0.18,
+            'fill-opacity': 0.88,
             'fill-antialias': true
           }
         }, beforeId);
+
+        // 2. 白い光彩発光 Halo アウトライン
         map.addLayer({
           id: `${country}-outline-halo`,
           type: 'line',
@@ -947,26 +1007,28 @@
           layout: { 'line-cap': 'round', 'line-join': 'round' },
           paint: {
             'line-color': '#ffffff',
-            'line-width': ['interpolate', ['linear'], ['zoom'], 3, 2, 6, 4],
-            'line-opacity': 0.9,
-            'line-blur': 0.6
+            'line-width': ['interpolate', ['linear'], ['zoom'], 3, 3.5, 6, 6],
+            'line-opacity': 1.0,
+            'line-blur': 0.5
           }
         }, beforeId);
+
+        // 3. 際立つネイビー／ブルーのメイン外郭グラフィック
         map.addLayer({
           id: `${country}-outline`,
           type: 'line',
           source: `${country}-src`,
           layout: { 'line-cap': 'round', 'line-join': 'round' },
           paint: {
-            'line-color': color,
-            'line-width': ['interpolate', ['linear'], ['zoom'], 3, 1.15, 6, 2.25],
-            'line-opacity': 0.98
+            'line-color': glowColor,
+            'line-width': ['interpolate', ['linear'], ['zoom'], 3, 2.0, 6, 3.5],
+            'line-opacity': 1.0
           }
         }, beforeId);
       };
 
-      addBoundaryLayers('sri-lanka', '#0284c7');
-      addBoundaryLayers('japan', '#f97316');
+      addHighlightCountryGraphics('sri-lanka', '#0284c7', '#0b2039');
+      addHighlightCountryGraphics('japan', '#1d4ed8', '#0b2039');
 
       map.addSource('flight-arc-src', {
         type: 'geojson',
@@ -980,9 +1042,9 @@
         source: 'flight-arc-src',
         layout: { 'line-cap': 'round', 'line-join': 'round' },
         paint: {
-          'line-color': '#fb923c',
+          'line-color': '#38bdf8',
           'line-width': ['interpolate', ['linear'], ['zoom'], 3, 7, 6, 11],
-          'line-opacity': 0.22,
+          'line-opacity': 0.25,
           'line-blur': 3
         }
       });
@@ -1002,19 +1064,6 @@
       triggerRender();
     });
 
-    function lerp(a, b, t) { return a + (b - a) * t; }
-    function clamp(value, min = 0, max = 1) { return Math.max(min, Math.min(max, value)); }
-    function smootherStep(value) {
-      const x = clamp(value);
-      return x * x * x * (x * (x * 6 - 15) + 10);
-    }
-
-    function normalizeCamera(camera, fallback) {
-      if (!camera) return fallback;
-      const center = camera.center.toArray ? camera.center.toArray() : camera.center;
-      return { center, zoom: camera.zoom };
-    }
-
     function calculateCameraKeyframes() {
       const width = vectorMapContainer.clientWidth || window.innerWidth;
       const isMobile = width < 900;
@@ -1022,14 +1071,14 @@
       const sidePanelSpace = Math.min(460, Math.max(360, width * 0.27));
 
       const sriPadding = isMobile
-        ? { top: headerClearance + 92, right: 24, bottom: 250, left: 24 }
-        : { top: headerClearance + 92, right: Math.max(64, width * 0.08), bottom: 64, left: sidePanelSpace };
+        ? { top: headerClearance + 60, right: 24, bottom: 120, left: 24 }
+        : { top: headerClearance + 60, right: Math.max(64, width * 0.08), bottom: 100, left: Math.max(64, width * 0.08) };
       const routePadding = isMobile
-        ? { top: headerClearance + 96, right: 22, bottom: 245, left: 22 }
-        : { top: headerClearance + 96, right: Math.max(48, width * 0.05), bottom: 56, left: Math.max(48, width * 0.05) };
+        ? { top: headerClearance + 70, right: 22, bottom: 120, left: 22 }
+        : { top: headerClearance + 70, right: Math.max(48, width * 0.05), bottom: 90, left: Math.max(48, width * 0.05) };
       const japanPadding = isMobile
-        ? { top: headerClearance + 92, right: 24, bottom: 250, left: 24 }
-        : { top: headerClearance + 92, right: Math.max(64, width * 0.08), bottom: 64, left: sidePanelSpace };
+        ? { top: headerClearance + 60, right: 24, bottom: 120, left: 24 }
+        : { top: headerClearance + 60, right: Math.max(64, width * 0.08), bottom: 100, left: Math.max(64, width * 0.08) };
 
       const fallbackSri = { center: [80.7718, 7.8731], zoom: isMobile ? 5.1 : 5.85 };
       const fallbackRoute = { center: [109.8, 21.6], zoom: isMobile ? 2.3 : 3.05 };
@@ -1117,19 +1166,61 @@
       const camera = getCameraForProgress(progress);
       if (camera) map.jumpTo({ center: camera.center, zoom: camera.zoom, bearing: 0, pitch: 0 });
 
-      if (routeProgressFill) {
-        routeProgressFill.style.transform = `scaleX(${progress.toFixed(4)})`;
+      // 3-Step Horizontal Process Flow (Exact Port) Progress & Activation Toggles
+      const lineFill = document.getElementById('step-flow-line-fill');
+      const step1 = document.getElementById('step-card-1');
+      const step2 = document.getElementById('step-card-2');
+      const step3 = document.getElementById('step-card-3');
+
+      let currentStep = 1;
+      let fillPercent = 33.33;
+
+      if (progress < 0.35) {
+        currentStep = 1;
+        fillPercent = 33.33;
+      } else if (progress < 0.72) {
+        currentStep = 2;
+        fillPercent = 66.66;
+      } else {
+        currentStep = 3;
+        fillPercent = 100;
+      }
+
+      if (lineFill) {
+        lineFill.style.width = `${fillPercent}%`;
+      }
+
+      if (step1) step1.classList.toggle('is-active', currentStep === 1);
+      if (step2) step2.classList.toggle('is-active', currentStep === 2);
+      if (step3) step3.classList.toggle('is-active', currentStep === 3);
+
+      // Ocean Video Overlay Instant Crossfade Mix Control (Sri Lanka ⇄ Japan)
+      const sriVideo = document.getElementById('srilanka-ocean-video');
+      const japanVideo = document.getElementById('japan-ocean-video');
+
+      const showSriVideo = progress < 0.52;
+      const showJapanVideo = progress >= 0.48;
+
+      if (sriVideo) {
+        if (showSriVideo) {
+          sriVideo.classList.add('is-active');
+          if (sriVideo.paused) sriVideo.play().catch(() => {});
+        } else {
+          sriVideo.classList.remove('is-active');
+        }
+      }
+
+      if (japanVideo) {
+        if (showJapanVideo) {
+          japanVideo.classList.add('is-active');
+          if (japanVideo.paused) japanVideo.play().catch(() => {});
+        } else {
+          japanVideo.classList.remove('is-active');
+        }
       }
 
       if (progress < 0.12) {
         realMapWrapper.dataset.phase = 'sri-lanka';
-        if (panelSriLanka) panelSriLanka.classList.remove('moved-left');
-        if (panelSriLanka) panelSriLanka.classList.remove('is-dimmed');
-        if (panelJapan) panelJapan.classList.remove('is-visible');
-        if (phaseIndicatorText) {
-          phaseIndicatorText.textContent = 'PHASE 1: 現地教育・人材選定';
-          phaseIndicatorText.style.color = '#0284c7';
-        }
         if (isMapLoaded && map.getSource('flight-arc-src') && lastVisibleCount !== 0) {
           map.getSource('flight-arc-src').setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: [] } });
           lastVisibleCount = 0;
@@ -1148,15 +1239,8 @@
           });
           lastVisibleCount = visibleCount;
         }
-        if (panelSriLanka) panelSriLanka.classList.add('moved-left');
-        if (panelSriLanka) panelSriLanka.classList.toggle('is-dimmed', t > 0.7);
-        if (panelJapan) panelJapan.classList.toggle('is-visible', t > 0.54);
         if (isMapLoaded && map.getLayer('sri-lanka-fill')) map.setPaintProperty('sri-lanka-fill', 'fill-opacity', lerp(0.50, 0.30, t));
         if (isMapLoaded && map.getLayer('japan-fill')) map.setPaintProperty('japan-fill', 'fill-opacity', lerp(0.16, 0.52, smootherStep(t)));
-        if (phaseIndicatorText) {
-          phaseIndicatorText.textContent = 'PHASE 2: 渡航準備・両拠点連携';
-          phaseIndicatorText.style.color = '#f59e0b';
-        }
       } else {
         realMapWrapper.dataset.phase = 'japan';
         if (isMapLoaded && map.getSource('flight-arc-src') && lastVisibleCount !== fullArcCoords.length) {
@@ -1167,15 +1251,8 @@
           });
           lastVisibleCount = fullArcCoords.length;
         }
-        if (panelSriLanka) panelSriLanka.classList.add('moved-left');
-        if (panelSriLanka) panelSriLanka.classList.add('is-dimmed');
-        if (panelJapan) panelJapan.classList.add('is-visible');
         if (isMapLoaded && map.getLayer('sri-lanka-fill')) map.setPaintProperty('sri-lanka-fill', 'fill-opacity', 0.30);
         if (isMapLoaded && map.getLayer('japan-fill')) map.setPaintProperty('japan-fill', 'fill-opacity', 0.52);
-        if (phaseIndicatorText) {
-          phaseIndicatorText.textContent = 'PHASE 3: 就労・定着支援';
-          phaseIndicatorText.style.color = '#f97316';
-        }
       }
     }
 
