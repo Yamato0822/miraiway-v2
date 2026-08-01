@@ -113,6 +113,10 @@
       if (icon) {
         icon.className = isOpen ? 'fas fa-xmark' : 'fas fa-bars';
       }
+      if (isOpen && window.matchMedia('(max-width: 768px)').matches) {
+        const firstLink = mobileNav.querySelector('a');
+        if (firstLink) window.requestAnimationFrame(() => firstLink.focus());
+      }
     });
     mobileNav.querySelectorAll('a').forEach((a) =>
       a.addEventListener('click', () => {
@@ -859,6 +863,14 @@
     const japanBounds = [[126.7, 25.3], [146.35, 45.75]];
     const routeBounds = [[76.4, 3.1], [143.1, 40.2]];
     const reduceMapMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const compactMapMedia = window.matchMedia('(max-width: 900px)');
+    const sriVideo = document.getElementById('srilanka-ocean-video');
+    const japanVideo = document.getElementById('japan-ocean-video');
+    const mapVideos = [sriVideo, japanVideo].filter(Boolean);
+    let mapVideosLoaded = false;
+    let isMapNearViewport = false;
+    let isMapVisible = false;
+    let latestVideoProgress = 0;
 
     const map = new maplibregl.Map({
       container: 'maplibre-vector-map',
@@ -873,6 +885,78 @@
     });
 
     window.realMapLibreInstance = map;
+
+    mapVideos.forEach(video => {
+      video.muted = true;
+      video.defaultMuted = true;
+      video.loop = true;
+      video.playsInline = true;
+    });
+
+    const ensureMapVideosLoaded = () => {
+      if (mapVideosLoaded || !isMapNearViewport || reduceMapMotion) return;
+      mapVideosLoaded = true;
+      mapVideos.forEach(video => video.load());
+    };
+
+    const syncMapVideoPlayback = (progress = latestVideoProgress) => {
+      latestVideoProgress = progress;
+      const canPlay = isMapVisible && document.visibilityState === 'visible' && !reduceMapMotion;
+      const showSriVideo = !reduceMapMotion && progress < 0.52;
+      const showJapanVideo = !reduceMapMotion && progress >= 0.48;
+
+      if (sriVideo) {
+        sriVideo.classList.toggle('is-active', showSriVideo);
+        if (canPlay && showSriVideo) {
+          sriVideo.play().catch(() => {});
+        } else if (!sriVideo.paused) {
+          sriVideo.pause();
+        }
+      }
+
+      if (japanVideo) {
+        japanVideo.classList.toggle('is-active', showJapanVideo);
+        if (canPlay && showJapanVideo) {
+          japanVideo.play().catch(() => {});
+        } else if (!japanVideo.paused) {
+          japanVideo.pause();
+        }
+      }
+    };
+
+    if ('IntersectionObserver' in window) {
+      const preloadObserver = new IntersectionObserver(entries => {
+        const entry = entries[0];
+        isMapNearViewport = Boolean(entry?.isIntersecting);
+        if (isMapNearViewport) ensureMapVideosLoaded();
+      }, { rootMargin: '70% 0px', threshold: 0 });
+
+      const visibilityObserver = new IntersectionObserver(entries => {
+        const entry = entries[0];
+        isMapVisible = Boolean(entry?.isIntersecting);
+        if (isMapVisible) {
+          isMapNearViewport = true;
+          ensureMapVideosLoaded();
+        }
+        syncMapVideoPlayback();
+      }, { threshold: [0, 0.02] });
+
+      preloadObserver.observe(realMapWrapper);
+      visibilityObserver.observe(realMapWrapper);
+    } else {
+      isMapNearViewport = true;
+      isMapVisible = true;
+      ensureMapVideosLoaded();
+    }
+
+    mapVideos.forEach(video => {
+      video.addEventListener('canplay', () => syncMapVideoPlayback());
+    });
+    document.addEventListener('visibilitychange', () => syncMapVideoPlayback());
+    window.addEventListener('pageshow', () => syncMapVideoPlayback());
+    window.addEventListener('pagehide', () => {
+      mapVideos.forEach(video => video.pause());
+    });
 
     const createPulsingDOM = (isOrange = false) => {
       const el = document.createElement('div');
@@ -938,97 +1022,54 @@
             map.setLayoutProperty(layer.id, 'visibility', 'none');
           }
 
-          // 海・水域レイヤー（water）はベース背景カラーと同じ純白（#ffffff）
+          // 海・水域は透明にし、地図下層の背景動画を海面だけに表示する。
           if (layer.id.includes('water') || layer.sourceLayer === 'water') {
             if (layer.type === 'fill') {
-              map.setPaintProperty(layer.id, 'fill-color', '#ffffff');
+              map.setPaintProperty(layer.id, 'fill-opacity', 0);
+            }
+          }
+
+          // 背景を透明化し、陸地系レイヤーは完全不透明にする。
+          if (layer.id === 'background' || layer.id.includes('land') || layer.sourceLayer === 'landcover' || layer.sourceLayer === 'landuse') {
+            if (layer.type === 'background') {
+              map.setPaintProperty(layer.id, 'background-color', 'rgba(255, 255, 255, 0)');
+              map.setPaintProperty(layer.id, 'background-opacity', 0);
+            } else if (layer.type === 'fill') {
+              map.setPaintProperty(layer.id, 'fill-color', '#e8eef2');
               map.setPaintProperty(layer.id, 'fill-opacity', 1);
             }
           }
 
-          // 一般大陸・島々の陸地（background / land / landuse）をスタイリッシュなライトグレー（#e5e9ee）に設定
-          if (layer.id === 'background' || layer.id.includes('land') || layer.sourceLayer === 'landcover' || layer.sourceLayer === 'landuse') {
-            if (layer.type === 'background') {
-              map.setPaintProperty(layer.id, 'background-color', '#e5e9ee');
-            } else if (layer.type === 'fill') {
-              map.setPaintProperty(layer.id, 'fill-color', '#e5e9ee');
-              map.setPaintProperty(layer.id, 'fill-opacity', 0.95);
-            }
-          }
-
-          // 国境・海岸線・行政区画線をクッキリと上品なグレー（#cbd5e1）でグラフィック強調
+          // 国境・行政区画線は控えめにし、島の外郭を強調しない。
           if (layer.id.includes('admin') || layer.id.includes('boundary') || layer.sourceLayer === 'boundary') {
             if (layer.type === 'line') {
-              map.setPaintProperty(layer.id, 'line-color', '#cbd5e1');
-              map.setPaintProperty(layer.id, 'line-width', 1.2);
-              map.setPaintProperty(layer.id, 'line-opacity', 0.85);
+              map.setPaintProperty(layer.id, 'line-color', '#aebdca');
+              map.setPaintProperty(layer.id, 'line-width', 0.6);
+              map.setPaintProperty(layer.id, 'line-opacity', 0.25);
             }
           }
         });
       } catch (e) {
         console.warn('Basemap layer cleanup notice:', e);
       }
-      const firstLabelLayer = map.getStyle().layers.find(layer => layer.type === 'symbol');
+      const firstBaseLayer = map.getStyle().layers.find(layer => layer.type !== 'background');
 
-      map.addSource('sri-lanka-src', {
+      map.addSource('world-land-src', {
         type: 'geojson',
-        data: '/static/geojson/sri_lanka.json',
-        tolerance: 0.1,
-        buffer: 64
+        data: '/static/geojson/world_land_110m.json',
+        tolerance: 0.25,
+        buffer: 32
       });
-      map.addSource('japan-src', {
-        type: 'geojson',
-        data: '/static/geojson/japan.json',
-        tolerance: 0.1,
-        buffer: 64
-      });
-
-      // 主役拠点国（スリランカ ＆ 日本）を際立たせるグラフィック描画
-      const addHighlightCountryGraphics = (country, color, glowColor) => {
-        const beforeId = firstLabelLayer ? firstLabelLayer.id : undefined;
-
-        // 1. ソリッド鮮やか塗り
-        map.addLayer({
-          id: `${country}-fill`,
-          type: 'fill',
-          source: `${country}-src`,
-          paint: {
-            'fill-color': color,
-            'fill-opacity': 0.88,
-            'fill-antialias': true
-          }
-        }, beforeId);
-
-        // 2. 白い光彩発光 Halo アウトライン
-        map.addLayer({
-          id: `${country}-outline-halo`,
-          type: 'line',
-          source: `${country}-src`,
-          layout: { 'line-cap': 'round', 'line-join': 'round' },
-          paint: {
-            'line-color': '#ffffff',
-            'line-width': ['interpolate', ['linear'], ['zoom'], 3, 3.5, 6, 6],
-            'line-opacity': 1.0,
-            'line-blur': 0.5
-          }
-        }, beforeId);
-
-        // 3. 際立つネイビー／ブルーのメイン外郭グラフィック
-        map.addLayer({
-          id: `${country}-outline`,
-          type: 'line',
-          source: `${country}-src`,
-          layout: { 'line-cap': 'round', 'line-join': 'round' },
-          paint: {
-            'line-color': glowColor,
-            'line-width': ['interpolate', ['linear'], ['zoom'], 3, 2.0, 6, 3.5],
-            'line-opacity': 1.0
-          }
-        }, beforeId);
-      };
-
-      addHighlightCountryGraphics('sri-lanka', '#0284c7', '#0b2039');
-      addHighlightCountryGraphics('japan', '#1d4ed8', '#0b2039');
+      map.addLayer({
+        id: 'world-land-fill',
+        type: 'fill',
+        source: 'world-land-src',
+        paint: {
+          'fill-color': '#e8eef2',
+          'fill-opacity': 1,
+          'fill-antialias': true
+        }
+      }, firstBaseLayer ? firstBaseLayer.id : undefined);
 
       map.addSource('flight-arc-src', {
         type: 'geojson',
@@ -1190,34 +1231,16 @@
         lineFill.style.width = `${fillPercent}%`;
       }
 
-      if (step1) step1.classList.toggle('is-active', currentStep === 1);
-      if (step2) step2.classList.toggle('is-active', currentStep === 2);
-      if (step3) step3.classList.toggle('is-active', currentStep === 3);
+      [step1, step2, step3].forEach((step, index) => {
+        if (!step) return;
+        const isCurrent = currentStep === index + 1;
+        step.classList.toggle('is-active', isCurrent);
+        step.setAttribute('aria-current', isCurrent ? 'step' : 'false');
+        step.setAttribute('aria-hidden', String(!isCurrent && compactMapMedia.matches));
+      });
 
-      // Ocean Video Overlay Instant Crossfade Mix Control (Sri Lanka ⇄ Japan)
-      const sriVideo = document.getElementById('srilanka-ocean-video');
-      const japanVideo = document.getElementById('japan-ocean-video');
-
-      const showSriVideo = progress < 0.52;
-      const showJapanVideo = progress >= 0.48;
-
-      if (sriVideo) {
-        if (showSriVideo) {
-          sriVideo.classList.add('is-active');
-          if (sriVideo.paused) sriVideo.play().catch(() => {});
-        } else {
-          sriVideo.classList.remove('is-active');
-        }
-      }
-
-      if (japanVideo) {
-        if (showJapanVideo) {
-          japanVideo.classList.add('is-active');
-          if (japanVideo.paused) japanVideo.play().catch(() => {});
-        } else {
-          japanVideo.classList.remove('is-active');
-        }
-      }
+      // 海面背景動画は表示中のフェーズだけ再生し、短い切り替え区間だけクロスフェードする。
+      syncMapVideoPlayback(progress);
 
       if (progress < 0.12) {
         realMapWrapper.dataset.phase = 'sri-lanka';
@@ -1225,8 +1248,6 @@
           map.getSource('flight-arc-src').setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: [] } });
           lastVisibleCount = 0;
         }
-        if (isMapLoaded && map.getLayer('sri-lanka-fill')) map.setPaintProperty('sri-lanka-fill', 'fill-opacity', 0.50);
-        if (isMapLoaded && map.getLayer('japan-fill')) map.setPaintProperty('japan-fill', 'fill-opacity', 0.16);
       } else if (progress <= 0.86) {
         realMapWrapper.dataset.phase = 'pathway';
         const t = clamp((progress - 0.12) / 0.74);
@@ -1239,8 +1260,6 @@
           });
           lastVisibleCount = visibleCount;
         }
-        if (isMapLoaded && map.getLayer('sri-lanka-fill')) map.setPaintProperty('sri-lanka-fill', 'fill-opacity', lerp(0.50, 0.30, t));
-        if (isMapLoaded && map.getLayer('japan-fill')) map.setPaintProperty('japan-fill', 'fill-opacity', lerp(0.16, 0.52, smootherStep(t)));
       } else {
         realMapWrapper.dataset.phase = 'japan';
         if (isMapLoaded && map.getSource('flight-arc-src') && lastVisibleCount !== fullArcCoords.length) {
@@ -1251,8 +1270,6 @@
           });
           lastVisibleCount = fullArcCoords.length;
         }
-        if (isMapLoaded && map.getLayer('sri-lanka-fill')) map.setPaintProperty('sri-lanka-fill', 'fill-opacity', 0.30);
-        if (isMapLoaded && map.getLayer('japan-fill')) map.setPaintProperty('japan-fill', 'fill-opacity', 0.52);
       }
     }
 

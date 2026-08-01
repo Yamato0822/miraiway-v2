@@ -3348,12 +3348,29 @@ body.intro-revealed .animated-marker-text {
 /* ============================================================
    MapLibre Scrollytelling Map Realistic Ocean Theme
    ============================================================ */
-#about-section,
-#real-map-scrolly-wrapper,
-.real-map-sticky-container,
+#about-section {
+  background: #fff !important;
+}
+
+#real-map-scrolly-wrapper {
+  background: linear-gradient(
+    to bottom,
+    #fff 0,
+    #eef5f8 90px,
+    #dce8ef 220px
+  ) !important;
+  filter: none !important;
+}
+
+.real-map-sticky-container {
+  background: #dce8ef !important;
+  filter: none !important;
+}
+
 .maplibre-map-canvas,
 .maplibre-map-canvas .maplibregl-canvas {
-  background: #ffffff !important;
+  z-index: 2;
+  background: transparent !important;
   filter: none !important;
 }
 
@@ -3364,8 +3381,13 @@ body.intro-revealed .animated-marker-text {
   top: 0;
   left: 0;
   right: 0;
-  height: 140px;
-  background: linear-gradient(to bottom, #ffffff 0%, rgba(255, 255, 255, 0) 100%);
+  height: 220px;
+  background: linear-gradient(
+    to bottom,
+    #fff 0,
+    rgba(255, 255, 255, 0.88) 32%,
+    rgba(220, 232, 239, 0) 100%
+  );
   z-index: 20;
   pointer-events: none;
 }
@@ -3487,22 +3509,70 @@ body.intro-revealed .animated-marker-text {
 
 @media (max-width: 900px) {
   .map-steps-horizontal-flow {
-    position: relative;
-    bottom: auto;
-    left: auto;
+    position: absolute;
+    bottom: 28px;
+    left: clamp(16px, 3vw, 28px);
     transform: none;
-    width: 92%;
-    margin: 40px auto 20px;
+    width: min(520px, calc(100% - 32px));
+    max-width: 520px;
+    margin: 0;
     flex-direction: column;
-    gap: 32px;
-    padding: 24px 20px;
+    gap: 0;
+    padding: 14px 16px 14px 18px;
+    overflow: hidden;
+    background:
+      linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(237, 246, 255, 0.78));
+    border: 1px solid rgba(255, 255, 255, 0.84);
+    border-left: 3px solid var(--mw-royal, #1d4ed8);
+    box-shadow: 0 16px 38px rgba(11, 32, 57, 0.18);
+    backdrop-filter: blur(14px) saturate(1.08);
+    -webkit-backdrop-filter: blur(14px) saturate(1.08);
   }
+
   .step-flow-connecting-line {
     display: none;
   }
+
   .map-step-card {
+    display: none;
+    width: 100%;
     max-width: 100%;
+    padding: 0;
+    opacity: 0;
+  }
+
+  .map-step-card.is-active {
+    display: grid;
+    grid-template-columns: 76px minmax(0, 1fr);
+    column-gap: 14px;
+    width: 100%;
     opacity: 1;
+    transform: none;
+  }
+
+  .map-step-card.is-active .step-badge {
+    grid-row: 1 / 4;
+    align-self: stretch;
+    display: grid;
+    min-width: 76px;
+    margin: 0;
+    padding: 7px 10px;
+    place-items: center;
+  }
+
+  .map-step-card.is-active .step-en-sub {
+    margin: 0 0 2px;
+    font-size: 0.66rem;
+  }
+
+  .map-step-card.is-active .step-jp-title {
+    margin-bottom: 3px;
+    font-size: 1.12rem;
+  }
+
+  .map-step-card.is-active .step-desc {
+    font-size: 0.74rem;
+    line-height: 1.5;
   }
 }
 
@@ -3516,23 +3586,731 @@ body.intro-revealed .animated-marker-text {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  z-index: 2;
+  z-index: 1;
   opacity: 0;
   transition: opacity 0.42s cubic-bezier(0.2, 0, 0.2, 1);
   pointer-events: none;
-  mix-blend-mode: multiply;
-  filter: contrast(1.06) brightness(1.02);
-  /* Linear edge-fade for natural top and bottom blending without circular masks */
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.95) 12%, rgba(0, 0, 0, 0.95) 88%, transparent 100%);
-  mask-image: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.95) 12%, rgba(0, 0, 0, 0.95) 88%, transparent 100%);
+  mix-blend-mode: normal;
+  filter: none;
+  will-change: opacity;
 }
 
-/* Smooth Fade-in when active */
-.real-map-section-wrapper[data-phase="sri-lanka"] .srilanka-ocean-video-bg,
-.real-map-section-wrapper.is-step-1 .srilanka-ocean-video-bg,
-.srilanka-ocean-video-bg.is-active,
-.real-map-section-wrapper[data-phase="japan"] .japan-ocean-video-bg,
-.real-map-section-wrapper.is-step-3 .japan-ocean-video-bg,
-.japan-ocean-video-bg.is-active {
-  opacity: 0.65;
+/* JSの再生状態と表示を同期し、停止中・reduced motionでは静的な海色へ戻す。 */
+.real-map-video-bg.is-active {
+  opacity: 0.48;
+}
+
+/* ============================================================
+   MOBILE EXPERIENCE LAYER
+   Desktop visuals remain governed by the existing rules above.
+   ============================================================ */
+.hero-title__line {
+  display: block;
+}
+
+.hero-title__closing {
+  display: inline;
+}
+
+.phone-video-control {
+  position: absolute;
+  z-index: 12;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  width: 52px;
+  height: 52px;
+  padding: 0;
+  place-items: center;
+  color: #fff;
+  background: rgba(2, 31, 84, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 50%;
+  box-shadow: 0 10px 30px rgba(2, 9, 20, 0.38);
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  transition: opacity 180ms ease, background 180ms ease, transform 180ms ease;
+}
+
+.phone-screen.needs-video-action .phone-video-control,
+.phone-video-control:focus-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.phone-video-control:hover {
+  background: rgba(17, 85, 169, 0.96);
+  transform: translate(-50%, -50%) scale(1.06);
+}
+
+@media (max-width: 768px) {
+  html {
+    scroll-padding-top: 88px;
+  }
+
+  :where(
+    #about-section,
+    #news-section,
+    #services-section,
+    #process-section,
+    .contact-hero-section,
+    .faq-hero-section,
+    .news-hero,
+    .company-page-main,
+    .message-page-main,
+    .privacy-page-main
+  ) {
+    scroll-margin-top: 88px;
+  }
+
+  main :where(h1, h2, h3, p) {
+    line-break: strict;
+    overflow-wrap: break-word;
+    text-wrap: pretty;
+  }
+
+  @supports (word-break: auto-phrase) {
+    main :where(h1, h2, h3, p) {
+      word-break: auto-phrase;
+    }
+  }
+
+  .menu-toggle {
+    display: grid;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    place-items: center;
+    flex: 0 0 44px;
+  }
+
+  #mobile-nav a {
+    display: flex;
+    min-height: 48px;
+    align-items: center;
+  }
+
+  /* Hero: retain the typography globe while tightening the mobile composition. */
+  #hero-section {
+    min-height: 100svh;
+    padding: 82px 20px 62px;
+  }
+
+  .hero-inner {
+    align-content: center;
+    gap: 0;
+  }
+
+  .hero-globe-wrap {
+    min-height: 0;
+    margin: 0 0 -12px;
+  }
+
+  .typography-globe {
+    width: min(74vw, 286px);
+    margin: 0 auto;
+  }
+
+  .hero-copy {
+    width: 100%;
+  }
+
+  .hero-title {
+    margin-bottom: 20px;
+    font-size: clamp(2rem, 9.2vw, 2.72rem);
+    line-height: 1.34;
+    letter-spacing: 0;
+  }
+
+  .hero-lead {
+    margin-bottom: 26px;
+    font-size: 0.94rem;
+    line-height: 1.9;
+  }
+
+  .kinetic-bg {
+    bottom: 12px;
+  }
+
+  .kinetic-track span {
+    font-size: clamp(3rem, 15vw, 4.8rem);
+  }
+
+  /* Keep the path as a branded edge detail without crossing mobile copy. */
+  .global-path-wrapper {
+    opacity: 0.34;
+    -webkit-mask-image: linear-gradient(
+      90deg,
+      #000 0,
+      #000 8%,
+      transparent 24%,
+      transparent 76%,
+      #000 92%,
+      #000 100%
+    );
+    mask-image: linear-gradient(
+      90deg,
+      #000 0,
+      #000 8%,
+      transparent 24%,
+      transparent 76%,
+      #000 92%,
+      #000 100%
+    );
+  }
+
+  .global-path path {
+    stroke-width: 54;
+  }
+
+  /* Map: show only the card that belongs to the active scrollytelling phase. */
+  .map-steps-horizontal-flow {
+    position: absolute;
+    right: auto;
+    bottom: 28px;
+    left: 16px;
+    width: min(520px, calc(100% - 32px));
+    max-width: calc(100% - 32px);
+    margin: 0;
+    padding: 16px 18px;
+    flex-direction: column;
+    gap: 0;
+    transform: none;
+    background:
+      linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(237, 246, 255, 0.78));
+    border: 1px solid rgba(255, 255, 255, 0.84);
+    border-left: 3px solid var(--mw-royal, #1d4ed8);
+    box-shadow: 0 18px 42px rgba(11, 32, 57, 0.18);
+    backdrop-filter: blur(14px) saturate(1.08);
+    -webkit-backdrop-filter: blur(14px) saturate(1.08);
+  }
+
+  .map-step-card {
+    display: none;
+    max-width: none;
+    padding: 0;
+    opacity: 0;
+  }
+
+  .map-step-card.is-active {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    column-gap: 14px;
+    opacity: 1;
+    transform: none;
+  }
+
+  .map-step-card.is-active .step-badge {
+    grid-row: 1 / 4;
+    align-self: stretch;
+    display: grid;
+    min-width: 76px;
+    margin: 0;
+    place-items: center;
+  }
+
+  .map-step-card.is-active .step-en-sub {
+    margin: 0 0 2px;
+  }
+
+  .map-step-card.is-active .step-jp-title {
+    margin-bottom: 4px;
+    font-size: 1.16rem;
+  }
+
+  .map-step-card.is-active .step-desc {
+    font-size: 0.75rem;
+    line-height: 1.55;
+  }
+
+  .step-flow-connecting-line {
+    display: none;
+  }
+
+  .map-data-credit {
+    bottom: 4px;
+  }
+
+  /* Activity rail: tactile manual controls with a clean single-card snap. */
+  .activity-rail {
+    margin-top: 50px;
+  }
+
+  .activity-rail__viewport {
+    grid-auto-columns: minmax(272px, 84vw);
+    gap: 14px;
+    padding-bottom: 10px;
+    scroll-padding-inline: 0;
+  }
+
+  .activity-card,
+  .activity-card img {
+    min-height: min(116vw, 430px);
+  }
+
+  .activity-card:hover img {
+    transform: none;
+  }
+
+  .activity-card .marquee-card-overlay {
+    padding: 22px 20px;
+  }
+
+  .activity-rail__navigation {
+    margin-top: 18px;
+  }
+
+  .activity-rail__dots {
+    min-height: 48px;
+    gap: 0;
+    padding: 2px 6px;
+  }
+
+  .activity-rail__dots button,
+  .activity-rail__dots button.is-active,
+  .activity-rail__dots button:hover:not(.is-active) {
+    position: relative;
+    width: 44px;
+    height: 44px;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .activity-rail__dots button::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 14px;
+    height: 4px;
+    background: rgba(11, 32, 57, 0.22);
+    transform: translate(-50%, -50%);
+    transition: width 300ms ease, background 300ms ease, box-shadow 300ms ease;
+  }
+
+  .activity-rail__dots button.is-active::before {
+    width: 30px;
+    background: linear-gradient(90deg, var(--mw-royal), var(--mw-gold));
+    box-shadow: 0 0 12px rgba(2, 132, 199, 0.3);
+  }
+
+  /* Services: preserve the visual rhythm with consistent mobile hierarchy. */
+  .service-showcase-list {
+    gap: 68px;
+    margin-top: 58px;
+  }
+
+  .service-showcase-item.split,
+  .service-showcase-item.split-reverse {
+    gap: 28px;
+  }
+
+  .service-showcase-item .service-text {
+    order: 1;
+    padding: 0;
+  }
+
+  .service-showcase-item .service-visual,
+  .service-showcase-item.split-reverse .service-visual {
+    order: 2;
+  }
+
+  .service-title {
+    margin-bottom: 16px;
+    font-size: clamp(1.82rem, 8vw, 2.25rem);
+  }
+
+  .service-desc {
+    margin-bottom: 22px;
+    font-size: 0.96rem;
+    line-height: 1.9;
+  }
+
+  .glass-card-large.service-image-card {
+    min-height: 0;
+    aspect-ratio: 4 / 3;
+  }
+
+  /* Creative: keep the effects, but let the phone/video lead the composition. */
+  .service-showcase-item--creative {
+    --creative-text-reveal-progress: 1;
+    --creative-phone-flip-progress: 1;
+    --creative-scroll-progress: 1;
+    grid-template-columns: 1fr !important;
+    padding: 52px 20px 64px !important;
+    overflow: hidden !important;
+    background: #061730;
+  }
+
+  .service-showcase-item--creative .creative-dissolve-overlay {
+    opacity: 1 !important;
+    background:
+      radial-gradient(circle at 72% 60%, rgba(2, 132, 199, 0.38), transparent 46%),
+      radial-gradient(circle at 12% 16%, rgba(245, 156, 26, 0.20), transparent 32%),
+      linear-gradient(165deg, #101344 0%, #082758 52%, #061730 100%);
+  }
+
+  .service-showcase-item--creative .service-text.lens-projected-text {
+    width: 100%;
+    max-width: none;
+    transform: none !important;
+    transform-origin: center;
+    opacity: 1 !important;
+    filter: none !important;
+    will-change: auto;
+  }
+
+  .service-showcase-item--creative .service-title {
+    margin-bottom: 16px;
+    font-size: clamp(2.35rem, 12vw, 3.35rem);
+  }
+
+  .service-showcase-item--creative .service-desc {
+    margin-top: 18px;
+    font-size: 0.95rem;
+    line-height: 1.88;
+  }
+
+  .interactive-invert-box .text-spotlight-lens {
+    display: none;
+  }
+
+  .creative-marquee-bg {
+    inset: -12% -120%;
+    gap: 18px;
+    opacity: 0.13;
+    transform: rotate(-4deg);
+  }
+
+  .creative-marquee-track {
+    font-size: clamp(2rem, 12vw, 3.2rem);
+  }
+
+  .creative-aurora__glow {
+    width: 105vw;
+    height: 105vw;
+    opacity: 0.22;
+    filter: blur(68px);
+  }
+
+  .creative-devices-stage {
+    display: grid;
+    order: 2;
+    min-height: 500px;
+    margin: 20px 0 0;
+    align-items: center;
+    justify-content: center;
+    place-items: center;
+    perspective: 900px;
+  }
+
+  .creative-phone-3d,
+  .creative-phone-3d:hover {
+    left: clamp(24px, 7vw, 30px);
+    z-index: 12;
+    width: 210px;
+    height: 420px;
+    margin: 0;
+    transform: rotateY(-4deg) rotateX(3deg) rotateZ(1deg);
+    animation: mobilePhoneFloat 6.4s ease-in-out infinite alternate;
+  }
+
+  .creative-phone-3d .phone-body {
+    padding: 8px;
+    border-width: 3px;
+    border-radius: 36px;
+  }
+
+  .creative-phone-3d .phone-screen {
+    border-radius: 28px;
+  }
+
+  .creative-phone-3d .phone-notch {
+    top: 13px;
+    width: 70px;
+    height: 19px;
+  }
+
+  .creative-camera-real-3d,
+  .creative-camera-real-3d:hover {
+    top: 68%;
+    left: max(0px, calc(50% - 210px));
+    z-index: 9;
+    width: clamp(112px, 31vw, 140px);
+    height: clamp(112px, 31vw, 140px);
+    transform: translateY(-50%) rotateY(10deg) rotateX(-3deg) rotateZ(-5deg);
+    animation: mobileCameraFloat 7.2s ease-in-out infinite alternate;
+  }
+
+  .creative-camera-real-3d .camera-lens-beam {
+    display: none;
+  }
+
+  .creative-camera-real-3d .camera-lens-flare {
+    top: 34%;
+    left: 17%;
+    width: 52px;
+    height: 52px;
+    filter: blur(7px);
+  }
+
+  .phone-video-control,
+  .phone-video-control:hover {
+    top: auto;
+    right: 12px;
+    bottom: 12px;
+    left: auto;
+    width: 44px;
+    height: 44px;
+    opacity: 0.68;
+    pointer-events: auto;
+    transform: none;
+  }
+
+  .phone-screen.is-video-paused .phone-video-control {
+    opacity: 1;
+  }
+
+  .phone-screen.needs-video-action .phone-video-control {
+    top: 50%;
+    right: auto;
+    bottom: auto;
+    left: 50%;
+    width: 58px;
+    height: 58px;
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+
+  @keyframes mobilePhoneFloat {
+    from { transform: translateY(4px) rotateY(-4deg) rotateX(3deg) rotateZ(1deg); }
+    to { transform: translateY(-7px) rotateY(-2deg) rotateX(2deg) rotateZ(0deg); }
+  }
+
+  @keyframes mobileCameraFloat {
+    from { transform: translateY(-50%) translateY(4px) rotateY(10deg) rotateX(-3deg) rotateZ(-5deg); }
+    to { transform: translateY(-50%) translateY(-5px) rotateY(7deg) rotateX(-1deg) rotateZ(-3deg); }
+  }
+
+  /* Process, CTA and footer: preserve branding, fix mobile spacing and overlap. */
+  #process-section.sticky-scroll-section {
+    padding: 76px 0 84px;
+  }
+
+  #process-section .journey-panel.intro-panel {
+    scroll-margin-top: 96px;
+  }
+
+  #process-section .horizontal-scroll-track {
+    gap: 28px;
+  }
+
+  #process-section .card-image-placeholder,
+  #process-section .card-image-wrap {
+    height: min(56vw, 210px);
+    min-height: min(56vw, 210px);
+    flex-basis: min(56vw, 210px);
+  }
+
+  .home-contact-wrap {
+    padding: 50px 0 0;
+  }
+
+  .contact-cta__content {
+    padding: 42px 24px 38px;
+  }
+
+  .contact-cta__trust {
+    margin-top: 26px;
+  }
+
+  .contact-cta__trust li {
+    min-height: 52px;
+    padding: 11px 13px;
+    font-size: 0.88rem;
+  }
+
+  .contact-cta__actions {
+    margin-top: 30px;
+  }
+
+  .contact-cta__visual {
+    height: min(88vw, 340px);
+    min-height: min(88vw, 340px);
+  }
+
+  .contact-cta__wordmark {
+    bottom: 28%;
+    font-size: 28vw;
+    opacity: 0.42;
+  }
+
+  .footer-nav {
+    row-gap: 28px;
+  }
+
+  .footer-col a {
+    display: flex;
+    min-height: 44px;
+    align-items: center;
+    padding-block: 5px;
+  }
+
+  .footer-social-icon {
+    width: 44px;
+    height: 44px;
+  }
+
+  .footer-legal a {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+  }
+
+  .form-control {
+    min-height: 50px;
+    font-size: 1rem;
+  }
+
+  textarea.form-control {
+    min-height: 150px;
+  }
+
+  .btn-submit {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .checkbox-label {
+    align-items: flex-start;
+    min-height: 44px;
+  }
+
+  .checkbox-label input[type="checkbox"] {
+    width: 22px;
+    height: 22px;
+    margin-top: 3px;
+    flex: 0 0 22px;
+  }
+}
+
+@media (max-width: 370px) {
+  .hero-title__closing {
+    display: block;
+    width: max-content;
+    margin-top: 0.04em;
+  }
+
+  .hero-title {
+    font-size: clamp(1.92rem, 9.1vw, 2.12rem);
+  }
+
+  .typography-globe {
+    width: min(70vw, 250px);
+  }
+
+  .creative-phone-3d,
+  .creative-phone-3d:hover {
+    left: 34px;
+  }
+
+  .activity-rail__viewport {
+    grid-auto-columns: minmax(260px, 86vw);
+  }
+
+}
+
+/* PROCESS mobile: one full-width card per viewport-sized step. */
+@media (max-width: 900px) {
+  #process-section .horizontal-scroll-track {
+    gap: 0;
+  }
+
+  #process-section .journey-panel.step-panel {
+    min-height: calc(100svh - 76px);
+    padding-left: 0;
+    align-items: center;
+    justify-content: center;
+    scroll-margin-top: 76px;
+  }
+
+  #process-section .step-panel::before {
+    top: 0;
+    bottom: 0;
+    left: -8px;
+  }
+
+  #process-section .step-panel::after {
+    top: 50%;
+    left: -14px;
+    transform: translateY(-50%);
+  }
+
+  #process-section .step-panel:last-child::before {
+    bottom: 50%;
+  }
+
+  #process-section .glass-card,
+  #process-section .step-panel .glass-card {
+    width: 100%;
+    max-width: none;
+    height: auto;
+  }
+
+  #process-section .card-image-placeholder,
+  #process-section .card-image-wrap {
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    aspect-ratio: 4 / 3;
+    flex-basis: auto;
+  }
+
+  #process-section .flow-card-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: none;
+  }
+
+  #process-section .glass-card:hover .flow-card-img {
+    transform: none;
+  }
+
+  #process-section [data-process-step="1"] .flow-card-img {
+    object-position: 50% 48%;
+  }
+
+  #process-section [data-process-step="2"] .flow-card-img {
+    object-position: 50% 54%;
+  }
+
+  #process-section [data-process-step="3"] .flow-card-img {
+    object-position: 50% 45%;
+  }
+
+  #process-section [data-process-step="4"] .flow-card-img {
+    object-position: 50% 46%;
+  }
+
+  #process-section [data-process-step="5"] .flow-card-img {
+    object-position: 50% 50%;
+  }
+}
+
+@media (max-width: 768px) and (prefers-reduced-motion: reduce) {
+  .creative-phone-3d,
+  .creative-camera-real-3d {
+    animation: none !important;
+  }
+
+  .activity-rail__viewport {
+    scroll-behavior: auto;
+  }
+
+  .activity-rail__dots button::before,
+  .phone-video-control {
+    transition: none;
+  }
 }

@@ -42,11 +42,14 @@ export const Home: FC = () => {
           <div class="hero-inner">
             <div class="hero-copy reveal">
               <h1 class="hero-title">
-                国境を越えて、<br />
-                <span class="animated-marker-wrap">
-                  <span class="animated-marker-bg"></span>
-                  <span class="animated-marker-text">可能性は</span>
-                </span>つながる。
+                <span class="hero-title__line">国境を越えて、</span>
+                <span class="hero-title__line hero-title__line--closing">
+                  <span class="animated-marker-wrap">
+                    <span class="animated-marker-bg"></span>
+                    <span class="animated-marker-text">可能性は</span>
+                  </span>
+                  <span class="hero-title__closing">つながる。</span>
+                </span>
               </h1>
               <p class="hero-lead">
                 スリランカと日本をつなぎ、<br />
@@ -88,11 +91,12 @@ export const Home: FC = () => {
                 {/* Cinematic Ocean Video Overlay (Plays during Sri Lanka / Step 01 Phase) */}
                 <video
                   id="srilanka-ocean-video"
-                  class="srilanka-ocean-video-bg"
-                  autoplay
+                  class="real-map-video-bg srilanka-ocean-video-bg"
+                  preload="metadata"
                   loop
                   muted
                   playsinline
+                  disablepictureinpicture
                   aria-hidden="true"
                 >
                   <source src="/static/videos/srilanka-education-bg.mp4" type="video/mp4" />
@@ -101,11 +105,12 @@ export const Home: FC = () => {
                 {/* Cinematic Ocean Video Overlay (Plays during Japan / Step 03 Phase) */}
                 <video
                   id="japan-ocean-video"
-                  class="japan-ocean-video-bg"
-                  autoplay
+                  class="real-map-video-bg japan-ocean-video-bg"
+                  preload="metadata"
                   loop
                   muted
                   playsinline
+                  disablepictureinpicture
                   aria-hidden="true"
                 >
                   <source src="/static/videos/japan-work-bg.mp4" type="video/mp4" />
@@ -156,6 +161,8 @@ export const Home: FC = () => {
                   Map: <a href="https://openfreemap.org/" target="_blank" rel="noopener noreferrer">OpenFreeMap</a>
                   <span aria-hidden="true"> · </span>
                   Boundaries: <a href="https://www.geoboundaries.org/" target="_blank" rel="noopener noreferrer">geoBoundaries</a>
+                  <span aria-hidden="true"> · </span>
+                  Land: <a href="https://www.naturalearthdata.com/" target="_blank" rel="noopener noreferrer">Natural Earth</a>
                 </div>
               </div>
             </div>
@@ -440,6 +447,17 @@ export const Home: FC = () => {
                           <source src="/static/videos/vertical-promo-video.mp4" type="video/mp4" />
                           <source src="/static/videos/vertical-promo-video.mov" type="video/quicktime" />
                         </video>
+                        <button
+                          type="button"
+                          class="phone-video-control"
+                          aria-label="Creative動画を一時停止"
+                          aria-pressed="false"
+                        >
+                          <i class="fas fa-pause" aria-hidden="true"></i>
+                        </button>
+                        <span class="sr-only phone-video-status" aria-live="polite">
+                          Creative動画を再生しています
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -472,7 +490,7 @@ export const Home: FC = () => {
               </div>
 
               {/* Step 1 */}
-              <div class="journey-panel step-panel">
+              <div class="journey-panel step-panel" data-process-step="1">
                 <div class="watermark-num" data-speed="0.8">
                   01
                 </div>
@@ -491,7 +509,7 @@ export const Home: FC = () => {
               </div>
 
               {/* Step 2 */}
-              <div class="journey-panel step-panel">
+              <div class="journey-panel step-panel" data-process-step="2">
                 <div class="watermark-num" data-speed="0.8">
                   02
                 </div>
@@ -510,7 +528,7 @@ export const Home: FC = () => {
               </div>
 
               {/* Step 3 */}
-              <div class="journey-panel step-panel">
+              <div class="journey-panel step-panel" data-process-step="3">
                 <div class="watermark-num" data-speed="0.8">
                   03
                 </div>
@@ -529,7 +547,7 @@ export const Home: FC = () => {
               </div>
 
               {/* Step 4 */}
-              <div class="journey-panel step-panel">
+              <div class="journey-panel step-panel" data-process-step="4">
                 <div class="watermark-num" data-speed="0.8">
                   04
                 </div>
@@ -548,7 +566,7 @@ export const Home: FC = () => {
               </div>
 
               {/* Step 5 */}
-              <div class="journey-panel step-panel end-panel">
+              <div class="journey-panel step-panel end-panel" data-process-step="5">
                 <div class="watermark-num" data-speed="0.8">
                   05
                 </div>
