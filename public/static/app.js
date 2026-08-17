@@ -169,24 +169,54 @@
     const centerX = 500;
     const centerY = 500;
     
-    let baseTiltX = -0.28; 
-    let baseTiltZ = -0.12;
+    let baseTiltX = -0.26; 
+    let baseTiltZ = -0.10;
     let targetTiltX = baseTiltX;
+    let targetYawY = 0;
     let targetTiltZ = baseTiltZ;
     let currentTiltX = baseTiltX;
+    let currentYawY = 0;
     let currentTiltZ = baseTiltZ;
-    let tiltCosX = Math.cos(currentTiltX);
-    let tiltSinX = Math.sin(currentTiltX);
-    let tiltCosZ = Math.cos(currentTiltZ);
-    let tiltSinZ = Math.sin(currentTiltZ);
+    let targetShiftX = 0;
+    let targetShiftY = 0;
+    let currentShiftX = 0;
+    let currentShiftY = 0;
+
+    let cosX = Math.cos(currentTiltX), sinX = Math.sin(currentTiltX);
+    let cosY = Math.cos(currentYawY), sinY = Math.sin(currentYawY);
+    let cosZ = Math.cos(currentTiltZ), sinZ = Math.sin(currentTiltZ);
 
     const globeReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
     if (!globeReducedMotion.matches) {
+      // Global smooth window cursor tracking with distinct 3D pitch/yaw/roll response
       window.addEventListener('mousemove', (e) => {
         const x = (e.clientX / window.innerWidth) * 2 - 1;
         const y = (e.clientY / window.innerHeight) * 2 - 1;
-        targetTiltZ = baseTiltZ + (x * 0.08);
-        targetTiltX = baseTiltX + (y * 0.08);
+        targetTiltX = baseTiltX + (y * 0.42);
+        targetYawY = x * 0.52;
+        targetTiltZ = baseTiltZ + (x * 0.20);
+        targetShiftX = x * 34;
+        targetShiftY = y * 24;
+      }, { passive: true });
+
+      // Direct high-precision hover over the typography globe canvas
+      canvas.addEventListener('mousemove', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const localX = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+        const localY = ((e.clientY - rect.top) / rect.height) * 2 - 1;
+        targetTiltX = baseTiltX + (localY * 0.50);
+        targetYawY = localX * 0.65;
+        targetTiltZ = baseTiltZ + (localX * 0.24);
+        targetShiftX = localX * 42;
+        targetShiftY = localY * 30;
+      }, { passive: true });
+
+      window.addEventListener('mouseleave', () => {
+        targetTiltX = baseTiltX;
+        targetYawY = 0;
+        targetTiltZ = baseTiltZ;
+        targetShiftX = 0;
+        targetShiftY = 0;
       }, { passive: true });
     }
     const fontFamily = "'Outfit', 'Noto Sans JP', sans-serif";
@@ -360,11 +390,20 @@
     }, { passive: true });
 
     function applyTilt(x, y, z, target) {
-      const y1 = y * tiltCosX - z * tiltSinX;
-      const z1 = y * tiltSinX + z * tiltCosX;
-      target.x = x * tiltCosZ - y1 * tiltSinZ;
-      target.y = x * tiltSinZ + y1 * tiltCosZ;
-      target.z = z1;
+      // 1. Yaw rotation (around Y axis - responds directly to horizontal mouse movement)
+      const x1 = x * cosY + z * sinY;
+      const y1 = y;
+      const z1 = -x * sinY + z * cosY;
+
+      // 2. Pitch rotation (around X axis - responds to vertical mouse movement)
+      const x2 = x1;
+      const y2 = y1 * cosX - z1 * sinX;
+      const z2 = y1 * sinX + z1 * cosX;
+
+      // 3. Roll rotation (around Z axis - natural banking tilt)
+      target.x = x2 * cosZ - y2 * sinZ;
+      target.y = x2 * sinZ + y2 * cosZ;
+      target.z = z2;
       return target;
     }
 
@@ -393,13 +432,19 @@
       const revealElapsed = Number.POSITIVE_INFINITY;
 
       if (!globeReducedMotion.matches) {
-        currentTiltX += (targetTiltX - currentTiltX) * 0.035;
-        currentTiltZ += (targetTiltZ - currentTiltZ) * 0.035;
+        const lerpFactor = 0.08;
+        currentTiltX += (targetTiltX - currentTiltX) * lerpFactor;
+        currentYawY += (targetYawY - currentYawY) * lerpFactor;
+        currentTiltZ += (targetTiltZ - currentTiltZ) * lerpFactor;
+        currentShiftX += (targetShiftX - currentShiftX) * lerpFactor;
+        currentShiftY += (targetShiftY - currentShiftY) * lerpFactor;
       }
-      tiltCosX = Math.cos(currentTiltX);
-      tiltSinX = Math.sin(currentTiltX);
-      tiltCosZ = Math.cos(currentTiltZ);
-      tiltSinZ = Math.sin(currentTiltZ);
+      cosX = Math.cos(currentTiltX);
+      sinX = Math.sin(currentTiltX);
+      cosY = Math.cos(currentYawY);
+      sinY = Math.sin(currentYawY);
+      cosZ = Math.cos(currentTiltZ);
+      sinZ = Math.sin(currentTiltZ);
 
       // Smooth progress from the integrated journey system
       const rawScrollP = Number(window.__MIRAI_SCROLL_P) || Number(window.__MIRAI_MORPH_PROGRESS) || 0;
@@ -432,6 +477,9 @@
       ctx.clearRect(0, 0, logicalWidth, logicalHeight);
       canvasHasContent = true;
 
+      const effCenterX = centerX + currentShiftX;
+      const effCenterY = centerY + currentShiftY;
+
       // One pre-rasterized radial sprite replaces hundreds of per-glyph blur
       // operations while retaining the same cosmic blue aura.
       const globeGlowAlpha = masterAlpha * (1 - dawnProgress) * (0.32 + assemblyProgress * 0.48);
@@ -442,8 +490,8 @@
         ctx.globalAlpha = globeGlowAlpha;
         ctx.drawImage(
           globeGlowCanvas,
-          centerX - glowSize / 2,
-          centerY - glowSize / 2,
+          effCenterX - glowSize / 2,
+          effCenterY - glowSize / 2,
           glowSize,
           glowSize
         );
@@ -477,8 +525,8 @@
         const U_tilt = applyTilt(Ux, Uy, Uz, item.up);
 
         const scale = fov / Math.max(10, fov + P_tilt.z);
-        item.x = centerX + P_tilt.x * scale;
-        item.y = centerY + P_tilt.y * scale;
+        item.x = effCenterX + P_tilt.x * scale;
+        item.y = effCenterY + P_tilt.y * scale;
         item.z = P_tilt.z;
         item.scale = scale;
         item.Tx = T_tilt.x;
