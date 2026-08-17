@@ -430,7 +430,6 @@ export const Home: FC = () => {
                           class="phone-video"
                         >
                           <source src="/static/videos/vertical-promo-video.mp4" type="video/mp4" />
-                          <source src="/static/videos/vertical-promo-video.mov" type="video/quicktime" />
                         </video>
                         <button
                           type="button"
