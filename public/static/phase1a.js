@@ -13,6 +13,7 @@
     const dots = Array.from(rail.querySelectorAll('[data-rail-dot]'));
     const status = rail.querySelector('[data-rail-status]');
     const desktopQuery = window.matchMedia('(min-width: 1024px)');
+    const mobileDesignQuery = window.matchMedia('(max-width: 768px)');
     if (!viewport || !slides.length) return;
 
     let currentIndex = 0;
@@ -63,7 +64,7 @@
 
     const startAutoPlay = () => {
       stopAutoPlay();
-      if (prefersReducedMotion.matches) return;
+      if (prefersReducedMotion.matches || mobileDesignQuery.matches) return;
       autoPlayTimer = setInterval(() => {
         changeSlide(1);
       }, 5000);
@@ -195,6 +196,13 @@
     };
 
     desktopQuery.addEventListener('change', syncMode);
+    mobileDesignQuery.addEventListener('change', () => {
+      if (mobileDesignQuery.matches) {
+        stopAutoPlay();
+      } else {
+        startAutoPlay();
+      }
+    });
     syncMode();
   });
 
@@ -444,6 +452,7 @@
   (function initCreativeInteraction() {
     const item = document.querySelector('.service-showcase-item--creative');
     if (!item) return;
+    const mobileDesignQuery = window.matchMedia('(max-width: 768px)');
 
     let mouseX = 70;
     let mouseY = 50;
@@ -485,7 +494,9 @@
       // Triggers start at rect.top = 82% window height, and reach 100% completion exactly when section is fully centered at rect.top = 28% window height
       const startPoint = windowHeight * 0.82;
       const endPoint = windowHeight * 0.28;
-      const centerSyncProgress = Math.max(0, Math.min(1, (startPoint - rect.top) / (startPoint - endPoint)));
+      const centerSyncProgress = mobileDesignQuery.matches
+        ? 1
+        : Math.max(0, Math.min(1, (startPoint - rect.top) / (startPoint - endPoint)));
 
       item.style.setProperty('--creative-scroll-progress', centerSyncProgress.toFixed(3));
       item.style.setProperty('--creative-phone-flip-progress', centerSyncProgress.toFixed(3));
@@ -566,6 +577,86 @@
       mouseY = 50;
       scheduleUpdate();
     });
+  })();
+
+  /* ---------- CREATIVE PHONE VIDEO PLAYBACK RECOVERY ---------- */
+  (function initCreativePhoneVideo() {
+    const video = document.querySelector('.phone-video');
+    const screen = video?.closest('.phone-screen');
+    const control = screen?.querySelector('.phone-video-control');
+    const status = screen?.querySelector('.phone-video-status');
+    if (!video || !screen || !control) return;
+
+    let isInView = false;
+    let userPaused = false;
+
+    video.muted = true;
+    video.defaultMuted = true;
+    video.autoplay = true;
+    video.loop = true;
+    video.playsInline = true;
+
+    const updateControl = (state) => {
+      const isPlaying = state === 'playing';
+      const needsAction = state === 'blocked' || state === 'error';
+      const icon = control.querySelector('i');
+
+      screen.classList.toggle('is-video-playing', isPlaying);
+      screen.classList.toggle('is-video-paused', state === 'paused');
+      screen.classList.toggle('needs-video-action', needsAction);
+      control.setAttribute('aria-pressed', String(isPlaying));
+      control.setAttribute('aria-label', isPlaying ? 'Creative動画を一時停止' : 'Creative動画を再生');
+      if (icon) icon.className = isPlaying ? 'fas fa-pause' : 'fas fa-play';
+      if (status) {
+        status.textContent = isPlaying
+          ? 'Creative動画を再生しています'
+          : needsAction
+            ? 'Creative動画は停止しています。再生ボタンで再生できます'
+            : 'Creative動画を一時停止しています';
+      }
+    };
+
+    const attemptPlay = () => {
+      if (!isInView || userPaused || document.visibilityState === 'hidden') return;
+      video.muted = true;
+      const playPromise = video.play();
+      if (playPromise && typeof playPromise.catch === 'function') {
+        playPromise
+          .then(() => updateControl('playing'))
+          .catch(() => updateControl('blocked'));
+      }
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        isInView = entry.isIntersecting && entry.intersectionRatio >= 0.2;
+        if (isInView) attemptPlay();
+      });
+    }, { threshold: [0, 0.2, 0.55] });
+
+    observer.observe(screen);
+
+    video.addEventListener('playing', () => updateControl('playing'));
+    video.addEventListener('pause', () => updateControl(userPaused ? 'paused' : 'blocked'));
+    video.addEventListener('canplay', attemptPlay);
+    video.addEventListener('error', () => updateControl('error'));
+
+    control.addEventListener('click', () => {
+      if (video.paused) {
+        userPaused = false;
+        attemptPlay();
+      } else {
+        userPaused = true;
+        video.pause();
+      }
+    });
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') attemptPlay();
+    });
+    window.addEventListener('pageshow', attemptPlay);
+
+    updateControl(video.paused ? 'blocked' : 'playing');
   })();
 
   /* ---------- FOOTER WORDMARK SCROLL-DRIVEN REALTIME SYNC ---------- */

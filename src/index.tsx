@@ -7,6 +7,8 @@ import { FAQPage } from './pages/FAQPage'
 import { CompanyPage } from './pages/CompanyPage'
 import { MessagePage } from './pages/MessagePage'
 import { NewsPage } from './pages/NewsPage'
+import { EducationPage } from './pages/EducationPage'
+import { RetentionPage } from './pages/RetentionPage'
 
 const app = new Hono()
 
@@ -98,6 +100,15 @@ app.get('/vision', (c) => {
 // ---- お知らせ・ニュース一覧 (News) ページ ----
 app.get('/news', (c) => {
   return c.html(<NewsPage />)
+})
+
+// ---- サービス詳細ページ ----
+app.get('/services/education', (c) => {
+  return c.html(<EducationPage />)
+})
+
+app.get('/services/retention', (c) => {
+  return c.html(<RetentionPage />)
 })
 
 export default app

@@ -2,7 +2,7 @@ import type { FC } from 'hono/jsx'
 import { LogoMark } from './LogoMark'
 
 interface HeaderProps {
-  activePage?: 'home' | 'message' | 'company' | 'contact' | 'news' | 'faq'
+  activePage?: 'home' | 'message' | 'company' | 'contact' | 'news' | 'faq' | 'services'
 }
 
 export const Header: FC<HeaderProps> = ({ activePage = 'home' }) => {
@@ -14,7 +14,7 @@ export const Header: FC<HeaderProps> = ({ activePage = 'home' }) => {
         </a>
         <nav id="global-nav" aria-label="グローバルナビゲーション">
           <a href="/message" class={activePage === 'message' ? 'is-active' : ''}>ビジョン</a>
-          <a href="/#services-section">事業内容</a>
+          <a href="/#services-section" class={activePage === 'services' ? 'is-active' : ''}>事業内容</a>
           <a href="/company" class={activePage === 'company' ? 'is-active' : ''}>会社情報</a>
           <a href="/news" class={activePage === 'news' ? 'is-active' : ''}>ニュース</a>
         </nav>
@@ -38,7 +38,9 @@ export const Header: FC<HeaderProps> = ({ activePage = 'home' }) => {
       </div>
       <nav id="mobile-nav" aria-label="モバイルナビゲーション">
         <a href="/message">ビジョン</a>
-        <a href="/#services-section">事業内容</a>
+        <a href="/#services-section" class={activePage === 'services' ? 'is-active' : ''}>事業内容</a>
+        <a href="/services/education" class="mobile-service-link">日本語・技能教育</a>
+        <a href="/services/retention" class="mobile-service-link">受け入れ・定着支援</a>
         <a href="/company">会社情報</a>
         <a href="/news">ニュース</a>
         <a href="/faq" class={activePage === 'faq' ? 'is-active' : ''}>よくあるご質問</a>

@@ -2,6 +2,15 @@
 (function () {
   'use strict';
 
+  if (typeof history !== 'undefined' && 'scrollRestoration' in history) {
+    history.scrollRestoration = 'manual';
+  }
+  try {
+    window.scrollTo(0, 0);
+  } catch (_) {}
+  window.addEventListener('beforeunload', () => { try { window.scrollTo(0, 0); } catch (_) {} });
+  window.addEventListener('pageshow', () => { try { window.scrollTo(0, 0); } catch (_) {} });
+
   /* Helper: Debounce */
   function debounce(func, wait) {
     let timeout;
@@ -113,6 +122,10 @@
       if (icon) {
         icon.className = isOpen ? 'fas fa-xmark' : 'fas fa-bars';
       }
+      if (isOpen && window.matchMedia('(max-width: 768px)').matches) {
+        const firstLink = mobileNav.querySelector('a');
+        if (firstLink) window.requestAnimationFrame(() => firstLink.focus());
+      }
     });
     mobileNav.querySelectorAll('a').forEach((a) =>
       a.addEventListener('click', () => {
@@ -139,11 +152,12 @@
   );
   document.querySelectorAll('.reveal, .reveal-glow').forEach((el) => observer.observe(el));
 
-  /* ---------- Canvas 3D Typography Globe Engine (Optimized with IntersectionObserver) ---------- */
+  /* ---------- Canvas 3D Typography Globe Engine (Refined Transition: Eclipse Corona + Stardust Dissolve + Arc Pulse) ---------- */
   const canvas = document.getElementById('typography-globe-canvas');
   if (canvas) {
-    const ctx = canvas.getContext('2d');
-    const dpr = window.devicePixelRatio || 1;
+    const ctx = canvas.getContext('2d', { alpha: true, desynchronized: true });
+    const compactGlobe = window.innerWidth <= 900;
+    const dpr = Math.min(window.devicePixelRatio || 1, compactGlobe ? 1 : 1.25);
     const logicalWidth = 1000;
     const logicalHeight = 1000;
     
@@ -161,6 +175,10 @@
     let targetTiltZ = baseTiltZ;
     let currentTiltX = baseTiltX;
     let currentTiltZ = baseTiltZ;
+    let tiltCosX = Math.cos(currentTiltX);
+    let tiltSinX = Math.sin(currentTiltX);
+    let tiltCosZ = Math.cos(currentTiltZ);
+    let tiltSinZ = Math.sin(currentTiltZ);
 
     const globeReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
     if (!globeReducedMotion.matches) {
@@ -172,6 +190,7 @@
       }, { passive: true });
     }
     const fontFamily = "'Outfit', 'Noto Sans JP', sans-serif";
+    const cosmicTypeColors = ['#b9d7ff', '#8fbaff', '#6fa2ff', '#4f86f7'];
     
     const bands = [
       { text: "MiraiWay · Opportunity · Growth · ", lat: 1.35, fontSize: 16, color: "#98BCDE", speed: 0.0015, weight: 500 },
@@ -212,28 +231,56 @@
         const dirX = Math.cos(band.lat) * Math.cos(angleRad);
         const dirY = Math.sin(band.lat);
         const dirZ = Math.cos(band.lat) * Math.sin(angleRad);
-        const spreadDist = 750 + Math.random() * 1100;
+
+        const baseColorInt = Number.parseInt(band.color.slice(1), 16);
+        const cosmicColor = cosmicTypeColors[bandIndex % cosmicTypeColors.length];
+        const cosmicColorInt = Number.parseInt(cosmicColor.slice(1), 16);
 
         points.push({
           char: char,
           angle: angle,
           baseY: y,
           baseR: r,
+          lat: band.lat,
           fontSize: band.fontSize,
           color: band.color,
+          baseRgb: [(baseColorInt >> 16) & 255, (baseColorInt >> 8) & 255, baseColorInt & 255],
+          cosmicRgb: [(cosmicColorInt >> 16) & 255, (cosmicColorInt >> 8) & 255, cosmicColorInt & 255],
           weight: band.weight,
           speed: band.speed,
           bandIndex,
           revealDelay: Math.abs(band.lat) * 390,
-          // High-Velocity 3D Dispersion Physics & Spin
-          disperseVx: dirX * spreadDist + (Math.random() - 0.5) * 450,
-          disperseVy: dirY * spreadDist + (Math.random() - 0.5) * 550,
-          disperseVz: dirZ * spreadDist + (Math.random() - 0.5) * 650,
-          spinAngle: (Math.random() - 0.5) * Math.PI * 7.5
+          dirX, dirY, dirZ
         });
         currentX += charWidth + tracking;
       }
     });
+
+    // Reuse projection records every frame. This avoids creating and
+    // collecting thousands of short-lived objects while the planet rotates.
+    const projectionItems = points.map((point) => ({
+      point,
+      p3d: { x: 0, y: 0, z: 0 },
+      tangent: { x: 0, y: 0, z: 0 },
+      up: { x: 0, y: 0, z: 0 },
+      x: 0,
+      y: 0,
+      z: 0,
+      scale: 1,
+      Tx: 0,
+      Ty: 0,
+      Ux: 0,
+      Uy: 0,
+      fontSize: point.fontSize,
+      color: point.color,
+      baseRgb: point.baseRgb,
+      cosmicRgb: point.cosmicRgb,
+      bandIndex: point.bandIndex,
+      weight: point.weight,
+      isBack: false,
+      reveal: 1
+    }));
+    const renderList = projectionItems.slice();
 
     let time = 0;
     let isGlobeVisible = false;
@@ -241,159 +288,295 @@
     let firstFrameRendered = false;
     let targetDisperseProgress = 0;
     let currentDisperseProgress = 0;
+    let previousGlobeFrame = null;
+    let lastGlobeRenderAt = 0;
+    let canvasHasContent = false;
+    const globeFrameInterval = globeReducedMotion.matches ? 1000 / 20 : (compactGlobe ? 1000 / 45 : 0);
     const globeElement = canvas.closest('.typography-globe');
+    const hasIntegratedJourney = Boolean(document.getElementById('hero-journey-section'));
 
-    // Scroll listener for 3D text scattering dispersion progress
+    // Canvas fillText + shadowBlur is exceptionally expensive when repeated
+    // hundreds of times per frame. Rasterize each unique glyph/color once and
+    // reuse the bitmap while preserving the same 3D transforms and colors.
+    const glyphSpriteCache = new Map();
+    const glyphMeasureCanvas = document.createElement('canvas');
+    const glyphMeasureCtx = glyphMeasureCanvas.getContext('2d');
+    const glyphDpr = Math.min(dpr, 1.5);
+    const globeGlowCanvas = document.createElement('canvas');
+    globeGlowCanvas.width = 512;
+    globeGlowCanvas.height = 512;
+    const globeGlowCtx = globeGlowCanvas.getContext('2d', { alpha: true });
+    const globeGlowGradient = globeGlowCtx.createRadialGradient(256, 256, 8, 256, 256, 250);
+    globeGlowGradient.addColorStop(0, 'rgba(116, 166, 255, 0.32)');
+    globeGlowGradient.addColorStop(0.36, 'rgba(74, 126, 238, 0.2)');
+    globeGlowGradient.addColorStop(0.68, 'rgba(31, 67, 154, 0.08)');
+    globeGlowGradient.addColorStop(1, 'rgba(10, 26, 70, 0)');
+    globeGlowCtx.fillStyle = globeGlowGradient;
+    globeGlowCtx.fillRect(0, 0, 512, 512);
+
+    function getGlyphSprite(point, variant) {
+      const cacheKey = `${point.bandIndex}:${point.char}:${variant}`;
+      const cached = glyphSpriteCache.get(cacheKey);
+      if (cached) return cached;
+
+      const rgb = variant === 'base' ? point.baseRgb : point.cosmicRgb;
+      const color = `rgb(${rgb[0]} ${rgb[1]} ${rgb[2]})`;
+      const font = `${point.weight} ${point.fontSize}px ${fontFamily}`;
+      glyphMeasureCtx.font = font;
+      const metrics = glyphMeasureCtx.measureText(point.char);
+      const glyphWidth = Math.max(2, Math.ceil(metrics.width));
+      const padding = Math.ceil(point.fontSize * 0.16 + 3);
+      const logicalSpriteWidth = glyphWidth + padding * 2;
+      const logicalSpriteHeight = Math.ceil(point.fontSize * 1.55) + padding * 2;
+      const spriteCanvas = document.createElement('canvas');
+      spriteCanvas.width = Math.ceil(logicalSpriteWidth * glyphDpr);
+      spriteCanvas.height = Math.ceil(logicalSpriteHeight * glyphDpr);
+      const spriteCtx = spriteCanvas.getContext('2d', { alpha: true });
+      spriteCtx.scale(glyphDpr, glyphDpr);
+      spriteCtx.font = font;
+      spriteCtx.fillStyle = color;
+      spriteCtx.textAlign = 'center';
+      spriteCtx.textBaseline = 'middle';
+      spriteCtx.fillText(point.char, logicalSpriteWidth / 2, logicalSpriteHeight / 2);
+
+      const sprite = {
+        canvas: spriteCanvas,
+        width: logicalSpriteWidth,
+        height: logicalSpriteHeight
+      };
+      glyphSpriteCache.set(cacheKey, sprite);
+      return sprite;
+    }
+
+    // Rebuild lazily once the web font has finished loading so cached glyphs
+    // never remain in the fallback font.
+    document.fonts?.ready.then(() => glyphSpriteCache.clear()).catch(() => {});
+
     window.addEventListener('scroll', () => {
+      if (hasIntegratedJourney) return;
       const scrollY = window.scrollY;
       const triggerHeight = window.innerHeight * 0.48;
       targetDisperseProgress = Math.max(0, Math.min(1, scrollY / triggerHeight));
     }, { passive: true });
 
-    function applyTilt(v) {
-      let y1 = v.y * Math.cos(currentTiltX) - v.z * Math.sin(currentTiltX);
-      let z1 = v.y * Math.sin(currentTiltX) + v.z * Math.cos(currentTiltX);
-      let x2 = v.x * Math.cos(currentTiltZ) - y1 * Math.sin(currentTiltZ);
-      let y2 = v.x * Math.sin(currentTiltZ) + y1 * Math.cos(currentTiltZ);
-      return { x: x2, y: y2, z: z1 };
+    function applyTilt(x, y, z, target) {
+      const y1 = y * tiltCosX - z * tiltSinX;
+      const z1 = y * tiltSinX + z * tiltCosX;
+      target.x = x * tiltCosZ - y1 * tiltSinZ;
+      target.y = x * tiltSinZ + y1 * tiltCosZ;
+      target.z = z1;
+      return target;
+    }
+
+    function smoothstep(min, max, val) {
+      const t = Math.max(0, Math.min(1, (val - min) / (max - min)));
+      return t * t * (3 - 2 * t);
     }
 
     function renderGlobe(timestamp = performance.now()) {
       if (!isGlobeVisible) return;
 
-      const introHasStarted =
-        globeReducedMotion.matches || document.body.classList.contains('intro-revealed');
-      if (introHasStarted && revealStartedAt === null) {
+      if (globeFrameInterval > 0 && lastGlobeRenderAt && timestamp - lastGlobeRenderAt < globeFrameInterval) {
+        requestAnimationFrame(renderGlobe);
+        return;
+      }
+      lastGlobeRenderAt = timestamp;
+
+      const globeDelta = previousGlobeFrame === null
+        ? 1 / 60
+        : Math.min(0.05, Math.max(0.001, (timestamp - previousGlobeFrame) / 1000));
+      previousGlobeFrame = timestamp;
+
+      if (revealStartedAt === null) {
         revealStartedAt = timestamp;
       }
-      const revealElapsed = globeReducedMotion.matches
-        ? Number.POSITIVE_INFINITY
-        : revealStartedAt === null
-          ? 0
-          : timestamp - revealStartedAt;
+      const revealElapsed = Number.POSITIVE_INFINITY;
 
       if (!globeReducedMotion.matches) {
         currentTiltX += (targetTiltX - currentTiltX) * 0.035;
         currentTiltZ += (targetTiltZ - currentTiltZ) * 0.035;
       }
+      tiltCosX = Math.cos(currentTiltX);
+      tiltSinX = Math.sin(currentTiltX);
+      tiltCosZ = Math.cos(currentTiltZ);
+      tiltSinZ = Math.sin(currentTiltZ);
 
-      // Lerp 3D text scatter dispersion progress with responsive easing
-      currentDisperseProgress += (targetDisperseProgress - currentDisperseProgress) * 0.1;
-      const dispProgress = Math.pow(currentDisperseProgress, 1.25);
-
-      ctx.clearRect(0, 0, logicalWidth, logicalHeight);
-      
-      const bgOpacity = Math.max(0, 1 - dispProgress * 1.3);
-      if (bgOpacity > 0.01) {
-        let bgGrad = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, globeRadius * (1 + dispProgress * 0.6));
-        bgGrad.addColorStop(0, `rgba(255, 255, 255, ${0.95 * bgOpacity})`);
-        bgGrad.addColorStop(0.6, `rgba(240, 246, 252, ${0.35 * bgOpacity})`);
-        bgGrad.addColorStop(1, "rgba(255, 255, 255, 0)");
-        
-        ctx.beginPath();
-        ctx.arc(centerX, centerY, globeRadius * (1 + dispProgress * 0.5), 0, Math.PI * 2);
-        ctx.fillStyle = bgGrad;
-        ctx.fill();
+      // Smooth progress from the integrated journey system
+      const rawScrollP = Number(window.__MIRAI_SCROLL_P) || Number(window.__MIRAI_MORPH_PROGRESS) || 0;
+      const rawNewPlanet = Math.max(0, Math.min(1, Number(window.__MIRAI_NEW_PLANET_PROGRESS) || 0));
+      const dawnProgress = Math.max(0, Math.min(1, Number(window.__MIRAI_DAWN_PROGRESS) || 0));
+      if (hasIntegratedJourney) {
+        targetDisperseProgress = rawNewPlanet;
       }
 
-      let renderList = [];
-      points.forEach(p => {
-        const rawReveal = globeReducedMotion.matches
-          ? 1
-          : Math.min(1, Math.max(0, (revealElapsed - p.revealDelay) / 760));
-        const bandReveal = 1 - Math.pow(1 - rawReveal, 3);
-        let theta = p.angle + time * p.speed;
+      const globeFollow = 1 - Math.exp(-globeDelta * (hasIntegratedJourney ? 22 : 7));
+      currentDisperseProgress += (targetDisperseProgress - currentDisperseProgress) * globeFollow;
+      if (Math.abs(targetDisperseProgress - currentDisperseProgress) < 0.0001) {
+        currentDisperseProgress = targetDisperseProgress;
+      }
+      
+      const newPlanetProgress = currentDisperseProgress;
+      const assemblyProgress = smoothstep(0.06, 0.9, newPlanetProgress);
 
-        // Apply High-Impact 3D Scatter Dispersal Offset on Scroll
-        let x = p.baseR * Math.cos(theta) + p.disperseVx * dispProgress;
-        let z = p.baseR * Math.sin(theta) + p.disperseVz * dispProgress;
-        let y = p.baseY + (1 - bandReveal) * (p.baseY >= 0 ? 18 : -18) + p.disperseVy * dispProgress;
-        
-        let Nx = x / globeRadius, Ny = y / globeRadius, Nz = z / globeRadius;
-        let Tx = -Math.sin(theta), Ty = 0, Tz = Math.cos(theta);
-        let Ux = Ny * Tz;
-        let Uy = Nz * Tx - Nx * Tz;
-        let Uz = -Ny * Tx;
+      // The new planet emerges from deep cosmic space in a slow, cinematic orbit.
+      const masterAlpha = hasIntegratedJourney ? smoothstep(0.005, 0.28, newPlanetProgress) : 1.0;
+      if (masterAlpha <= 0.001) {
+        if (canvasHasContent) {
+          ctx.clearRect(0, 0, logicalWidth, logicalHeight);
+          canvasHasContent = false;
+        }
+        if (!globeReducedMotion.matches) time += 0.02;
+        requestAnimationFrame(renderGlobe);
+        return;
+      }
+      ctx.clearRect(0, 0, logicalWidth, logicalHeight);
+      canvasHasContent = true;
 
-        let P_tilt = applyTilt({x, y, z});
-        let T_tilt = applyTilt({x: Tx, y: Ty, z: Tz});
-        let U_tilt = applyTilt({x: Ux, y: Uy, z: Uz});
+      // One pre-rasterized radial sprite replaces hundreds of per-glyph blur
+      // operations while retaining the same cosmic blue aura.
+      const globeGlowAlpha = masterAlpha * (1 - dawnProgress) * (0.32 + assemblyProgress * 0.48);
+      if (globeGlowAlpha > 0.002) {
+        const glowSize = globeRadius * (2.55 + (1 - assemblyProgress) * 0.35);
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.globalAlpha = globeGlowAlpha;
+        ctx.drawImage(
+          globeGlowCanvas,
+          centerX - glowSize / 2,
+          centerY - glowSize / 2,
+          glowSize,
+          glowSize
+        );
+        ctx.restore();
+      }
 
-        const fov = 1200;
-        const scale = fov / (fov + P_tilt.z);
-        
-        renderList.push({
-          char: p.char,
-          x: centerX + P_tilt.x * scale,
-          y: centerY + P_tilt.y * scale,
-          z: P_tilt.z,
-          scale: scale,
-          Tx: T_tilt.x, Ty: T_tilt.y,
-          Ux: U_tilt.x, Uy: U_tilt.y,
-          fontSize: p.fontSize,
-          color: p.color,
-          weight: p.weight,
-          isBack: P_tilt.z > 0,
-          reveal: bandReveal,
-          spinAngle: p.spinAngle
-        });
+      // -------------------------------------------------------------
+      // (1) 3D Points Processing
+      // -------------------------------------------------------------
+      const fov = 1200;
+
+      points.forEach((p, pointIndex) => {
+        const item = projectionItems[pointIndex];
+        const theta = p.angle + time * p.speed;
+
+        const gatherDistance = hasIntegratedJourney
+          ? (1 - assemblyProgress) * (420 + (p.bandIndex % 4) * 78)
+          : 0;
+        const x = p.baseR * Math.cos(theta) + p.dirX * gatherDistance;
+        const z = p.baseR * Math.sin(theta) + p.dirZ * gatherDistance;
+        const y = p.baseY + p.dirY * gatherDistance;
+
+        const Nx = x / globeRadius, Ny = y / globeRadius, Nz = z / globeRadius;
+        const Tx = -Math.sin(theta), Ty = 0, Tz = Math.cos(theta);
+        const Ux = Ny * Tz;
+        const Uy = Nz * Tx - Nx * Tz;
+        const Uz = -Ny * Tx;
+
+        const P_tilt = applyTilt(x, y, z, item.p3d);
+        const T_tilt = applyTilt(Tx, Ty, Tz, item.tangent);
+        const U_tilt = applyTilt(Ux, Uy, Uz, item.up);
+
+        const scale = fov / Math.max(10, fov + P_tilt.z);
+        item.x = centerX + P_tilt.x * scale;
+        item.y = centerY + P_tilt.y * scale;
+        item.z = P_tilt.z;
+        item.scale = scale;
+        item.Tx = T_tilt.x;
+        item.Ty = T_tilt.y;
+        item.Ux = U_tilt.x;
+        item.Uy = U_tilt.y;
+        item.isBack = P_tilt.z > 0;
       });
 
       renderList.sort((a, b) => b.z - a.z);
 
-      const alphaFade = Math.max(0, 1 - dispProgress * 0.88);
+      // -------------------------------------------------------------
+      // (2) Blue particle convergence before the characters resolve
+      // -------------------------------------------------------------
+      const particleAlpha = masterAlpha * (1 - smoothstep(0.46, 0.96, newPlanetProgress)) * (1 - dawnProgress);
+      if (particleAlpha > 0.004) {
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        const particleStride = compactGlobe ? 3 : 2;
+        for (let index = 0; index < renderList.length; index += particleStride) {
+          const item = renderList[index];
+          const twinkle = 0.58 + Math.sin(time * 0.045 + index * 1.73) * 0.28;
+          const radius = 0.7 + (index % 5) * 0.18;
+          ctx.globalAlpha = Math.max(0, particleAlpha * twinkle);
+          ctx.fillStyle = cosmicTypeColors[item.bandIndex % cosmicTypeColors.length];
+          ctx.beginPath();
+          ctx.arc(item.x, item.y, radius, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+      }
 
-      renderList.forEach(p => {
-        if (alphaFade <= 0.005) return;
+      // -------------------------------------------------------------
+      // (3) Resolve particles into typography on the same spherical surface
+      // -------------------------------------------------------------
+      const letterBuild = hasIntegratedJourney ? smoothstep(0.26, 0.94, newPlanetProgress) : 1;
+      const colorLanding = smoothstep(0.08, 0.92, dawnProgress);
+      renderList.forEach(item => {
+        const p = item.point;
+        if (!p.char.trim()) return;
+
+        const tLen = Math.sqrt(item.Tx * item.Tx + item.Ty * item.Ty);
+        const depthAlpha = item.isBack
+          ? 0.07 * item.reveal * masterAlpha * letterBuild
+          : (0.1 + 0.9 * Math.pow(tLen, 0.5)) * item.reveal * masterAlpha * letterBuild;
+        if (depthAlpha <= 0.002) return;
 
         ctx.save();
-        ctx.translate(p.x, p.y);
-        let s = p.scale;
-        let tLen = Math.sqrt(p.Tx*p.Tx + p.Ty*p.Ty);
-        let minLen = 0.2; 
-        let tScale = 1;
-        if (tLen < minLen && tLen > 0.001) {
-          tScale = minLen / tLen;
+        ctx.translate(item.x, item.y);
+
+        let s = item.scale;
+        let minLen = 0.2;
+        let tScale = (tLen < minLen && tLen > 0.001) ? (minLen / tLen) : 1;
+
+        let a = item.Tx * s * tScale;
+        let b = item.Ty * s * tScale;
+        let c = -item.Ux * s;
+        let d = -item.Uy * s;
+
+        const fontScale = 0.12 + assemblyProgress * 0.88;
+        ctx.transform(a * fontScale, b * fontScale, c * fontScale, d * fontScale, 0, 0);
+
+        if (colorLanding < 0.995) {
+          const cosmicSprite = getGlyphSprite(p, 'cosmic');
+          ctx.globalAlpha = depthAlpha * (1 - colorLanding);
+          ctx.drawImage(
+            cosmicSprite.canvas,
+            -cosmicSprite.width / 2,
+            -cosmicSprite.height / 2,
+            cosmicSprite.width,
+            cosmicSprite.height
+          );
         }
-
-        let a = p.Tx * s * tScale;
-        let b = p.Ty * s * tScale;
-        let c = -p.Ux * s;
-        let d = -p.Uy * s;
-
-        // Apply individual character 3D spin angle during scroll dispersal
-        if (dispProgress > 0.001) {
-          ctx.rotate(p.spinAngle * dispProgress);
+        if (colorLanding > 0.005) {
+          const baseSprite = getGlyphSprite(p, 'base');
+          ctx.globalAlpha = depthAlpha * colorLanding;
+          ctx.drawImage(
+            baseSprite.canvas,
+            -baseSprite.width / 2,
+            -baseSprite.height / 2,
+            baseSprite.width,
+            baseSprite.height
+          );
         }
-
-        if (p.isBack) {
-          ctx.globalAlpha = 0.07 * p.reveal * alphaFade;
-          ctx.transform(a, b, c, d, 0, 0);
-        } else {
-          ctx.globalAlpha = (0.1 + 0.9 * Math.pow(tLen, 0.5)) * p.reveal * alphaFade;
-          ctx.transform(a, b, c, d, 0, 0);
-        }
-
-        ctx.font = `${p.weight} ${p.fontSize}px ${fontFamily}`;
-        ctx.fillStyle = p.color;
-        ctx.shadowColor = p.color;
-        ctx.shadowBlur = (1 - p.reveal) * 9;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        
-        ctx.fillText(p.char, 0, 0);
         ctx.restore();
       });
 
-      // Orbit Rings Dispersal
+      // -------------------------------------------------------------
+      // (4) Orbit Rings
+      // -------------------------------------------------------------
       ctx.save();
       const orbitReveal = globeReducedMotion.matches
         ? 1
         : Math.min(1, Math.max(0, (revealElapsed - 1040) / 320));
-      ctx.globalAlpha = orbitReveal * alphaFade;
+      ctx.globalAlpha = orbitReveal * masterAlpha * letterBuild;
       ctx.translate(centerX, centerY);
       ctx.rotate(currentTiltZ);
-      ctx.scale(1 + dispProgress * 0.5, (1 + dispProgress * 0.5) * 0.35);
+      ctx.scale(1, 0.35);
       
       ctx.beginPath();
       ctx.arc(0, 0, globeRadius + 60, 0, Math.PI * 2);
@@ -408,10 +591,14 @@
       ctx.strokeStyle = "rgba(107, 148, 192, 0.4)";
       ctx.lineWidth = 2;
       ctx.stroke();
-      
       ctx.restore();
 
-      if (!globeReducedMotion.matches) time += 1;
+      if (!globeReducedMotion.matches) {
+        const rotationRate = hasIntegratedJourney
+          ? 0.14 + assemblyProgress * 0.62
+          : 1;
+        time += rotationRate;
+      }
       if (!firstFrameRendered) {
         firstFrameRendered = true;
         if (globeElement) globeElement.classList.add('is-globe-ready');
@@ -481,13 +668,13 @@
   if (pCanvas) {
     const pCtx = pCanvas.getContext('2d');
     let width = window.innerWidth;
-    let height = document.body.scrollHeight || 4000;
+    let height = window.innerHeight;
     pCanvas.width = width;
     pCanvas.height = height;
 
     const updateParticleCanvasSize = debounce(() => {
       width = window.innerWidth;
-      height = document.body.scrollHeight;
+      height = window.innerHeight;
       pCanvas.width = width;
       pCanvas.height = height;
     }, 150);
@@ -508,9 +695,15 @@
     }
 
     let isParticlesVisible = false;
+    let lastParticlesFrame = 0;
 
-    function animateParticles() {
+    function animateParticles(timestamp = performance.now()) {
       if (!isParticlesVisible) return;
+      if (lastParticlesFrame && timestamp - lastParticlesFrame < 1000 / 30) {
+        requestAnimationFrame(animateParticles);
+        return;
+      }
+      lastParticlesFrame = timestamp;
       pCtx.clearRect(0, 0, width, height);
       pCtx.fillStyle = 'rgba(232, 185, 90, 0.7)';
       particles.forEach(p => {
@@ -556,7 +749,7 @@
       }
     });
 
-    if (heroSection) {
+    if (heroSection && !document.getElementById('hero-journey-section')) {
       if (scrollY < window.innerHeight) {
         const opacity = 1 - (scrollY / 500);
         const scale = 1 - (scrollY / 2500);
@@ -735,6 +928,15 @@
   const submitBtn = document.getElementById('submit-btn');
 
   if (contactForm && formAlert && submitBtn) {
+    const requestedType = new URLSearchParams(window.location.search).get('type');
+    const requestedOption = requestedType
+      ? contactForm.querySelector(`option[data-contact-type="${CSS.escape(requestedType)}"]`)
+      : null;
+    if (requestedOption) {
+      const contactTypeSelect = document.getElementById('contact-type');
+      if (contactTypeSelect) contactTypeSelect.value = requestedOption.value;
+    }
+
     contactForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       formAlert.style.display = 'none';
@@ -859,6 +1061,14 @@
     const japanBounds = [[126.7, 25.3], [146.35, 45.75]];
     const routeBounds = [[76.4, 3.1], [143.1, 40.2]];
     const reduceMapMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const compactMapMedia = window.matchMedia('(max-width: 900px)');
+    const sriVideo = document.getElementById('srilanka-ocean-video');
+    const japanVideo = document.getElementById('japan-ocean-video');
+    const mapVideos = [sriVideo, japanVideo].filter(Boolean);
+    let mapVideosLoaded = false;
+    let isMapNearViewport = false;
+    let isMapVisible = false;
+    let latestVideoProgress = 0;
 
     const map = new maplibregl.Map({
       container: 'maplibre-vector-map',
@@ -873,6 +1083,78 @@
     });
 
     window.realMapLibreInstance = map;
+
+    mapVideos.forEach(video => {
+      video.muted = true;
+      video.defaultMuted = true;
+      video.loop = true;
+      video.playsInline = true;
+    });
+
+    const ensureMapVideosLoaded = () => {
+      if (mapVideosLoaded || !isMapNearViewport || reduceMapMotion) return;
+      mapVideosLoaded = true;
+      mapVideos.forEach(video => video.load());
+    };
+
+    const syncMapVideoPlayback = (progress = latestVideoProgress) => {
+      latestVideoProgress = progress;
+      const canPlay = isMapVisible && document.visibilityState === 'visible' && !reduceMapMotion;
+      const showSriVideo = !reduceMapMotion && progress < 0.52;
+      const showJapanVideo = !reduceMapMotion && progress >= 0.48;
+
+      if (sriVideo) {
+        sriVideo.classList.toggle('is-active', showSriVideo);
+        if (canPlay && showSriVideo) {
+          sriVideo.play().catch(() => {});
+        } else if (!sriVideo.paused) {
+          sriVideo.pause();
+        }
+      }
+
+      if (japanVideo) {
+        japanVideo.classList.toggle('is-active', showJapanVideo);
+        if (canPlay && showJapanVideo) {
+          japanVideo.play().catch(() => {});
+        } else if (!japanVideo.paused) {
+          japanVideo.pause();
+        }
+      }
+    };
+
+    if ('IntersectionObserver' in window) {
+      const preloadObserver = new IntersectionObserver(entries => {
+        const entry = entries[0];
+        isMapNearViewport = Boolean(entry?.isIntersecting);
+        if (isMapNearViewport) ensureMapVideosLoaded();
+      }, { rootMargin: '70% 0px', threshold: 0 });
+
+      const visibilityObserver = new IntersectionObserver(entries => {
+        const entry = entries[0];
+        isMapVisible = Boolean(entry?.isIntersecting);
+        if (isMapVisible) {
+          isMapNearViewport = true;
+          ensureMapVideosLoaded();
+        }
+        syncMapVideoPlayback();
+      }, { threshold: [0, 0.02] });
+
+      preloadObserver.observe(realMapWrapper);
+      visibilityObserver.observe(realMapWrapper);
+    } else {
+      isMapNearViewport = true;
+      isMapVisible = true;
+      ensureMapVideosLoaded();
+    }
+
+    mapVideos.forEach(video => {
+      video.addEventListener('canplay', () => syncMapVideoPlayback());
+    });
+    document.addEventListener('visibilitychange', () => syncMapVideoPlayback());
+    window.addEventListener('pageshow', () => syncMapVideoPlayback());
+    window.addEventListener('pagehide', () => {
+      mapVideos.forEach(video => video.pause());
+    });
 
     const createPulsingDOM = (isOrange = false) => {
       const el = document.createElement('div');
@@ -938,97 +1220,54 @@
             map.setLayoutProperty(layer.id, 'visibility', 'none');
           }
 
-          // 海・水域レイヤー（water）はベース背景カラーと同じ純白（#ffffff）
+          // 海・水域は透明にし、地図下層の背景動画を海面だけに表示する。
           if (layer.id.includes('water') || layer.sourceLayer === 'water') {
             if (layer.type === 'fill') {
-              map.setPaintProperty(layer.id, 'fill-color', '#ffffff');
+              map.setPaintProperty(layer.id, 'fill-opacity', 0);
+            }
+          }
+
+          // 背景を透明化し、陸地系レイヤーは完全不透明にする。
+          if (layer.id === 'background' || layer.id.includes('land') || layer.sourceLayer === 'landcover' || layer.sourceLayer === 'landuse') {
+            if (layer.type === 'background') {
+              map.setPaintProperty(layer.id, 'background-color', 'rgba(255, 255, 255, 0)');
+              map.setPaintProperty(layer.id, 'background-opacity', 0);
+            } else if (layer.type === 'fill') {
+              map.setPaintProperty(layer.id, 'fill-color', '#e8eef2');
               map.setPaintProperty(layer.id, 'fill-opacity', 1);
             }
           }
 
-          // 一般大陸・島々の陸地（background / land / landuse）をスタイリッシュなライトグレー（#e5e9ee）に設定
-          if (layer.id === 'background' || layer.id.includes('land') || layer.sourceLayer === 'landcover' || layer.sourceLayer === 'landuse') {
-            if (layer.type === 'background') {
-              map.setPaintProperty(layer.id, 'background-color', '#e5e9ee');
-            } else if (layer.type === 'fill') {
-              map.setPaintProperty(layer.id, 'fill-color', '#e5e9ee');
-              map.setPaintProperty(layer.id, 'fill-opacity', 0.95);
-            }
-          }
-
-          // 国境・海岸線・行政区画線をクッキリと上品なグレー（#cbd5e1）でグラフィック強調
+          // 国境・行政区画線は控えめにし、島の外郭を強調しない。
           if (layer.id.includes('admin') || layer.id.includes('boundary') || layer.sourceLayer === 'boundary') {
             if (layer.type === 'line') {
-              map.setPaintProperty(layer.id, 'line-color', '#cbd5e1');
-              map.setPaintProperty(layer.id, 'line-width', 1.2);
-              map.setPaintProperty(layer.id, 'line-opacity', 0.85);
+              map.setPaintProperty(layer.id, 'line-color', '#aebdca');
+              map.setPaintProperty(layer.id, 'line-width', 0.6);
+              map.setPaintProperty(layer.id, 'line-opacity', 0.25);
             }
           }
         });
       } catch (e) {
         console.warn('Basemap layer cleanup notice:', e);
       }
-      const firstLabelLayer = map.getStyle().layers.find(layer => layer.type === 'symbol');
+      const firstBaseLayer = map.getStyle().layers.find(layer => layer.type !== 'background');
 
-      map.addSource('sri-lanka-src', {
+      map.addSource('world-land-src', {
         type: 'geojson',
-        data: '/static/geojson/sri_lanka.json',
-        tolerance: 0.1,
-        buffer: 64
+        data: '/static/geojson/world_land_110m.json',
+        tolerance: 0.25,
+        buffer: 32
       });
-      map.addSource('japan-src', {
-        type: 'geojson',
-        data: '/static/geojson/japan.json',
-        tolerance: 0.1,
-        buffer: 64
-      });
-
-      // 主役拠点国（スリランカ ＆ 日本）を際立たせるグラフィック描画
-      const addHighlightCountryGraphics = (country, color, glowColor) => {
-        const beforeId = firstLabelLayer ? firstLabelLayer.id : undefined;
-
-        // 1. ソリッド鮮やか塗り
-        map.addLayer({
-          id: `${country}-fill`,
-          type: 'fill',
-          source: `${country}-src`,
-          paint: {
-            'fill-color': color,
-            'fill-opacity': 0.88,
-            'fill-antialias': true
-          }
-        }, beforeId);
-
-        // 2. 白い光彩発光 Halo アウトライン
-        map.addLayer({
-          id: `${country}-outline-halo`,
-          type: 'line',
-          source: `${country}-src`,
-          layout: { 'line-cap': 'round', 'line-join': 'round' },
-          paint: {
-            'line-color': '#ffffff',
-            'line-width': ['interpolate', ['linear'], ['zoom'], 3, 3.5, 6, 6],
-            'line-opacity': 1.0,
-            'line-blur': 0.5
-          }
-        }, beforeId);
-
-        // 3. 際立つネイビー／ブルーのメイン外郭グラフィック
-        map.addLayer({
-          id: `${country}-outline`,
-          type: 'line',
-          source: `${country}-src`,
-          layout: { 'line-cap': 'round', 'line-join': 'round' },
-          paint: {
-            'line-color': glowColor,
-            'line-width': ['interpolate', ['linear'], ['zoom'], 3, 2.0, 6, 3.5],
-            'line-opacity': 1.0
-          }
-        }, beforeId);
-      };
-
-      addHighlightCountryGraphics('sri-lanka', '#0284c7', '#0b2039');
-      addHighlightCountryGraphics('japan', '#1d4ed8', '#0b2039');
+      map.addLayer({
+        id: 'world-land-fill',
+        type: 'fill',
+        source: 'world-land-src',
+        paint: {
+          'fill-color': '#e8eef2',
+          'fill-opacity': 1,
+          'fill-antialias': true
+        }
+      }, firstBaseLayer ? firstBaseLayer.id : undefined);
 
       map.addSource('flight-arc-src', {
         type: 'geojson',
@@ -1190,34 +1429,16 @@
         lineFill.style.width = `${fillPercent}%`;
       }
 
-      if (step1) step1.classList.toggle('is-active', currentStep === 1);
-      if (step2) step2.classList.toggle('is-active', currentStep === 2);
-      if (step3) step3.classList.toggle('is-active', currentStep === 3);
+      [step1, step2, step3].forEach((step, index) => {
+        if (!step) return;
+        const isCurrent = currentStep === index + 1;
+        step.classList.toggle('is-active', isCurrent);
+        step.setAttribute('aria-current', isCurrent ? 'step' : 'false');
+        step.setAttribute('aria-hidden', String(!isCurrent && compactMapMedia.matches));
+      });
 
-      // Ocean Video Overlay Instant Crossfade Mix Control (Sri Lanka ⇄ Japan)
-      const sriVideo = document.getElementById('srilanka-ocean-video');
-      const japanVideo = document.getElementById('japan-ocean-video');
-
-      const showSriVideo = progress < 0.52;
-      const showJapanVideo = progress >= 0.48;
-
-      if (sriVideo) {
-        if (showSriVideo) {
-          sriVideo.classList.add('is-active');
-          if (sriVideo.paused) sriVideo.play().catch(() => {});
-        } else {
-          sriVideo.classList.remove('is-active');
-        }
-      }
-
-      if (japanVideo) {
-        if (showJapanVideo) {
-          japanVideo.classList.add('is-active');
-          if (japanVideo.paused) japanVideo.play().catch(() => {});
-        } else {
-          japanVideo.classList.remove('is-active');
-        }
-      }
+      // 海面背景動画は表示中のフェーズだけ再生し、短い切り替え区間だけクロスフェードする。
+      syncMapVideoPlayback(progress);
 
       if (progress < 0.12) {
         realMapWrapper.dataset.phase = 'sri-lanka';
@@ -1225,8 +1446,6 @@
           map.getSource('flight-arc-src').setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: [] } });
           lastVisibleCount = 0;
         }
-        if (isMapLoaded && map.getLayer('sri-lanka-fill')) map.setPaintProperty('sri-lanka-fill', 'fill-opacity', 0.50);
-        if (isMapLoaded && map.getLayer('japan-fill')) map.setPaintProperty('japan-fill', 'fill-opacity', 0.16);
       } else if (progress <= 0.86) {
         realMapWrapper.dataset.phase = 'pathway';
         const t = clamp((progress - 0.12) / 0.74);
@@ -1239,8 +1458,6 @@
           });
           lastVisibleCount = visibleCount;
         }
-        if (isMapLoaded && map.getLayer('sri-lanka-fill')) map.setPaintProperty('sri-lanka-fill', 'fill-opacity', lerp(0.50, 0.30, t));
-        if (isMapLoaded && map.getLayer('japan-fill')) map.setPaintProperty('japan-fill', 'fill-opacity', lerp(0.16, 0.52, smootherStep(t)));
       } else {
         realMapWrapper.dataset.phase = 'japan';
         if (isMapLoaded && map.getSource('flight-arc-src') && lastVisibleCount !== fullArcCoords.length) {
@@ -1251,8 +1468,6 @@
           });
           lastVisibleCount = fullArcCoords.length;
         }
-        if (isMapLoaded && map.getLayer('sri-lanka-fill')) map.setPaintProperty('sri-lanka-fill', 'fill-opacity', 0.30);
-        if (isMapLoaded && map.getLayer('japan-fill')) map.setPaintProperty('japan-fill', 'fill-opacity', 0.52);
       }
     }
 
@@ -1271,7 +1486,29 @@
     updateTargetProgress();
   }
 
-  initMapLibreSection();
+  // The map owns another WebGL context and used to allocate a full DPR canvas
+  // while the visitor was still in the hero. Initialize it only when its
+  // section approaches the viewport; the map's own observers still handle
+  // video loading and playback after creation.
+  function scheduleMapLibreSection() {
+    const realMapWrapper = document.getElementById('real-map-scrolly-wrapper');
+    if (!realMapWrapper) return;
+
+    if (!('IntersectionObserver' in window)) {
+      initMapLibreSection();
+      return;
+    }
+
+    const mapInitObserver = new IntersectionObserver((entries, observerInstance) => {
+      if (!entries[0]?.isIntersecting) return;
+      observerInstance.disconnect();
+      initMapLibreSection();
+    }, { rootMargin: '20% 0px', threshold: 0 });
+
+    mapInitObserver.observe(realMapWrapper);
+  }
+
+  scheduleMapLibreSection();
 
   /* ---------- Infographics Counter Animation Engine ---------- */
   const counters = document.querySelectorAll('.counter');
@@ -1326,6 +1563,8 @@
 
     const stars = [];
     const shootingStars = [];
+    let shootingStarsVisible = false;
+    let lastShootingStarsFrame = 0;
 
     // Background Twinkling Stars
     for (let i = 0; i < 45; i++) {
@@ -1354,9 +1593,17 @@
     }
 
     // Periodically spawn shooting stars
-    setInterval(createShootingStar, 1800);
+    setInterval(() => {
+      if (shootingStarsVisible) createShootingStar();
+    }, 1800);
 
-    function renderShootingStars() {
+    function renderShootingStars(timestamp = performance.now()) {
+      if (!shootingStarsVisible) return;
+      if (lastShootingStarsFrame && timestamp - lastShootingStarsFrame < 1000 / 30) {
+        requestAnimationFrame(renderShootingStars);
+        return;
+      }
+      lastShootingStarsFrame = timestamp;
       ctx.clearRect(0, 0, width, height);
 
       // Draw Twinkling Stars
@@ -1411,7 +1658,16 @@
       }
     });
 
-    renderShootingStars();
+    const shootingStarsObserver = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting && !shootingStarsVisible) {
+        shootingStarsVisible = true;
+        lastShootingStarsFrame = 0;
+        requestAnimationFrame(renderShootingStars);
+      } else if (!entry.isIntersecting) {
+        shootingStarsVisible = false;
+      }
+    }, { threshold: 0.05 });
+    shootingStarsObserver.observe(starCanvas);
   }
 
   /* ---------- Card 01 Vision Globe 3D Canvas Renderer ---------- */
@@ -1420,6 +1676,8 @@
     const ctx = visionGlobeCanvas.getContext('2d');
     let rotationY = 0;
     let autoSpeed = 0.008;
+    let visionGlobeVisible = false;
+    let lastVisionGlobeFrame = 0;
 
     // Define 3D dots for continents / sphere landmass
     const dots = [];
@@ -1450,7 +1708,13 @@
       };
     }
 
-    function drawVisionGlobe() {
+    function drawVisionGlobe(timestamp = performance.now()) {
+      if (!visionGlobeVisible) return;
+      if (lastVisionGlobeFrame && timestamp - lastVisionGlobeFrame < 1000 / 30) {
+        requestAnimationFrame(drawVisionGlobe);
+        return;
+      }
+      lastVisionGlobeFrame = timestamp;
       const w = visionGlobeCanvas.width;
       const h = visionGlobeCanvas.height;
       const cx = w / 2;
@@ -1577,7 +1841,16 @@
     visionGlobeCanvas.addEventListener('mouseenter', () => { autoSpeed = 0.02; });
     visionGlobeCanvas.addEventListener('mouseleave', () => { autoSpeed = 0.008; });
 
-    drawVisionGlobe();
+    const visionGlobeObserver = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting && !visionGlobeVisible) {
+        visionGlobeVisible = true;
+        lastVisionGlobeFrame = 0;
+        requestAnimationFrame(drawVisionGlobe);
+      } else if (!entry.isIntersecting) {
+        visionGlobeVisible = false;
+      }
+    }, { threshold: 0.05 });
+    visionGlobeObserver.observe(visionGlobeCanvas);
   }
 
 })();

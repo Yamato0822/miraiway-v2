@@ -70,10 +70,9 @@ export const Footer: FC = () => {
           <nav class="footer-nav" aria-label="フッターナビゲーション">
             <div class="footer-col">
               <h4>サービス</h4>
-              <a href="/#services-section">人材マッチング</a>
-              <a href="/#services-section">日本語・文化教育</a>
-              <a href="/#services-section">企業受け入れサポート</a>
-              <a href="/#services-section">来日・定着支援</a>
+              <a href="/contact?type=matching">人材マッチング</a>
+              <a href="/services/education">日本語・技能教育</a>
+              <a href="/services/retention">受け入れ・定着支援</a>
               <a href="/#services-section">採用広報支援</a>
             </div>
             <div class="footer-col">

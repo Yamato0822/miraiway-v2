@@ -90,9 +90,9 @@ export const ContactPage: FC = () => {
                       お問い合わせ種別 <span class="badge-req">必須</span>
                     </label>
                     <select id="contact-type" name="inquiryType" class="form-control">
-                      <option value="人材採用のご相談">特定技能・人材採用のご相談</option>
-                      <option value="現地教育・育成について">現地日本語教育・育成プログラムについて</option>
-                      <option value="企業サポートについて">受入企業サポート・コンサルティングについて</option>
+                      <option value="人材採用のご相談" data-contact-type="matching">特定技能・人材採用のご相談</option>
+                      <option value="現地教育・育成について" data-contact-type="education">日本語・技能教育について</option>
+                      <option value="受け入れ・定着支援について" data-contact-type="retention">受け入れ・定着支援について</option>
                       <option value="クリエイティブ・制作依頼">採用PR・クリエイティブ制作のご相談</option>
                       <option value="その他">その他のお問い合わせ</option>
                     </select>

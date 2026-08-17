@@ -37,37 +37,123 @@ export const Home: FC = () => {
           </svg>
         </div>
 
-        {/* ===== Hero ===== */}
-        <section id="hero-section">
-          <div class="hero-inner">
-            <div class="hero-copy reveal">
-              <h1 class="hero-title">
-                国境を越えて、<br />
-                <span class="animated-marker-wrap">
-                  <span class="animated-marker-bg"></span>
-                  <span class="animated-marker-text">可能性は</span>
-                </span>つながる。
-              </h1>
-              <p class="hero-lead">
-                スリランカと日本をつなぎ、<br />
-                人材のキャリアと企業の未来を支えます。
-              </p>
-              <a href="#services-section" class="text-link" id="hero-cta">
-                サービスを見る <span class="arrow">&rarr;</span>
-              </a>
+        {/* ===== Hero → Midnight Journey (one continuous scroll scene) ===== */}
+        <section id="hero-journey-section" aria-label="スリランカと日本をつなぐストーリー">
+          <div class="hero-journey-sticky">
+            <div id="journey-dark-bg" aria-hidden="true"></div>
+            <div id="journey-dawn-bloom" aria-hidden="true"></div>
+            <div id="celestial-orbit-plane" class="celestial-orbit-plane" aria-hidden="true">
+              <div class="orbit-ring-track orbit-ring-track--outer"></div>
+              <div class="orbit-ring-track orbit-ring-track--inner"></div>
+              <div class="orbit-dust-node orbit-dust-node--1"></div>
+              <div class="orbit-dust-node orbit-dust-node--2"></div>
+              <div class="orbit-dust-node orbit-dust-node--3"></div>
             </div>
-            <div class="hero-globe-wrap">
-              <div class="typography-globe" aria-hidden="true">
-                <canvas id="typography-globe-canvas" width="1000" height="1000" role="presentation"></canvas>
-              </div>
-            </div>
-          </div>
+            <canvas id="stage-canvas" aria-hidden="true"></canvas>
+            <div id="grain-overlay" aria-hidden="true"></div>
+            <div id="vignette-overlay" aria-hidden="true"></div>
+            <div id="scanline-overlay" aria-hidden="true"></div>
 
-          {/* Kinetic Typography Background - Positioned below 'サービスを見る' */}
-          <div class="kinetic-bg" aria-hidden="true">
-            <div class="kinetic-track">
-              <span>MIRAI WAY &mdash; CONNECTING THE FUTURE &mdash; BEYOND BORDERS &mdash;&nbsp;</span>
-              <span>MIRAI WAY &mdash; CONNECTING THE FUTURE &mdash; BEYOND BORDERS &mdash;&nbsp;</span>
+            <div id="hero-initial-layer">
+              <section id="hero-section">
+                <div class="hero-inner">
+                  <div class="hero-copy reveal">
+                    <h1 class="hero-title">
+                      <span class="hero-title__line">国境を越えて、</span>
+                      <span class="hero-title__line hero-title__line--closing">
+                        <span class="animated-marker-wrap">
+                          <span class="animated-marker-bg"></span>
+                          <span class="animated-marker-text">可能性は</span>
+                        </span>
+                        <span class="hero-title__closing">つながる。</span>
+                      </span>
+                    </h1>
+                    <p class="hero-lead">
+                      スリランカと日本をつなぎ、<br />
+                      人材のキャリアと企業の未来を支えます。
+                    </p>
+                    <a href="#services-section" class="text-link" id="hero-cta">
+                      サービスを見る <span class="arrow">&rarr;</span>
+                    </a>
+                  </div>
+                  <div class="hero-globe-wrap hero-morph-globe-wrap">
+                    <div class="typography-globe" aria-hidden="true">
+                      <canvas id="typography-globe-canvas" width="1000" height="1000" role="presentation"></canvas>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Kinetic Typography Background - Positioned below 'サービスを見る' */}
+                <div class="kinetic-bg" aria-hidden="true">
+                  <div class="kinetic-track">
+                    <span>MIRAI WAY &mdash; CONNECTING THE FUTURE &mdash; BEYOND BORDERS &mdash;&nbsp;</span>
+                    <span>MIRAI WAY &mdash; CONNECTING THE FUTURE &mdash; BEYOND BORDERS &mdash;&nbsp;</span>
+                  </div>
+                </div>
+              </section>
+            </div>
+
+            <div id="hero-stage" class="hero-stage-telemetry" aria-live="polite">
+              {/* Top Navigation / Skip button */}
+              <div class="hero-stage-topbar">
+                <button type="button" id="skip-universe-btn" class="skip-universe-btn" aria-label="スキップしてトップページへ進む">
+                  <span class="skip-btn-text">スキップ</span>
+                  <svg class="skip-btn-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg>
+                </button>
+              </div>
+
+              {/* Left Flank Editorial Telemetry */}
+              <div class="hero-telemetry-left">
+                <h2 class="hero-country">
+                  <span class="country-word-wrap">
+                    <span class="country-word" id="hero-country-word" lang="en">Sri Lanka</span>
+                  </span>
+                </h2>
+              </div>
+
+              {/* Bottom 3-Step Pure White & Straight-Line Telemetry Grid */}
+              <div class="hero-mission-steps" aria-label="MiraiWay 3つの支援ステップ">
+                <div class="mission-steps-header">
+                  <span class="steps-label">SUPPORT PROCESS</span>
+                  <span class="steps-progress-track">
+                    <span id="hero-steps-seeker" class="steps-progress-seeker"></span>
+                  </span>
+                </div>
+
+                <div class="mission-steps-grid">
+                  {/* Step 01 */}
+                  <div id="step-node-1" class="step-node is-active" data-step="1">
+                    <div class="step-node-top">
+                      <span class="step-node-num">01</span>
+                      <span class="step-node-category">LOCAL EDUCATION</span>
+                    </div>
+                    <h3 class="step-node-title">現地教育</h3>
+                    <p class="step-node-desc">日本語・文化・技能を体系的に学び、来日前の不安を減らします。</p>
+                  </div>
+
+                  {/* Step 02 */}
+                  <div id="step-node-2" class="step-node" data-step="2">
+                    <div class="step-node-top">
+                      <span class="step-node-num">02</span>
+                      <span class="step-node-category">MATCHING</span>
+                    </div>
+                    <h3 class="step-node-title">人材紹介</h3>
+                    <p class="step-node-desc">企業と人材の希望を丁寧に結び、納得感のある選考を支えます。</p>
+                  </div>
+
+                  {/* Step 03 */}
+                  <div id="step-node-3" class="step-node" data-step="3">
+                    <div class="step-node-top">
+                      <span class="step-node-num">03</span>
+                      <span class="step-node-category">SETTLEMENT SUPPORT</span>
+                    </div>
+                    <h3 class="step-node-title">来日・定着支援</h3>
+                    <p class="step-node-desc">行政手続きから生活相談まで、就労後も切れ目なく伴走します。</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -75,91 +161,6 @@ export const Home: FC = () => {
         {/* ===== 01 About ===== */}
         <section id="about-section" class="num-section">
           <div class="about-container">
-            {/* ===== MapLibre GL JS Precision Scrollytelling Section ===== */}
-            <div class="real-map-section-wrapper" id="real-map-scrolly-wrapper">
-              <div class="real-map-sticky-container">
-                <div
-                  id="maplibre-vector-map"
-                  class="maplibre-map-canvas"
-                  role="img"
-                  aria-label="スリランカのコロンボから日本の東京へつながる支援ルート"
-                ></div>
-
-                {/* Cinematic Ocean Video Overlay (Plays during Sri Lanka / Step 01 Phase) */}
-                <video
-                  id="srilanka-ocean-video"
-                  class="srilanka-ocean-video-bg"
-                  autoplay
-                  loop
-                  muted
-                  playsinline
-                  aria-hidden="true"
-                >
-                  <source src="/static/videos/srilanka-education-bg.mp4" type="video/mp4" />
-                </video>
-
-                {/* Cinematic Ocean Video Overlay (Plays during Japan / Step 03 Phase) */}
-                <video
-                  id="japan-ocean-video"
-                  class="japan-ocean-video-bg"
-                  autoplay
-                  loop
-                  muted
-                  playsinline
-                  aria-hidden="true"
-                >
-                  <source src="/static/videos/japan-work-bg.mp4" type="video/mp4" />
-                </video>
-
-                {/* 3-Step Horizontal Process Flow (Restored Clean Sharp Flat Design) */}
-                <div class="map-steps-horizontal-flow" id="map-steps-flow">
-                  <div class="step-flow-connecting-line" aria-hidden="true">
-                    <div class="step-flow-line-fill" id="step-flow-line-fill"></div>
-                  </div>
-
-                  {/* Step 01 */}
-                  <div class="map-step-card is-active" data-step="1" id="step-card-1">
-                    <div class="step-badge">STEP 01</div>
-                    <span class="step-en-sub">LOCAL EDUCATION</span>
-                    <h3 class="step-jp-title">現地教育</h3>
-                    <p class="step-desc">
-                      日本語・文化・技能を体系的に学び、来日前の不安を減らします。
-                    </p>
-                  </div>
-
-                  {/* Step 02 */}
-                  <div class="map-step-card" data-step="2" id="step-card-2">
-                    <div class="step-badge">STEP 02</div>
-                    <span class="step-en-sub">MATCHING</span>
-                    <h3 class="step-jp-title">人材紹介</h3>
-                    <p class="step-desc">
-                      企業と人材の希望を丁寧に結び、納得感のある選考を支えます。
-                    </p>
-                  </div>
-
-                  {/* Step 03 */}
-                  <div class="map-step-card" data-step="3" id="step-card-3">
-                    <div class="step-badge">STEP 03</div>
-                    <span class="step-en-sub">SETTLEMENT SUPPORT</span>
-                    <h3 class="step-jp-title">来日・定着支援</h3>
-                    <p class="step-desc">
-                      行政手続きから生活相談まで、就労後も切れ目なく伴走します。
-                    </p>
-                  </div>
-                </div>
-
-
-
-
-
-                <div class="map-data-credit">
-                  Map: <a href="https://openfreemap.org/" target="_blank" rel="noopener noreferrer">OpenFreeMap</a>
-                  <span aria-hidden="true"> · </span>
-                  Boundaries: <a href="https://www.geoboundaries.org/" target="_blank" rel="noopener noreferrer">geoBoundaries</a>
-                </div>
-              </div>
-            </div>
-
             <SectionHeading
               number="01"
               eyebrow="ABOUT US"
@@ -171,12 +172,6 @@ export const Home: FC = () => {
             />
 
             <div class="activity-rail reveal" id="activity-rail" data-activity-rail>
-              <div class="activity-rail__header">
-                <div>
-                  <span>OUR ACTIVITIES</span>
-                  <p>両国でつながる、<span>6つの取り組み</span></p>
-                </div>
-              </div>
               <div
                 class="activity-rail__viewport"
                 data-rail-viewport
@@ -235,14 +230,29 @@ export const Home: FC = () => {
                 </article>
 
               </div>
-              <div class="activity-rail__navigation" aria-label="活動スライド操作">
-                <div class="activity-rail__dots" role="group" aria-label="活動を選択">
-                  <button type="button" data-rail-dot="0" aria-label="活動1を表示"></button>
-                  <button type="button" data-rail-dot="1" aria-label="活動2を表示"></button>
-                  <button type="button" data-rail-dot="2" aria-label="活動3を表示"></button>
-                  <button type="button" data-rail-dot="3" aria-label="活動4を表示"></button>
-                  <button type="button" data-rail-dot="4" aria-label="活動5を表示"></button>
-                  <button type="button" data-rail-dot="5" aria-label="活動6を表示"></button>
+              <div class="activity-rail__detail" data-activity-detail>
+                <div class="activity-rail__count" aria-hidden="true">
+                  <span class="activity-rail__count-current" data-activity-current>01</span>
+                  <span class="activity-rail__count-separator">/</span>
+                  <span class="activity-rail__count-total">06</span>
+                </div>
+                <div class="activity-rail__detail-copy" data-activity-detail-copy>
+                  <span class="activity-rail__detail-kicker" data-activity-kicker>
+                    EDUCATION &bull; SRI LANKA
+                  </span>
+                  <h3 class="activity-rail__detail-title" data-activity-title>
+                    現地直営スクールでの高度日本語・技能研修
+                  </h3>
+                </div>
+                <div class="activity-rail__navigation" aria-label="活動スライド操作">
+                  <div class="activity-rail__dots" role="group" aria-label="活動を選択">
+                    <button type="button" data-rail-dot="0" aria-label="活動1を表示"></button>
+                    <button type="button" data-rail-dot="1" aria-label="活動2を表示"></button>
+                    <button type="button" data-rail-dot="2" aria-label="活動3を表示"></button>
+                    <button type="button" data-rail-dot="3" aria-label="活動4を表示"></button>
+                    <button type="button" data-rail-dot="4" aria-label="活動5を表示"></button>
+                    <button type="button" data-rail-dot="5" aria-label="活動6を表示"></button>
+                  </div>
                 </div>
               </div>
               <p class="sr-only" data-rail-status aria-live="polite">活動1 / 6</p>
@@ -295,7 +305,7 @@ export const Home: FC = () => {
                     面談までの情報共有を丁寧に行い、双方が納得できる選考を支えます。
                   </p>
                   <div class="card-action-bottom">
-                    <ActionLink href="/contact" variant="text">人材採用について相談する</ActionLink>
+                    <ActionLink href="/contact?type=matching" variant="text">人材採用について相談する</ActionLink>
                   </div>
                 </div>
                 <div class="service-visual glass-card-large service-image-card">
@@ -316,43 +326,25 @@ export const Home: FC = () => {
                     対応分野に合わせた技能学習とあわせて、就労開始に向けた準備を進めます。
                   </p>
                   <div class="card-action-bottom">
-                    <ActionLink href="/contact" variant="text">教育内容について相談する</ActionLink>
+                    <ActionLink href="/services/education" variant="text">日本語・技能教育を詳しく見る</ActionLink>
                   </div>
                 </div>
               </div>
 
               {/* Service 3 */}
-              <div class="service-showcase-item split reveal animated-icon-card">
-                <div class="service-text">
-                  <span class="service-index">03 / CORPORATE SUPPORT</span>
-                  <h3 class="service-title">企業サポート</h3>
-                  <p class="service-desc">
-                    受け入れに必要な確認事項を整理し、提携機関と連携しながら手続きや社内準備をご案内します。
-                    異文化コミュニケーションや受け入れ体制づくりも、企業の状況に合わせて支援します。
-                  </p>
-                  <div class="card-action-bottom">
-                    <ActionLink href="/contact" variant="text">受け入れ準備について相談する</ActionLink>
-                  </div>
-                </div>
-                <div class="service-visual glass-card-large service-image-card">
-                  <img src="/static/images/service-corporate.jpg" alt="企業サポート" class="service-img" />
-                </div>
-              </div>
-
-              {/* Service 4 */}
               <div class="service-showcase-item split-reverse reveal animated-icon-card">
                 <div class="service-visual glass-card-large service-image-card">
                   <img src="/static/images/service-retention.png" alt="定着支援" class="service-img" />
                 </div>
                 <div class="service-text">
-                  <span class="service-index">04 / RETENTION</span>
-                  <h3 class="service-title">定着支援</h3>
+                  <span class="service-index">03 / RETENTION SUPPORT</span>
+                  <h3 class="service-title">受け入れ・定着支援</h3>
                   <p class="service-desc">
-                    就労開始後も定期面談や生活相談を通じて、職場・生活上の課題を早期に把握します。
-                    人材と企業の双方と連絡を取りながら、継続して働ける環境づくりを支援します。
+                    来日前の受け入れ準備から、就労後の定期面談や生活相談まで継続して支援します。
+                    人材と企業の双方と連絡を取り、職場・生活上の課題を早期に整理します。
                   </p>
                   <div class="card-action-bottom">
-                    <ActionLink href="/contact" variant="text">定着支援について相談する</ActionLink>
+                    <ActionLink href="/services/retention" variant="text">受け入れ・定着支援を詳しく見る</ActionLink>
                   </div>
                 </div>
               </div>
@@ -404,7 +396,7 @@ export const Home: FC = () => {
                   <span class="service-index"><i class="fas fa-video" aria-hidden="true"></i> CROSS-FUNCTIONAL SUPPORT</span>
                   <h3 class="service-title">Creative</h3>
                   <p class="service-desc">
-                    採用広報、企業ブランディング、写真・動画などのコンテンツ制作を通じて、01〜04の支援を横断的に補完します。
+                    採用広報、企業ブランディング、写真・動画などのコンテンツ制作を通じて、01〜03の支援を横断的に補完します。
                     企業や職場の情報を分かりやすく届け、候補者との接点づくりと母集団形成を支えます。
                   </p>
                 </div>
@@ -440,6 +432,17 @@ export const Home: FC = () => {
                           <source src="/static/videos/vertical-promo-video.mp4" type="video/mp4" />
                           <source src="/static/videos/vertical-promo-video.mov" type="video/quicktime" />
                         </video>
+                        <button
+                          type="button"
+                          class="phone-video-control"
+                          aria-label="Creative動画を一時停止"
+                          aria-pressed="false"
+                        >
+                          <i class="fas fa-pause" aria-hidden="true"></i>
+                        </button>
+                        <span class="sr-only phone-video-status" aria-live="polite">
+                          Creative動画を再生しています
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -472,7 +475,7 @@ export const Home: FC = () => {
               </div>
 
               {/* Step 1 */}
-              <div class="journey-panel step-panel">
+              <div class="journey-panel step-panel" data-process-step="1">
                 <div class="watermark-num" data-speed="0.8">
                   01
                 </div>
@@ -491,7 +494,7 @@ export const Home: FC = () => {
               </div>
 
               {/* Step 2 */}
-              <div class="journey-panel step-panel">
+              <div class="journey-panel step-panel" data-process-step="2">
                 <div class="watermark-num" data-speed="0.8">
                   02
                 </div>
@@ -510,7 +513,7 @@ export const Home: FC = () => {
               </div>
 
               {/* Step 3 */}
-              <div class="journey-panel step-panel">
+              <div class="journey-panel step-panel" data-process-step="3">
                 <div class="watermark-num" data-speed="0.8">
                   03
                 </div>
@@ -529,7 +532,7 @@ export const Home: FC = () => {
               </div>
 
               {/* Step 4 */}
-              <div class="journey-panel step-panel">
+              <div class="journey-panel step-panel" data-process-step="4">
                 <div class="watermark-num" data-speed="0.8">
                   04
                 </div>
@@ -548,7 +551,7 @@ export const Home: FC = () => {
               </div>
 
               {/* Step 5 */}
-              <div class="journey-panel step-panel end-panel">
+              <div class="journey-panel step-panel end-panel" data-process-step="5">
                 <div class="watermark-num" data-speed="0.8">
                   05
                 </div>
@@ -574,6 +577,8 @@ export const Home: FC = () => {
         </div>
       </main>
 
+      <script src="/static/midnight-journey.js"></script>
+      <script src="/static/about-editorial.js"></script>
       <Footer />
     </Layout>
   )
