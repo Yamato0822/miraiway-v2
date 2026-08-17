@@ -3327,7 +3327,7 @@ body.intro-revealed .typography-globe.is-globe-ready {
 }
 
 /* ============================================================
-   Kinetic Typography Background (Luminous Editorial Dual Layer)
+   Kinetic Typography Background (Positioned Below Hero CTA)
    ============================================================ */
 #hero-section {
   position: relative;
@@ -3336,52 +3336,16 @@ body.intro-revealed .typography-globe.is-globe-ready {
 
 .kinetic-bg {
   position: absolute;
-  bottom: 0px;
+  bottom: 25px;
   top: auto;
   left: 0;
   width: 100%;
   overflow: hidden;
+  white-space: nowrap;
+  z-index: 1;
+  opacity: 0.13;
   pointer-events: none;
   user-select: none;
-  z-index: 1;
-  opacity: 0.16;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  transition: opacity 0.5s ease;
-}
-
-.kinetic-row {
-  width: 100%;
-  overflow: hidden;
-  white-space: nowrap;
-}
-
-.kinetic-row--upper {
-  opacity: 0.85;
-  margin-bottom: -10px;
-}
-
-.kinetic-row--upper .kinetic-track span {
-  font-family: var(--font-en, "Outfit", sans-serif);
-  font-size: clamp(2.2rem, 4.8vw, 4.6rem);
-  font-weight: 750;
-  letter-spacing: 0.08em;
-  color: transparent;
-  -webkit-text-stroke: 1.2px rgba(11, 32, 57, 0.45);
-  text-shadow: 0 2px 10px rgba(11, 32, 57, 0.05);
-  padding-right: 40px;
-}
-
-.kinetic-row--lower .kinetic-track span {
-  font-family: var(--font-en, "Outfit", sans-serif);
-  font-size: clamp(3.6rem, 7.6vw, 7.8rem);
-  font-weight: 900;
-  letter-spacing: 0.03em;
-  color: rgba(29, 78, 216, 0.02);
-  -webkit-text-stroke: 2px rgba(11, 32, 57, 0.55);
-  text-shadow: 0 4px 20px rgba(29, 78, 216, 0.08);
-  padding-right: 50px;
 }
 
 .kinetic-track {
@@ -3391,8 +3355,15 @@ body.intro-revealed .typography-globe.is-globe-ready {
   animation: kineticScrollLeft 48s linear infinite;
 }
 
-.kinetic-track--reverse {
-  animation: kineticScrollRight 56s linear infinite;
+.kinetic-track span {
+  font-family: var(--font-en, "Outfit", sans-serif);
+  font-size: clamp(3.5rem, 7vw, 7rem);
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  color: transparent;
+  -webkit-text-stroke: 1.8px rgba(11, 32, 57, 0.42);
+  text-shadow: 0 4px 20px rgba(11, 32, 57, 0.12);
+  padding-right: 50px;
 }
 
 @keyframes kineticScrollLeft {
@@ -3401,15 +3372,6 @@ body.intro-revealed .typography-globe.is-globe-ready {
   }
   100% {
     transform: translate3d(-50%, 0, 0);
-  }
-}
-
-@keyframes kineticScrollRight {
-  0% {
-    transform: translate3d(-50%, 0, 0);
-  }
-  100% {
-    transform: translate3d(0, 0, 0);
   }
 }
 

@@ -83,21 +83,11 @@ export const Home: FC = () => {
                   </div>
                 </div>
 
-                {/* Kinetic Typography Background - Luminous Editorial Dual-Layer */}
+                {/* Kinetic Typography Background - Positioned below 'サービスを見る' */}
                 <div class="kinetic-bg" aria-hidden="true">
-                  {/* Layer 1 (Upper Row - Fine Hairline Outline, Scrolling Left-to-Right) */}
-                  <div class="kinetic-row kinetic-row--upper">
-                    <div class="kinetic-track kinetic-track--reverse">
-                      <span>SRI LANKA &times; JAPAN &mdash; GLOBAL TALENT &mdash; CAREER HORIZON &mdash; MIRAIWAY ECOSYSTEM &mdash;&nbsp;</span>
-                      <span>SRI LANKA &times; JAPAN &mdash; GLOBAL TALENT &mdash; CAREER HORIZON &mdash; MIRAIWAY ECOSYSTEM &mdash;&nbsp;</span>
-                    </div>
-                  </div>
-                  {/* Layer 2 (Lower Row - Bold Architectural Stroke, Scrolling Right-to-Left) */}
-                  <div class="kinetic-row kinetic-row--lower">
-                    <div class="kinetic-track">
-                      <span>BEYOND BORDERS &mdash; MIRAI WAY &mdash; EMPOWERING PEOPLE &mdash; CONNECTING FUTURES &mdash;&nbsp;</span>
-                      <span>BEYOND BORDERS &mdash; MIRAI WAY &mdash; EMPOWERING PEOPLE &mdash; CONNECTING FUTURES &mdash;&nbsp;</span>
-                    </div>
+                  <div class="kinetic-track">
+                    <span>MIRAI WAY &mdash; CONNECTING THE FUTURE &mdash; BEYOND BORDERS &mdash;&nbsp;</span>
+                    <span>MIRAI WAY &mdash; CONNECTING THE FUTURE &mdash; BEYOND BORDERS &mdash;&nbsp;</span>
                   </div>
                 </div>
               </section>
