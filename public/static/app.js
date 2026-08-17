@@ -222,21 +222,21 @@
       }, { passive: true });
     }
     const fontFamily = "'Outfit', 'Noto Sans JP', sans-serif";
-    const cosmicTypeColors = ['#b9d7ff', '#8fbaff', '#6fa2ff', '#4f86f7'];
+    const cosmicTypeColors = ['#cbe2ff', '#93c5fd', '#60a5fa', '#3b82f6'];
     
     const bands = [
-      { text: "MiraiWay · Opportunity · Growth · ", lat: 1.35, fontSize: 16, color: "#98BCDE", speed: 0.0015, weight: 500 },
-      { text: "Sri Lanka · Japan · Connection · Education · Future · ", lat: 1.15, fontSize: 20, color: "#7BA3CD", speed: 0.002, weight: 500 },
-      { text: "Global Talent · Support · Career Growth · Learning · Community · ", lat: 0.9, fontSize: 25, color: "#5482B0", speed: 0.0025, weight: 600 },
-      { text: "Education · Future · MiraiWay · Support · Learning · ", lat: 0.65, fontSize: 30, color: "#306191", speed: 0.003, weight: 600 },
-      { text: "Sri Lanka · Opportunity · Trust · Support · ", lat: 0.35, fontSize: 40, color: "#184675", speed: 0.0022, weight: 700 },
-      { text: "MiraiWay · Education · Sri Lanka · ", lat: 0.05, fontSize: 86, color: "#0A1F36", speed: 0.0035, weight: 800 }, 
-      { text: "Japan Connection Future · Trust · Opportunity · ", lat: -0.28, fontSize: 60, color: "#102E4E", speed: 0.003, weight: 750 },
-      { text: "Opportunity · Talent · Growth · Career · Community · ", lat: -0.6, fontSize: 40, color: "#184675", speed: 0.0025, weight: 700 },
-      { text: "Building Bridges · Empowering People · Vision · Success · ", lat: -0.85, fontSize: 30, color: "#306191", speed: 0.002, weight: 600 },
-      { text: "Sri Lanka · Japan · Connection · Learning · Future · Way · ", lat: -1.08, fontSize: 24, color: "#5482B0", speed: 0.0025, weight: 600 },
-      { text: "MiraiWay · Creating Opportunities · Bright Tomorrow · ", lat: -1.28, fontSize: 18, color: "#7BA3CD", speed: 0.002, weight: 500 },
-      { text: "Global Bridge · Mutual Trust · Learning · ", lat: -1.45, fontSize: 15, color: "#98BCDE", speed: 0.0015, weight: 500 },
+      { text: "MIRAIWAY · BEYOND BORDERS · CAREER HORIZON · ", lat: 1.38, fontSize: 16, color: "#8cb4dc", speed: 0.0012, weight: 600 },
+      { text: "SRI LANKA × JAPAN · GLOBAL TALENT ECOSYSTEM · ", lat: 1.18, fontSize: 22, color: "#5d90c5", speed: 0.0018, weight: 700 },
+      { text: "Education · Language · Mindset · Specialized Skills · ", lat: 0.92, fontSize: 26, color: "#3d6fa3", speed: 0.0022, weight: 600 },
+      { text: "OPPORTUNITY · CAREER ADVANCEMENT · TRUST · ", lat: 0.64, fontSize: 34, color: "#255385", speed: 0.0026, weight: 750 },
+      { text: "Sri Lanka · Japan · Global Network · Support · ", lat: 0.34, fontSize: 44, color: "#143a66", speed: 0.0024, weight: 750 },
+      { text: "MIRAIWAY · CONNECTING POSSIBILITIES · ", lat: 0.04, fontSize: 94, color: "#06182e", speed: 0.0035, weight: 900 }, 
+      { text: "SRI LANKA × JAPAN · EMPOWERING FUTURES · ", lat: -0.28, fontSize: 62, color: "#0a223f", speed: 0.0030, weight: 850 },
+      { text: "Recruitment · Settlement Support · Long-term Partnership · ", lat: -0.58, fontSize: 38, color: "#184675", speed: 0.0025, weight: 700 },
+      { text: "BUILDING BRIDGES · CREATING VALUE · SHARED VISION · ", lat: -0.84, fontSize: 30, color: "#2d6092", speed: 0.0020, weight: 750 },
+      { text: "Bilingual Training · Culture · Life Guidance · ", lat: -1.08, fontSize: 24, color: "#4d7eaF", speed: 0.0022, weight: 600 },
+      { text: "MiraiWay · Tomorrow Begins Today · Bright Horizon · ", lat: -1.28, fontSize: 18, color: "#74a3ce", speed: 0.0016, weight: 500 },
+      { text: "Mutual Trust · Respect · Global Future · ", lat: -1.45, fontSize: 14, color: "#9ac0e4", speed: 0.0012, weight: 500 },
     ];
     
     let points = [];
@@ -338,26 +338,29 @@
     globeGlowCanvas.width = 512;
     globeGlowCanvas.height = 512;
     const globeGlowCtx = globeGlowCanvas.getContext('2d', { alpha: true });
-    const globeGlowGradient = globeGlowCtx.createRadialGradient(256, 256, 8, 256, 256, 250);
-    globeGlowGradient.addColorStop(0, 'rgba(116, 166, 255, 0.32)');
-    globeGlowGradient.addColorStop(0.36, 'rgba(74, 126, 238, 0.2)');
-    globeGlowGradient.addColorStop(0.68, 'rgba(31, 67, 154, 0.08)');
-    globeGlowGradient.addColorStop(1, 'rgba(10, 26, 70, 0)');
+    const globeGlowGradient = globeGlowCtx.createRadialGradient(256, 256, 12, 256, 256, 250);
+    globeGlowGradient.addColorStop(0, 'rgba(56, 189, 248, 0.32)');
+    globeGlowGradient.addColorStop(0.32, 'rgba(37, 99, 235, 0.22)');
+    globeGlowGradient.addColorStop(0.68, 'rgba(30, 64, 175, 0.08)');
+    globeGlowGradient.addColorStop(1, 'rgba(6, 24, 46, 0)');
     globeGlowCtx.fillStyle = globeGlowGradient;
     globeGlowCtx.fillRect(0, 0, 512, 512);
 
     function getGlyphSprite(point, variant) {
-      const cacheKey = `${point.bandIndex}:${point.char}:${variant}`;
+      const isAccentGlyph = point.char === '·' || point.char === '×' || point.char === '—';
+      const cacheKey = `${point.bandIndex}:${point.char}:${variant}:${isAccentGlyph ? 'acc' : 'std'}`;
       const cached = glyphSpriteCache.get(cacheKey);
       if (cached) return cached;
 
       const rgb = variant === 'base' ? point.baseRgb : point.cosmicRgb;
-      const color = `rgb(${rgb[0]} ${rgb[1]} ${rgb[2]})`;
+      const color = isAccentGlyph && variant === 'base'
+        ? '#38bdf8'
+        : `rgb(${rgb[0]} ${rgb[1]} ${rgb[2]})`;
       const font = `${point.weight} ${point.fontSize}px ${fontFamily}`;
       glyphMeasureCtx.font = font;
       const metrics = glyphMeasureCtx.measureText(point.char);
       const glyphWidth = Math.max(2, Math.ceil(metrics.width));
-      const padding = Math.ceil(point.fontSize * 0.16 + 3);
+      const padding = Math.ceil(point.fontSize * 0.2 + 4);
       const logicalSpriteWidth = glyphWidth + padding * 2;
       const logicalSpriteHeight = Math.ceil(point.fontSize * 1.55) + padding * 2;
       const spriteCanvas = document.createElement('canvas');
@@ -367,6 +370,10 @@
       spriteCtx.scale(glyphDpr, glyphDpr);
       spriteCtx.font = font;
       spriteCtx.fillStyle = color;
+      if (isAccentGlyph) {
+        spriteCtx.shadowColor = 'rgba(56, 189, 248, 0.6)';
+        spriteCtx.shadowBlur = 6;
+      }
       spriteCtx.textAlign = 'center';
       spriteCtx.textBaseline = 'middle';
       spriteCtx.fillText(point.char, logicalSpriteWidth / 2, logicalSpriteHeight / 2);
