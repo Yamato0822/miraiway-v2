@@ -41,10 +41,12 @@
       document.body.classList.remove('is-loading');
       document.body.classList.add('intro-revealed');
 
-      // Trigger animated marker line drawing
-      const markerWrap = document.querySelector('.animated-marker-wrap');
-      if (markerWrap) {
-        setTimeout(() => markerWrap.classList.add('is-drawing'), 250);
+      // Trigger animated marker line drawing only if not in OP cinematic mode
+      if (!document.getElementById('hero-journey-section')) {
+        const markerWrap = document.querySelector('.animated-marker-wrap');
+        if (markerWrap) {
+          setTimeout(() => markerWrap.classList.add('is-drawing'), 250);
+        }
       }
     }, progressSettleDuration);
 

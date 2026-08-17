@@ -4813,6 +4813,14 @@ function Wm(i, t){
         corporateCopyAlpha < 0.995 ? `blur(${rounded((1 - corporateCopyAlpha) * 10, 2)}px)` : "none"
       );
       setCachedStyle(heroCopyEl, "pointerEvents", corporateCopyAlpha > 0.72 ? "auto" : "none");
+
+      if (corporateCopyAlpha > 0.35 && !markerHasDrawn) {
+        markerHasDrawn = true;
+        const markerWrap = document.querySelector(".animated-marker-wrap");
+        if (markerWrap) {
+          markerWrap.classList.add("is-drawing");
+        }
+      }
     }
     setCachedStyle(heroCtaEl, "opacity", rounded(corporateCopyAlpha));
     setCachedStyle(kineticBgEl, "opacity", rounded(corporateCopyAlpha * 0.13));
@@ -4997,6 +5005,7 @@ function Wm(i, t){
   let autoTransitionStarted = false;
   let hasCompletedJourney = false;
   let hasEverCompleted = false;
+  let markerHasDrawn = false;
 
   function transitionToCorporate() {
     if (isTransitioningToCorporate) return;
@@ -5010,6 +5019,17 @@ function Wm(i, t){
     const startY = window.scrollY;
     const startTime = performance.now();
     const duration = 2200;
+
+    // Trigger marker drawing line animation during corporate landing glide
+    setTimeout(() => {
+      if (!markerHasDrawn) {
+        markerHasDrawn = true;
+        const markerWrap = document.querySelector('.animated-marker-wrap');
+        if (markerWrap) {
+          markerWrap.classList.add('is-drawing');
+        }
+      }
+    }, 450);
 
     // Prevent CSS smooth-scroll collision with requestAnimationFrame step
     const origScrollBehavior = document.documentElement.style.scrollBehavior;

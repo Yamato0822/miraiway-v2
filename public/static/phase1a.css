@@ -3251,31 +3251,47 @@ body.intro-revealed .typography-globe.is-globe-ready {
 .animated-marker-bg {
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 50%, #1e40af 100%);
-  border-radius: 0;
+  background: linear-gradient(135deg, #1e40af 0%, #2563eb 50%, #3b82f6 100%);
+  border-radius: 2px;
   z-index: 1;
   transform-origin: left center;
   transform: scaleX(0);
-  box-shadow: 0 4px 18px rgba(29, 78, 216, 0.35);
+  box-shadow: 0 4px 20px rgba(37, 99, 235, 0.4);
   will-change: transform;
+}
+
+.animated-marker-bg::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 4px;
+  height: 100%;
+  background: #ffffff;
+  box-shadow: 0 0 10px #93c5fd, 0 0 18px #3b82f6;
+  opacity: 0;
+  transition: opacity 0.2s ease;
 }
 
 .animated-marker-text {
   position: relative;
   z-index: 2;
   color: var(--mw-ink, #0b2039);
-  transition: color 0.3s ease;
+  transition: color 0.4s cubic-bezier(0.16, 1, 0.3, 1), text-shadow 0.4s ease;
 }
 
-/* Trigger draw animation when JS adds .is-drawing or body becomes .intro-revealed */
-.animated-marker-wrap.is-drawing .animated-marker-bg,
-body.intro-revealed .animated-marker-bg {
-  animation: markerLineDraw 1.1s cubic-bezier(0.22, 1, 0.36, 1) 0.2s forwards;
+/* Trigger draw animation strictly when JS adds .is-drawing after OP / dawn transition */
+.animated-marker-wrap.is-drawing .animated-marker-bg {
+  animation: markerLineDraw 0.95s cubic-bezier(0.16, 1, 0.3, 1) 0.15s forwards;
 }
 
-.animated-marker-wrap.is-drawing .animated-marker-text,
-body.intro-revealed .animated-marker-text {
-  animation: markerTextColor 0.4s ease 0.45s forwards;
+.animated-marker-wrap.is-drawing .animated-marker-bg::after {
+  opacity: 1;
+  animation: markerGlowFade 0.95s cubic-bezier(0.16, 1, 0.3, 1) 0.15s forwards;
+}
+
+.animated-marker-wrap.is-drawing .animated-marker-text {
+  animation: markerTextColor 0.45s ease 0.42s forwards;
 }
 
 @keyframes markerLineDraw {
@@ -3287,12 +3303,26 @@ body.intro-revealed .animated-marker-text {
   }
 }
 
+@keyframes markerGlowFade {
+  0% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
 @keyframes markerTextColor {
   0% {
     color: var(--mw-ink, #0b2039);
+    text-shadow: none;
   }
   100% {
     color: #ffffff;
+    text-shadow: 0 1px 4px rgba(10, 30, 80, 0.35);
   }
 }
 
