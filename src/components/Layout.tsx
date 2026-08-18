@@ -45,7 +45,12 @@ export const Layout: FC<PropsWithChildren<LayoutProps>> = ({
         <link href="/static/about-editorial.css" rel="stylesheet" />
         <link href="/static/service-detail.css" rel="stylesheet" />
         <link href="/static/midnight-journey.css" rel="stylesheet" />
-        <link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+        <link rel="manifest" href="/site.webmanifest" />
+        <meta name="theme-color" content="#0a1f36" />
       </head>
       <body class="is-loading">
         <a class="skip-link" href="#page-main">本文へ移動</a>
@@ -64,6 +69,27 @@ export const Layout: FC<PropsWithChildren<LayoutProps>> = ({
         </div>
 
         {children}
+
+        {/* Floating Scroll to Top Button with Dynamic Circular Progress */}
+        <button
+          id="scroll-to-top"
+          class="scroll-to-top"
+          type="button"
+          aria-label="ページトップへ戻る"
+          title="ページトップへ戻る"
+        >
+          <svg class="scroll-to-top__progress" viewBox="0 0 48 48" aria-hidden="true">
+            <circle class="scroll-to-top__track" cx="24" cy="24" r="21" />
+            <circle class="scroll-to-top__bar" id="scroll-top-bar" cx="24" cy="24" r="21" />
+          </svg>
+          <span class="scroll-to-top__content" aria-hidden="true">
+            <svg class="scroll-to-top__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 15l-6-6-6 6"/>
+            </svg>
+            <span class="scroll-to-top__text">TOP</span>
+          </span>
+        </button>
+
         <script src="https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
         <script src="/static/app.js"></script>
         <script src="/static/phase1a.js"></script>

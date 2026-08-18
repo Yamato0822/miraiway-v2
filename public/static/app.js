@@ -1878,4 +1878,47 @@
     visionGlobeObserver.observe(visionGlobeCanvas);
   }
 
+  /* ---------- Floating Scroll to Top Controller with Circular Scroll Progress ---------- */
+  const scrollTopBtn = document.getElementById('scroll-to-top');
+  const scrollTopBar = document.getElementById('scroll-top-bar');
+  if (scrollTopBtn) {
+    const radius = 21;
+    const circumference = 2 * Math.PI * radius; // ~131.95px
+    if (scrollTopBar) {
+      scrollTopBar.style.strokeDasharray = `${circumference} ${circumference}`;
+      scrollTopBar.style.strokeDashoffset = `${circumference}`;
+    }
+
+    let isScrollTopVisible = false;
+
+    function updateScrollTopProgress() {
+      const scrollY = window.scrollY || window.pageYOffset || 0;
+      const maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+      const progress = Math.min(1, Math.max(0, scrollY / maxScroll));
+
+      // Show button after user scrolls down beyond 350px
+      const shouldShow = scrollY > 350;
+      if (shouldShow !== isScrollTopVisible) {
+        isScrollTopVisible = shouldShow;
+        scrollTopBtn.classList.toggle('is-visible', shouldShow);
+      }
+
+      if (scrollTopBar) {
+        const offset = circumference * (1 - progress);
+        scrollTopBar.style.strokeDashoffset = offset.toFixed(2);
+      }
+    }
+
+    window.addEventListener('scroll', updateScrollTopProgress, { passive: true });
+    updateScrollTopProgress();
+
+    scrollTopBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    });
+  }
+
 })();

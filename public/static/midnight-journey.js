@@ -3902,285 +3902,7 @@ void main() {
         vec3 col = mix(vec3(0.62, 0.70, 0.92), vec3(1.0), vT);
         gl_FragColor = vec4(col, a);
       }
-    `}),r=new Xe(n,s);return r.name="starfield",{points:r,material:s,update(o){s.uniforms.uTime.value=o},setOpacity(o){s.uniforms.uOpacity.value=o}}}
-
-function createLogoConstellationSystem() {
-  const group = new Ue();
-  group.name = "logo-constellation";
-
-  const pointsData = [];
-  
-  // 1. MiraiWay "M" Arc 1 (Left Swoop - Cyan/Electric Blue):
-  const arc1Points = 480;
-  for (let j = 0; j < arc1Points; j++) {
-    const t = j / (arc1Points - 1);
-    const inv = 1 - t;
-    const x = inv*inv*inv*(-0.55) + 3*inv*inv*t*(-0.48) + 3*inv*t*t*(-0.26) + t*t*t*(-0.06);
-    const y = inv*inv*inv*(-0.30) + 3*inv*inv*t*(0.48) + 3*inv*t*t*(0.42) + t*t*t*(-0.04);
-    const width = 0.042 * (1 - Math.abs(t - 0.5) * 0.7);
-    const jitter = (Math.random() - 0.5) * 2;
-    pointsData.push({
-      logoPos: [x + jitter * width, y + jitter * width, (Math.random() - 0.5) * 0.04],
-      color: [0.22, 0.65 + Math.random() * 0.35, 1.0], // Electric Cyan/Blue
-      size: 2.2 + Math.random() * 2.2,
-      rand: Math.random(),
-      delay: Math.hypot(x, y) * 0.45
-    });
-  }
-
-  // 2. MiraiWay "M" Arc 2 (Right Arch & Star Sweep - Radiant Sun Gold):
-  const arc2Points = 600;
-  for (let j = 0; j < arc2Points; j++) {
-    const t = j / (arc2Points - 1);
-    const inv = 1 - t;
-    const x = inv*inv*inv*(-0.08) + 3*inv*inv*t*(0.14) + 3*inv*t*t*(0.52) + t*t*t*(0.64);
-    const y = inv*inv*inv*(-0.06) + 3*inv*inv*t*(0.65) + 3*inv*t*t*(0.48) + t*t*t*(-0.30);
-    const width = 0.048 * (1 - Math.abs(t - 0.5) * 0.7);
-    const jitter = (Math.random() - 0.5) * 2;
-    pointsData.push({
-      logoPos: [x + jitter * width, y + jitter * width, (Math.random() - 0.5) * 0.04],
-      color: [1.0, 0.74 + Math.random() * 0.22, 0.20 + Math.random() * 0.2], // Radiant Sun Gold
-      size: 2.4 + Math.random() * 2.4,
-      rand: Math.random(),
-      delay: Math.hypot(x, y) * 0.45
-    });
-  }
-
-  // 3. Guiding Radiant Star (Diamond / 4-point sparkle at the golden apex):
-  const starCenterX = 0.24, starCenterY = 0.64;
-  const starPoints = 250;
-  for (let j = 0; j < starPoints; j++) {
-    const angle = (Math.floor(Math.random() * 4) * Math.PI / 2) + (Math.random() - 0.5) * 0.15;
-    const rayDist = Math.pow(Math.random(), 1.6) * 0.24;
-    const sx = starCenterX + Math.cos(angle) * rayDist;
-    const sy = starCenterY + Math.sin(angle) * rayDist;
-    pointsData.push({
-      logoPos: [sx, sy, (Math.random() - 0.5) * 0.04],
-      color: [1.0, 0.96, 0.82], // Brilliant White-Gold Star
-      size: 3.2 + Math.random() * 3.6,
-      rand: Math.random(),
-      delay: 0.08 + Math.random() * 0.15
-    });
-  }
-
-  // 4. "MiraiWay" Dot-Matrix Geometric Letterforms:
-  const textChars = [
-    { x: -0.66, strokes: [[0,0, 0,0.20], [0,0.20, 0.055,0.10], [0.055,0.10, 0.11,0.20], [0.11,0.20, 0.11,0]] }, // M
-    { x: -0.49, strokes: [[0,0, 0,0.13], [0,0.18, 0,0.20]] }, // i
-    { x: -0.41, strokes: [[0,0, 0,0.13], [0,0.09, 0.065,0.13]] }, // r
-    { x: -0.28, strokes: [[0.065,0, 0.065,0.13], [0,0.065, 0.065,0.13], [0,0.065, 0.065,0], [0,0.065, 0,0]] }, // a
-    { x: -0.15, strokes: [[0,0, 0,0.13], [0,0.18, 0,0.20]] }, // i
-    { x: 0.02, strokes: [[0,0.20, 0.03,0], [0.03,0, 0.065,0.14], [0.065,0.14, 0.10,0], [0.10,0, 0.13,0.20]] }, // W
-    { x: 0.22, strokes: [[0.065,0, 0.065,0.13], [0,0.065, 0.065,0.13], [0,0.065, 0.065,0], [0,0.065, 0,0]] }, // a
-    { x: 0.36, strokes: [[0,0.13, 0.045,0], [0.08,0.13, 0.02,-0.07]] } // y
-  ];
-
-  const textBaseY = -0.50;
-  textChars.forEach(char => {
-    char.strokes.forEach(([x1, y1, x2, y2]) => {
-      const segSteps = 14;
-      for (let s = 0; s <= segSteps; s++) {
-        const st = s / segSteps;
-        const px = char.x + x1 + (x2 - x1) * st;
-        const py = textBaseY + y1 + (y2 - y1) * st;
-        pointsData.push({
-          logoPos: [px, py, (Math.random() - 0.5) * 0.03],
-          color: [0.82, 0.92, 1.0], // Ice Blue White
-          size: 1.8 + Math.random() * 1.6,
-          rand: Math.random(),
-          delay: 0.18 + Math.abs(px) * 0.35
-        });
-      }
-    });
-  });
-
-  // 5. Ambient Stardust Orbiting the Logo:
-  const ambientCount = 700;
-  for (let j = 0; j < ambientCount; j++) {
-    const angle = Math.random() * Math.PI * 2;
-    const r = 0.35 + Math.random() * 0.95;
-    const px = Math.cos(angle) * r;
-    const py = Math.sin(angle) * (r * 0.72) + 0.08;
-    pointsData.push({
-      logoPos: [px, py, (Math.random() - 0.5) * 0.28],
-      color: Math.random() > 0.45 ? [0.38, 0.72, 1.0] : [1.0, 0.82, 0.32],
-      size: 1.5 + Math.random() * 1.9,
-      rand: Math.random(),
-      delay: Math.random() * 0.4
-    });
-  }
-
-  // 6. Constellation connecting lines
-  const linePositions = [];
-  const lineColors = [];
-  for (let a = 0; a < pointsData.length; a += 3) {
-    for (let b = a + 1; b < Math.min(pointsData.length, a + 12); b++) {
-      const pa = pointsData[a].logoPos;
-      const pb = pointsData[b].logoPos;
-      const d = Math.hypot(pa[0] - pb[0], pa[1] - pb[1], pa[2] - pb[2]);
-      if (d > 0.012 && d < 0.068) {
-        linePositions.push(pa[0] * 1.9, pa[1] * 1.9, pa[2] * 1.9 + 2.2, pb[0] * 1.9, pb[1] * 1.9, pb[2] * 1.9 + 2.2);
-        const col = pointsData[a].color;
-        lineColors.push(col[0], col[1], col[2], col[0], col[1], col[2]);
-      }
-    }
-  }
-
-  const lineGeo = new Qt();
-  lineGeo.setAttribute("position", new Wt(new Float32Array(linePositions), 3));
-  lineGeo.setAttribute("color", new Wt(new Float32Array(lineColors), 3));
-  const lineMat = new Ti({
-    vertexColors: true,
-    transparent: true,
-    opacity: 0.38,
-    depthWrite: false,
-    blending: he
-  });
-  const lineSegments = new $i(lineGeo, lineMat);
-  group.add(lineSegments);
-
-  // 7. Buffers for particles
-  const total = pointsData.length;
-  const logoPosArr = new Float32Array(total * 3);
-  const starPosArr = new Float32Array(total * 3);
-  const colorArr = new Float32Array(total * 3);
-  const sizeArr = new Float32Array(total);
-  const randArr = new Float32Array(total);
-  const delayArr = new Float32Array(total);
-
-  for (let i = 0; i < total; i++) {
-    const p = pointsData[i];
-    logoPosArr[i * 3] = p.logoPos[0] * 1.9;
-    logoPosArr[i * 3 + 1] = p.logoPos[1] * 1.9;
-    logoPosArr[i * 3 + 2] = p.logoPos[2] * 1.9 + 2.2;
-
-    const theta = Math.random() * Math.PI * 2;
-    const phi = (Math.random() - 0.5) * Math.PI;
-    const radius = 24.0 + Math.random() * 45.0;
-
-    starPosArr[i * 3] = radius * Math.cos(phi) * Math.cos(theta);
-    starPosArr[i * 3 + 1] = radius * Math.sin(phi);
-    starPosArr[i * 3 + 2] = radius * Math.cos(phi) * Math.sin(theta);
-
-    colorArr[i * 3] = p.color[0];
-    colorArr[i * 3 + 1] = p.color[1];
-    colorArr[i * 3 + 2] = p.color[2];
-
-    sizeArr[i] = p.size;
-    randArr[i] = p.rand;
-    delayArr[i] = p.delay;
-  }
-
-  const partGeo = new Qt();
-  partGeo.setAttribute("aLogoPos", new Wt(logoPosArr, 3));
-  partGeo.setAttribute("aStarPos", new Wt(starPosArr, 3));
-  partGeo.setAttribute("aColor", new Wt(colorArr, 3));
-  partGeo.setAttribute("aSize", new Wt(sizeArr, 1));
-  partGeo.setAttribute("aRand", new Wt(randArr, 1));
-  partGeo.setAttribute("aScatterDelay", new Wt(delayArr, 1));
-  partGeo.setAttribute("position", new Wt(new Float32Array(total * 3), 3));
-
-  const partMat = new Xt({
-    transparent: true,
-    depthWrite: false,
-    blending: he,
-    uniforms: {
-      uTime: { value: 0 },
-      uScatterProgress: { value: 0 },
-      uPixelRatio: { value: Math.min(window.devicePixelRatio || 1, 2) },
-      uOpacity: { value: 1.0 }
-    },
-    vertexShader: `
-      uniform float uTime;
-      uniform float uScatterProgress;
-      uniform float uPixelRatio;
-      
-      attribute vec3 aLogoPos;
-      attribute vec3 aStarPos;
-      attribute vec3 aColor;
-      attribute float aSize;
-      attribute float aRand;
-      attribute float aScatterDelay;
-
-      varying vec3 vColor;
-      varying float vAlpha;
-
-      void main() {
-        vColor = aColor;
-
-        float p = clamp((uScatterProgress - aScatterDelay * 0.28) / max(0.001, 1.0 - aScatterDelay * 0.28), 0.0, 1.0);
-        
-        // High-order quartic ease out with energetic initial burst
-        float ease = 1.0 - pow(1.0 - p, 3.8);
-        
-        // Dynamic vortex swirl during scatter
-        float angle = aRand * 6.28318 + p * 3.14159;
-        vec3 swirl = vec3(sin(angle), cos(angle), sin(angle * 2.0)) * (sin(p * 3.14159) * 2.2);
-
-        vec3 curPos = mix(aLogoPos, aStarPos, ease) + swirl;
-
-        // Subtle crystalline breathing pulse during logo phase
-        if (p < 0.05) {
-          curPos.xy *= (1.0 + sin(uTime * 2.8) * 0.022);
-        }
-
-        vec4 mv = modelViewMatrix * vec4(curPos, 1.0);
-        gl_Position = projectionMatrix * mv;
-
-        float tw = 0.65 + 0.35 * sin(uTime * (1.2 + aRand * 2.8) + aRand * 50.0);
-        float sizeMult = mix(1.35, 0.85, p);
-        gl_PointSize = aSize * uPixelRatio * tw * sizeMult;
-
-        vAlpha = mix(0.98, 0.75 + 0.25 * tw, p);
-      }
-    `,
-    fragmentShader: `
-      uniform float uOpacity;
-      varying vec3 vColor;
-      varying float vAlpha;
-
-      void main() {
-        vec2 uv = gl_PointCoord - 0.5;
-        float d = length(uv);
-        if (d > 0.5) discard;
-
-        float core = smoothstep(0.18, 0.0, d);
-        float aura = smoothstep(0.5, 0.0, d);
-        float intensity = aura * 0.75 + core * 0.65;
-
-        vec3 finalColor = mix(vColor, vec3(1.0), core * 0.55);
-        gl_FragColor = vec4(finalColor, intensity * vAlpha * uOpacity);
-      }
-    `
-  });
-
-  const pointsMesh = new Xe(partGeo, partMat);
-  pointsMesh.frustumCulled = false;
-  group.add(pointsMesh);
-
-  return {
-    group,
-    pointsMesh,
-    lineSegments,
-    update(time, scatterP, timelineT) {
-      partMat.uniforms.uTime.value = time;
-      partMat.uniforms.uScatterProgress.value = scatterP;
-      
-      const lineAlpha = Math.max(0, 1.0 - (timelineT >= 1.3 ? Math.min(1, (timelineT - 1.3) / 0.7) : 0));
-      lineMat.opacity = 0.38 * lineAlpha;
-      lineSegments.visible = lineAlpha > 0.01;
-
-      if (scatterP < 0.1) {
-        group.rotation.z = Math.sin(time * 0.8) * 0.015;
-      } else {
-        group.rotation.y = time * 0.003;
-      }
-    },
-    setOpacity(op) {
-      partMat.uniforms.uOpacity.value = op;
-    }
-  };
-}function Ha(i,t={}){let{color:e="#6c8cff",coreColor:n="#dfe7ff",radius:s=1.004,mode:r="sphere",scale:o=1,center:a=null,lineWidthScale:l=1,fillDensity:c=1}=t,h=new Ue;h.name="country-plasma";let d=new pt(e),f=new pt(n),m=a??Nm(i.rings),g=i.rings.slice().sort((U,F)=>oc(F)-oc(U)),_=[],p=[],u=[],w=[],x=[],A=[],L=0,b=g.map(U=>{let F=0;for(let J=1;J<U.length;J++)F+=ac(U[J-1],U[J]);return L+=F,F}),T=0,R=[],v=0;for(let U=0;U<g.length;U++){let F=g[U];for(let J=0;J<F.length-1;J++){let q=ka(F[J],m,r,s,o),O=ka(F[J+1],m,r,s,o),X=ac(F[J],F[J+1]),Z=L>0?T/L:0;T+=X;let Y=L>0?T/L:1;for(let[V,$,st]of[[q,O,Z],[q,O,Z],[O,q,Y],[O,q,Y]])_.push(V.x,V.y,V.z),p.push($.x,$.y,$.z),w.push(st),x.push(Math.random()),A.push(U);u.push(-1,1,-1,1),R.push(v,v+2,v+1,v+1,v+2,v+3),v+=4}}let y=new Qt;y.setAttribute("position",new qt(_,3)),y.setAttribute("aNext",new qt(p,3)),y.setAttribute("aSide",new qt(u,1)),y.setAttribute("aProgress",new qt(w,1)),y.setAttribute("aJitter",new qt(x,1)),y.setIndex(R),y.computeBoundingSphere();let D=new Xt({transparent:!0,depthWrite:!1,depthTest:r==="sphere",blending:he,side:Be,uniforms:{uTime:{value:0},uDraw:{value:0},uOpacity:{value:1},uWidth:{value:.0042*l},uColor:{value:d.clone()},uCore:{value:f.clone()},uElectric:{value:1},uResolution:{value:new At(1,1)},uHeadGlow:{value:1}},vertexShader:`
+    `}),r=new Xe(n,s);return r.name="starfield",{points:r,material:s,update(o){s.uniforms.uTime.value=o},setOpacity(o){s.uniforms.uOpacity.value=o}}}function Ha(i,t={}){let{color:e="#6c8cff",coreColor:n="#dfe7ff",radius:s=1.004,mode:r="sphere",scale:o=1,center:a=null,lineWidthScale:l=1,fillDensity:c=1}=t,h=new Ue;h.name="country-plasma";let d=new pt(e),f=new pt(n),m=a??Nm(i.rings),g=i.rings.slice().sort((U,F)=>oc(F)-oc(U)),_=[],p=[],u=[],w=[],x=[],A=[],L=0,b=g.map(U=>{let F=0;for(let J=1;J<U.length;J++)F+=ac(U[J-1],U[J]);return L+=F,F}),T=0,R=[],v=0;for(let U=0;U<g.length;U++){let F=g[U];for(let J=0;J<F.length-1;J++){let q=ka(F[J],m,r,s,o),O=ka(F[J+1],m,r,s,o),X=ac(F[J],F[J+1]),Z=L>0?T/L:0;T+=X;let Y=L>0?T/L:1;for(let[V,$,st]of[[q,O,Z],[q,O,Z],[O,q,Y],[O,q,Y]])_.push(V.x,V.y,V.z),p.push($.x,$.y,$.z),w.push(st),x.push(Math.random()),A.push(U);u.push(-1,1,-1,1),R.push(v,v+2,v+1,v+1,v+2,v+3),v+=4}}let y=new Qt;y.setAttribute("position",new qt(_,3)),y.setAttribute("aNext",new qt(p,3)),y.setAttribute("aSide",new qt(u,1)),y.setAttribute("aProgress",new qt(w,1)),y.setAttribute("aJitter",new qt(x,1)),y.setIndex(R),y.computeBoundingSphere();let D=new Xt({transparent:!0,depthWrite:!1,depthTest:r==="sphere",blending:he,side:Be,uniforms:{uTime:{value:0},uDraw:{value:0},uOpacity:{value:1},uWidth:{value:.0042*l},uColor:{value:d.clone()},uCore:{value:f.clone()},uElectric:{value:1},uResolution:{value:new At(1,1)},uHeadGlow:{value:1}},vertexShader:`
       uniform float uTime;
       uniform float uDraw;
       uniform float uWidth;
@@ -4449,10 +4171,8 @@ var is=[
 ];
 var ss=is[is.length-1].end;
 var Dn=[
-  [0.0,  7.6,  80.4, 4.40],
-  [1.4,  7.6,  80.4, 4.20],
-  [3.2,  7.6,  80.4, 2.35],
-  [4.8,  7.0,  80.6, 2.05],
+  [0.0,  7.6,  80.4, 2.15],
+  [4.5,  7.0,  80.6, 2.05],
   [7.2,  7.8,  81.5, 2.08],
   [8.8,  9.6,  84.2, 2.24],
   [11.0, 13.5, 93.5, 2.54],
@@ -4518,13 +4238,14 @@ function dc(i){
   let t=km(i),
       e=Hm(i),
       n=1.0,
-      s=yt(2.8,6.5,i)*(1-yt(8,9.2,i)),
+      s=yt(0.8,5,i)*(1-yt(8,9.2,i)),
       r=yt(17.4,19.2,i)*(1-yt(27,28.4,i)),
       o=Math.max(s,r),
-      a=yt(1.4, 3.0, i),
-      l=Ba(yt(2.6, 4.5, i)),
-      c=yt(2.6, 4.0, i)*Math.max(0.4,1-yt(8.6,10.2,i)*.72)*(1-yt(27.6,29.6,i)*.35),
-      h=yt(2.6, 4.2, i)*(1-yt(5.4,7.6,i)*.62),
+      a=1.0,
+      // Sri Lanka starts dark / unlit at t=0, then smoothly ignites from t=0.6s to 2.8s
+      l=Ba(yt(0.6,2.8,i)),
+      c=yt(0.6,2.2,i)*Math.max(0.4,1-yt(8.6,10.2,i)*.72)*(1-yt(27.6,29.6,i)*.35),
+      h=yt(0.8,2.4,i)*(1-yt(5.4,7.6,i)*.62),
       d=Ba(yt(17.2,20.2,i)),
       f=yt(17.0,18.8,i)*(1-yt(31.8,34.6,i)*.42),
       m=1-yt(22,25.6,i)*.55,
@@ -4534,17 +4255,17 @@ function dc(i){
       u=1.0,
       w=yt(26,28.6,i)*(1-yt(34.6,35,i)*.4),
       x=.38,
-      A=yt(2.6,5.4,i)*(1-yt(6.6,8.0,i))*.22,
+      A=yt(0.8,4.4,i)*(1-yt(5.6,7,i))*.22,
       L=yt(17.2,19.4,i)*(1-yt(23.4,26.0,i))*.35,
       b=yt(9,11,i)*(1-yt(15.4,17.2,i))*.14,
       T=x+A+L+b,
-      R=Math.max(yt(2.6,4.2,i)*(1-yt(5.0,6.2,i)),yt(17.4,18.5,i)*(1-yt(19.0,20.8,i))),
+      R=Math.max(yt(0.8,3.2,i)*(1-yt(4,5.2,i)),yt(17.4,18.5,i)*(1-yt(19.0,20.8,i))),
       v=.9+R*.35,
       y=i<17.0?"lk":"jp",
-      D=yt(2.8,4.0,i),
-      W=yt(3.0,4.4,i)*(i<17.0?1.0:0.0),
+      D=yt(0.5,1.8,i),
+      W=yt(0.8,2.4,i)*(i<17.0?1.0:0.0),
       Q=yt(16.8,18.2,i),
-      P=yt(3.2,4.8,i),
+      P=yt(1.0,2.6,i),
       U=1.0,
       F=1.0,
       J=1.0,
@@ -4710,9 +4431,6 @@ function Wm(i, t){
   let l = rc(compactRender ? 800 : 1200);
   o.add(l.points);
 
-  let logoConstellation = createLogoConstellationSystem();
-  o.add(logoConstellation.group);
-
   let c = sc(i);
   o.add(c.group);
 
@@ -4845,7 +4563,6 @@ function Wm(i, t){
     _.setSize(O, X);
     c.materials.dotMat.uniforms.uPixelRatio.value = Z;
     l.material.uniforms.uPixelRatio.value = Z;
-    if (logoConstellation) logoConstellation.pointsMesh.material.uniforms.uPixelRatio.value = Z;
   };
   window.addEventListener("resize", L);
 
@@ -5239,12 +4956,6 @@ function Wm(i, t){
     l.update(X);
     l.setOpacity(0.5 + Y.globeOpacity * 0.5);
     l.points.rotation.y = X * 0.004;
-
-    if (logoConstellation) {
-      const logoScatterP = smoothstep(1.3, 3.2, Z);
-      logoConstellation.update(X, logoScatterP, Z);
-      logoConstellation.setOpacity(Math.max(0, 1.0 - smoothstep(29.5, 34.0, Z)));
-    }
 
     h.setDraw(Y.lk.draw);
     h.setOpacity(Y.lk.opacity);
