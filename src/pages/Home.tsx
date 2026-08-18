@@ -182,7 +182,7 @@ export const Home: FC = () => {
               >
                 {/* Set 1 */}
                 <article class="activity-card" data-slide-index="0" role="group" aria-label="1 / 6">
-                  <img src="/static/images/activity-education.jpg" alt="現地直営スクールでの高度日本語教育" loading="lazy" />
+                  <img src="/static/images/activity-education.jpg" alt="現地直営スクールでの高度日本語教育" width="480" height="300" loading="lazy" decoding="async" />
                   <div class="marquee-card-overlay">
                     <span class="marquee-badge">EDUCATION &bull; SRI LANKA</span>
                     <h3 class="marquee-card-title">現地直営スクールでの高度日本語・技能研修</h3>
@@ -190,7 +190,7 @@ export const Home: FC = () => {
                 </article>
 
                 <article class="activity-card" data-slide-index="1" role="group" aria-label="2 / 6">
-                  <img src="/static/images/activity-collaboration.jpg" alt="日本企業とスリランカ人材の選考・交流" loading="lazy" />
+                  <img src="/static/images/activity-collaboration.jpg" alt="日本企業とスリランカ人材の選考・交流" width="480" height="300" loading="lazy" decoding="async" />
                   <div class="marquee-card-overlay">
                     <span class="marquee-badge">MATCHING &bull; INTERVIEW</span>
                     <h3 class="marquee-card-title">日本企業と志の高い人材の厳選マッチング</h3>
@@ -198,7 +198,7 @@ export const Home: FC = () => {
                 </article>
 
                 <article class="activity-card" data-slide-index="2" role="group" aria-label="3 / 6">
-                  <img src="/static/images/about-hills.jpg" alt="スリランカ現地の自然環境" loading="lazy" />
+                  <img src="/static/images/about-hills.jpg" alt="スリランカ現地の自然環境" width="480" height="300" loading="lazy" decoding="async" />
                   <div class="marquee-card-overlay">
                     <span class="marquee-badge">HUB &bull; COLOMBO</span>
                     <h3 class="marquee-card-title">豊かな文化と教育基盤を持つスリランカ拠点</h3>
@@ -206,7 +206,7 @@ export const Home: FC = () => {
                 </article>
 
                 <article class="activity-card" data-slide-index="3" role="group" aria-label="4 / 6">
-                  <img src="/static/images/tokyo-skyline.jpg" alt="日本拠点・東京での就労＆定着支援" loading="lazy" />
+                  <img src="/static/images/tokyo-skyline.jpg" alt="日本拠点・東京での就労＆定着支援" width="480" height="300" loading="lazy" decoding="async" />
                   <div class="marquee-card-overlay">
                     <span class="marquee-badge">CAREER &bull; TOKYO</span>
                     <h3 class="marquee-card-title">東京拠点での生活立ち上げ・定着伴走サポート</h3>
@@ -214,7 +214,7 @@ export const Home: FC = () => {
                 </article>
 
                 <article class="activity-card" data-slide-index="4" role="group" aria-label="5 / 6">
-                  <img src="/static/images/about-feature.png" alt="特定技能教育・実務トレーニング" loading="lazy" />
+                  <img src="/static/images/about-feature.png" alt="特定技能教育・実務トレーニング" width="480" height="300" loading="lazy" decoding="async" />
                   <div class="marquee-card-overlay">
                     <span class="marquee-badge">TRAINING &bull; SKILLS</span>
                     <h3 class="marquee-card-title">建築・介護・農業の専門実務トレーニング</h3>
@@ -222,7 +222,7 @@ export const Home: FC = () => {
                 </article>
 
                 <article class="activity-card" data-slide-index="5" role="group" aria-label="6 / 6">
-                  <img src="/static/images/miraiway-pathway.jpg" alt="日ス両国をつなぐ国際パートナーシップ" loading="lazy" />
+                  <img src="/static/images/miraiway-pathway.jpg" alt="日ス両国をつなぐ国際パートナーシップ" width="480" height="300" loading="lazy" decoding="async" />
                   <div class="marquee-card-overlay">
                     <span class="marquee-badge">BRIDGE &bull; FUTURE</span>
                     <h3 class="marquee-card-title">国境を越えた挑戦を育む持続可能なエコシステム</h3>
@@ -309,14 +309,14 @@ export const Home: FC = () => {
                   </div>
                 </div>
                 <div class="service-visual glass-card-large service-image-card">
-                  <img src="/static/images/service-matching.jpg" alt="人材マッチング" class="service-img" />
+                  <img src="/static/images/service-matching.jpg" alt="人材マッチング" width="600" height="375" class="service-img" loading="lazy" decoding="async" />
                 </div>
               </div>
 
               {/* Service 2 */}
               <div class="service-showcase-item split-reverse reveal animated-icon-card">
                 <div class="service-visual glass-card-large service-image-card">
-                  <img src="/static/images/service-education.jpg" alt="日本語教育" class="service-img" />
+                  <img src="/static/images/service-education.jpg" alt="日本語教育" width="600" height="375" class="service-img" loading="lazy" decoding="async" />
                 </div>
                 <div class="service-text">
                   <span class="service-index">02 / EDUCATION</span>
@@ -334,7 +334,7 @@ export const Home: FC = () => {
               {/* Service 3 */}
               <div class="service-showcase-item split-reverse reveal animated-icon-card">
                 <div class="service-visual glass-card-large service-image-card">
-                  <img src="/static/images/service-retention.png" alt="定着支援" class="service-img" />
+                  <img src="/static/images/service-retention.png" alt="定着支援" width="600" height="375" class="service-img" loading="lazy" decoding="async" />
                 </div>
                 <div class="service-text">
                   <span class="service-index">03 / RETENTION SUPPORT</span>
@@ -480,7 +480,7 @@ export const Home: FC = () => {
                 </div>
                 <div class="glass-card parallax-card" data-speed="1.2">
                   <div class="card-image-wrap">
-                    <img src="/static/images/flow-step1-consultation.jpg" alt="お問い合わせ" class="flow-card-img" />
+                    <img src="/static/images/flow-step1-consultation.jpg" alt="お問い合わせ" width="400" height="250" class="flow-card-img" loading="lazy" decoding="async" />
                   </div>
                   <div class="card-content">
                     <div class="step-icon-hz">
@@ -499,7 +499,7 @@ export const Home: FC = () => {
                 </div>
                 <div class="glass-card parallax-card" data-speed="1.2">
                   <div class="card-image-wrap">
-                    <img src="/static/images/flow-step2-selection.jpg" alt="人材選定" class="flow-card-img" />
+                    <img src="/static/images/flow-step2-selection.jpg" alt="人材選定" width="400" height="250" class="flow-card-img" loading="lazy" decoding="async" />
                   </div>
                   <div class="card-content">
                     <div class="step-icon-hz">
@@ -518,7 +518,7 @@ export const Home: FC = () => {
                 </div>
                 <div class="glass-card parallax-card" data-speed="1.2">
                   <div class="card-image-wrap">
-                    <img src="/static/images/flow-step3-interview.jpg" alt="面接・選考" class="flow-card-img" />
+                    <img src="/static/images/flow-step3-interview.jpg" alt="面接・選考" width="400" height="250" class="flow-card-img" loading="lazy" decoding="async" />
                   </div>
                   <div class="card-content">
                     <div class="step-icon-hz">
@@ -537,7 +537,7 @@ export const Home: FC = () => {
                 </div>
                 <div class="glass-card parallax-card" data-speed="1.2">
                   <div class="card-image-wrap">
-                    <img src="/static/images/flow-step4-visa-prep.jpg" alt="入国準備" class="flow-card-img" />
+                    <img src="/static/images/flow-step4-visa-prep.jpg" alt="入国準備" width="400" height="250" class="flow-card-img" loading="lazy" decoding="async" />
                   </div>
                   <div class="card-content">
                     <div class="step-icon-hz">
@@ -556,7 +556,7 @@ export const Home: FC = () => {
                 </div>
                 <div class="glass-card parallax-card" data-speed="1.2">
                   <div class="card-image-wrap">
-                    <img src="/static/images/flow-step5-employment.jpg" alt="就労開始" class="flow-card-img" />
+                    <img src="/static/images/flow-step5-employment.jpg" alt="就労開始" width="400" height="250" class="flow-card-img" loading="lazy" decoding="async" />
                   </div>
                   <div class="card-content">
                     <div class="step-icon-hz">

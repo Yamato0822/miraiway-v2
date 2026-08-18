@@ -79,7 +79,7 @@ export const EducationPage: FC = () => (
               <ActionLink href="/contact?type=education">教育内容について相談する</ActionLink>
             </div>
             <figure class="service-detail-hero__visual reveal">
-              <img src="/static/images/service-education.jpg" alt="日本で働くためのビジネスマナーと日本語を学ぶ研修風景" />
+              <img src="/static/images/service-education.jpg" alt="日本で働くためのビジネスマナーと日本語を学ぶ研修風景" width="600" height="400" decoding="async" />
               <figcaption><span>COLOMBO / TOKYO</span> LANGUAGE &amp; SKILLS PROGRAM</figcaption>
             </figure>
           </div>
@@ -159,7 +159,7 @@ export const EducationPage: FC = () => (
       <section class="service-detail-section" aria-labelledby="education-quality-title">
         <div class="service-detail-container service-quality-grid">
           <figure class="service-quality-grid__visual reveal">
-            <img src="/static/images/activity-education.jpg" alt="日本語と技能を学ぶ教育環境" loading="lazy" />
+            <img src="/static/images/activity-education.jpg" alt="日本語と技能を学ぶ教育環境" width="600" height="400" loading="lazy" decoding="async" />
             <figcaption>LEARN / PRACTICE / REVIEW</figcaption>
           </figure>
           <div class="service-quality-grid__copy reveal">

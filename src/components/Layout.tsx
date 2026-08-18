@@ -24,8 +24,12 @@ export const Layout: FC<PropsWithChildren<LayoutProps>> = ({
         ` }} />
         <title>{title}</title>
         <meta name="description" content={description} />
+        {/* Preconnect & Preloads for maximum performance */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+        <link rel="preload" href="/static/geojson/world_land_110m.json" as="fetch" crossorigin="anonymous" />
+        <link rel="preload" href="/static/tokens.css" as="style" />
+        <link rel="preload" href="/static/style.css" as="style" />
         <link
           href="https://fonts.googleapis.com/css2?family=M+PLUS+1p:wght@400;500;700;800&family=Shippori+Antique+B1&family=Outfit:wght@300;400;600;700;800&family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@700;800;900&family=Great+Vibes&family=Alex+Brush&display=swap"
           rel="stylesheet"

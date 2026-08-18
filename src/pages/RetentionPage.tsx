@@ -67,7 +67,7 @@ export const RetentionPage: FC = () => (
               <ActionLink href="/contact?type=retention">定着支援について相談する</ActionLink>
             </div>
             <figure class="service-detail-hero__visual reveal">
-              <img src="/static/images/service-retention.jpg" alt="就労後の生活とキャリアについて相談する様子" />
+              <img src="/static/images/service-retention.jpg" alt="就労後の生活とキャリアについて相談する様子" width="600" height="400" decoding="async" />
               <figcaption><span>PEOPLE / COMPANY</span> CONTINUOUS SUPPORT</figcaption>
             </figure>
           </div>
@@ -153,7 +153,7 @@ export const RetentionPage: FC = () => (
       <section class="service-detail-section" aria-labelledby="support-system-title">
         <div class="service-detail-container support-system-grid">
           <figure class="support-system-grid__visual reveal">
-            <img src="/static/images/service-retention.png" alt="日本とスリランカのメンバーが連携する支援体制" loading="lazy" />
+            <img src="/static/images/service-retention.png" alt="日本とスリランカのメンバーが連携する支援体制" width="600" height="400" loading="lazy" decoding="async" />
             <figcaption>ONE TEAM / TWO COUNTRIES</figcaption>
           </figure>
           <div class="support-system-grid__copy reveal">

@@ -1890,26 +1890,55 @@
     }
 
     let isScrollTopVisible = false;
+    let hideTimer = null;
+
+    function resetHideTimer() {
+      if (hideTimer) {
+        clearTimeout(hideTimer);
+        hideTimer = null;
+      }
+      const scrollY = window.scrollY || window.pageYOffset || 0;
+      if (scrollY > 350) {
+        if (!isScrollTopVisible) {
+          isScrollTopVisible = true;
+          scrollTopBtn.classList.add('is-visible');
+        }
+        // Auto-fade after 8 seconds of no mouse / touch / scroll activity
+        hideTimer = setTimeout(() => {
+          if (!scrollTopBtn.matches(':hover, :focus, :focus-within')) {
+            isScrollTopVisible = false;
+            scrollTopBtn.classList.remove('is-visible');
+          } else {
+            resetHideTimer();
+          }
+        }, 8000);
+      } else {
+        if (isScrollTopVisible) {
+          isScrollTopVisible = false;
+          scrollTopBtn.classList.remove('is-visible');
+        }
+      }
+    }
 
     function updateScrollTopProgress() {
       const scrollY = window.scrollY || window.pageYOffset || 0;
       const maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
       const progress = Math.min(1, Math.max(0, scrollY / maxScroll));
 
-      // Show button after user scrolls down beyond 350px
-      const shouldShow = scrollY > 350;
-      if (shouldShow !== isScrollTopVisible) {
-        isScrollTopVisible = shouldShow;
-        scrollTopBtn.classList.toggle('is-visible', shouldShow);
-      }
-
       if (scrollTopBar) {
         const offset = circumference * (1 - progress);
         scrollTopBar.style.strokeDashoffset = offset.toFixed(2);
       }
+
+      resetHideTimer();
     }
 
     window.addEventListener('scroll', updateScrollTopProgress, { passive: true });
+    ['mousemove', 'touchstart', 'touchmove', 'keydown', 'pointerdown'].forEach((evt) => {
+      window.addEventListener(evt, resetHideTimer, { passive: true });
+    });
+    scrollTopBtn.addEventListener('mouseenter', resetHideTimer, { passive: true });
+
     updateScrollTopProgress();
 
     scrollTopBtn.addEventListener('click', (e) => {

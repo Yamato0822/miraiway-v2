@@ -42,7 +42,7 @@ export const CompanyPage: FC = () => {
               {/* Executive 1: Hasitha Shamika */}
               <div class="executive-card reveal">
                 <div class="executive-image-wrap">
-                  <img src="/static/images/hasitha-shamika.png" alt="Hasitha Shamika" loading="lazy" />
+                  <img src="/static/images/hasitha-shamika.png" alt="Hasitha Shamika" width="400" height="400" loading="lazy" decoding="async" />
                   <div class="executive-image-overlay">
                     <span class="executive-region-tag"><i class="fas fa-globe-asia"></i> SRI LANKA DIRECTIVITY</span>
                   </div>
@@ -68,7 +68,7 @@ export const CompanyPage: FC = () => {
               {/* Executive 2: Hiroki Sato */}
               <div class="executive-card reveal">
                 <div class="executive-image-wrap">
-                  <img src="/static/images/sato-hiroki.png" alt="佐藤 弘輝" loading="lazy" />
+                  <img src="/static/images/sato-hiroki.png" alt="佐藤 弘輝" width="400" height="400" loading="lazy" decoding="async" />
                   <div class="executive-image-overlay">
                     <span class="executive-region-tag orange"><i class="fas fa-building"></i> JAPAN DIRECTIVITY</span>
                   </div>

@@ -22,7 +22,7 @@ export const ContactCTA: FC<ContactCTAProps> = ({ compact = false }) => (
     )}
     {!compact && (
       <div class="contact-cta__visual" aria-hidden="true">
-        <img src="/static/images/contact-handshake-bg.png" alt="" loading="lazy" />
+        <img src="/static/images/contact-handshake-bg.png" alt="" width="800" height="500" loading="lazy" decoding="async" />
       </div>
     )}
     {!compact && <div class="contact-cta__texture" aria-hidden="true"></div>}

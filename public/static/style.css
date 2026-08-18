@@ -20,6 +20,46 @@
   --font-en: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", "Inter", sans-serif;
 }
 
+/* ---------- Zero Cumulative Layout Shift (CLS) Global Baseline ---------- */
+img, picture, video, canvas, svg {
+  display: block;
+  max-width: 100%;
+}
+
+img {
+  height: auto;
+  font-style: italic;
+  vertical-align: middle;
+  shape-margin: 0.75rem;
+}
+
+.activity-card img {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+}
+
+.service-image-card img,
+.flow-card-img {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+}
+
+.executive-image-wrap img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+}
+
+.service-detail-hero__visual img,
+.service-quality-grid__visual img,
+.support-system-grid__visual img {
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+}
+
 .m-plus-1p-regular {
   font-family: "M PLUS 1p", sans-serif;
   font-weight: 400;

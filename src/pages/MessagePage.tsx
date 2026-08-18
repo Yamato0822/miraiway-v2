@@ -54,7 +54,10 @@ export const MessagePage: FC = () => {
                     src="/static/images/executive-message-hero.png"
                     alt="MiraiWay Special Design Graphic"
                     class="hero-pathway-transparent-img"
+                    width="680"
+                    height="520"
                     loading="eager"
+                    decoding="async"
                   />
                 </div>
               </div>
