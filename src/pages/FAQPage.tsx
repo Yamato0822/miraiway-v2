@@ -98,6 +98,7 @@ export const faqList: FAQItem[] = [
 
 export const FAQPage: FC = () => (
   <Layout
+    canonicalPath="/faq"
     title="よくあるご質問（Q&A） | MiraiWay"
     description="MiraiWayの料金、受け入れ支援、対応分野、日本語教育など、よくあるご質問にお答えします。"
   >

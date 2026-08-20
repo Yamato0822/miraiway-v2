@@ -51,6 +51,7 @@ const learningPath = [
 
 export const EducationPage: FC = () => (
   <Layout
+    canonicalPath="/services/education"
     title="日本語・技能教育 | MiraiWay"
     description="MiraiWayの日本語・技能教育。来日前から日本語、職場文化、生活ルール、分野別技能を学び、日本で働くための準備を支援します。"
   >

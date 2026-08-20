@@ -4,13 +4,34 @@ import { LogoMark } from './LogoMark'
 interface LayoutProps {
   title?: string
   description?: string
+  canonicalPath?: string
+  cinematicOpening?: boolean
 }
 
 export const Layout: FC<PropsWithChildren<LayoutProps>> = ({
   title = 'MiraiWay | 国境を越えて、可能性はつながる。- スリランカ人材と日本企業をつなぐ',
   description = 'MiraiWayはスリランカと日本をつなぎ、特定技能人材のマッチングから日本語教育、企業サポート、定着支援までワンストップで支援します。',
+  canonicalPath = '/',
+  cinematicOpening = false,
   children
 }) => {
+  const siteUrl = 'https://www.miraiway-japan.com'
+  const canonicalUrl = `${siteUrl}${canonicalPath === '/' ? '/' : canonicalPath.replace(/\/$/, '')}`
+  const socialImage = `${siteUrl}/android-chrome-512x512.png`
+  const organization = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    '@id': `${siteUrl}/#organization`,
+    name: 'MiraiWay',
+    url: `${siteUrl}/`,
+    logo: `${siteUrl}/android-chrome-512x512.png`,
+    email: 'miraiwayjapan@gmail.com',
+    sameAs: [
+      'https://x.com/MiraiWay_jp',
+      'https://www.youtube.com/@MiraiWayJapan'
+    ]
+  }
+
   return (
     <html lang="ja">
       <head>
@@ -24,10 +45,26 @@ export const Layout: FC<PropsWithChildren<LayoutProps>> = ({
         ` }} />
         <title>{title}</title>
         <meta name="description" content={description} />
+        <meta name="robots" content="index,follow,max-image-preview:large" />
+        <link rel="canonical" href={canonicalUrl} />
+        <meta property="og:locale" content="ja_JP" />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="MiraiWay" />
+        <meta property="og:title" content={title} />
+        <meta property="og:description" content={description} />
+        <meta property="og:url" content={canonicalUrl} />
+        <meta property="og:image" content={socialImage} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={title} />
+        <meta name="twitter:description" content={description} />
+        <meta name="twitter:image" content={socialImage} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organization) }} />
         {/* Preconnect & Preloads for maximum performance */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
-        <link rel="preload" href="/static/geojson/world_land_110m.json" as="fetch" crossorigin="anonymous" />
+        {cinematicOpening && (
+          <link rel="preload" href="/static/data/geo.json" as="fetch" crossorigin="anonymous" />
+        )}
         <link rel="preload" href="/static/tokens.css" as="style" />
         <link rel="preload" href="/static/style.css" as="style" />
         <link
@@ -42,7 +79,6 @@ export const Layout: FC<PropsWithChildren<LayoutProps>> = ({
           href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css"
           rel="stylesheet"
         />
-        <link href="https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
         <link href="/static/tokens.css" rel="stylesheet" />
         <link href="/static/style.css" rel="stylesheet" />
         <link href="/static/phase1a.css" rel="stylesheet" />
@@ -56,16 +92,20 @@ export const Layout: FC<PropsWithChildren<LayoutProps>> = ({
         <link rel="manifest" href="/site.webmanifest" />
         <meta name="theme-color" content="#0a1f36" />
       </head>
-      <body class="is-loading">
+      <body class={`is-loading${cinematicOpening ? ' has-cinematic-opening' : ''}`}>
         <a class="skip-link" href="#page-main">本文へ移動</a>
-        {/* White-base curtain preloader */}
+        {/* A short black boot bridge on the home page; the live logo is rendered by WebGL. */}
         <div id="page-loader" class="page-loader" aria-hidden="true">
           <div class="loader-curtain top"></div>
           <div class="loader-curtain bottom"></div>
           <div class="loader-content">
-            <div class="loader-logo-wrap">
-              <LogoMark width={96} height={78} idPrefix="loader" />
-            </div>
+            {cinematicOpening ? (
+              <span class="loader-boot-label">INITIALIZING MIRAIWAY</span>
+            ) : (
+              <div class="loader-logo-wrap">
+                <LogoMark width={96} height={78} idPrefix="loader" />
+              </div>
+            )}
             <div class="loader-line-bar">
               <div class="loader-line-progress"></div>
             </div>
@@ -94,12 +134,13 @@ export const Layout: FC<PropsWithChildren<LayoutProps>> = ({
           </span>
         </button>
 
-        <script src="https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
         <script src="/static/app.js"></script>
         <script src="/static/phase1a.js"></script>
         <script dangerouslySetInnerHTML={{ __html: `
           (function() {
             function forceUnlock() {
+              if (document.body.classList.contains('has-cinematic-opening') &&
+                  !document.body.classList.contains('cinematic-opening-ready')) return;
               var loader = document.getElementById('page-loader');
               if (loader && loader.style.display !== 'none') {
                 loader.classList.add('is-complete', 'is-loaded');

@@ -12,6 +12,14 @@ import { RetentionPage } from './pages/RetentionPage'
 
 const app = new Hono()
 
+app.use('*', async (c, next) => {
+  await next()
+  c.header('X-Content-Type-Options', 'nosniff')
+  c.header('Referrer-Policy', 'strict-origin-when-cross-origin')
+  c.header('X-Frame-Options', 'SAMEORIGIN')
+  c.header('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
+})
+
 app.use('/api/*', cors())
 
 // ---- API: お問い合わせ受付 ----

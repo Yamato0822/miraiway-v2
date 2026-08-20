@@ -4386,6 +4386,209 @@ async function Un(i){
   return t.json()
 }
 
+// One draw-call identity system. The logo, its dust state and the opening
+// star field all share the same BufferGeometry; only shader uniforms change.
+function createParticleIdentity(scene, camera, compact) {
+  const source = document.createElement("canvas");
+  source.width = 960;
+  source.height = 320;
+  const ctx = source.getContext("2d", { willReadFrequently: true });
+  ctx.clearRect(0, 0, source.width, source.height);
+  ctx.fillStyle = "#ffffff";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.font = `900 ${compact ? 142 : 154}px Outfit, Arial, sans-serif`;
+  ctx.fillText("MiraiWay", 480, 188);
+
+  // Particle-native brand crest: three rising routes and one possibility star.
+  ctx.lineCap = "round";
+  ctx.lineWidth = 14;
+  ctx.beginPath();
+  ctx.moveTo(350, 112); ctx.bezierCurveTo(415, 45, 476, 50, 530, 90);
+  ctx.moveTo(414, 118); ctx.bezierCurveTo(480, 42, 544, 38, 600, 76);
+  ctx.moveTo(488, 120); ctx.bezierCurveTo(552, 48, 615, 35, 665, 58);
+  ctx.stroke();
+  const starX = 694, starY = 50;
+  ctx.beginPath();
+  for (let i = 0; i < 10; i++) {
+    const radius = i % 2 === 0 ? 18 : 6.5;
+    const angle = -Math.PI / 2 + i * Math.PI / 5;
+    const x = starX + Math.cos(angle) * radius;
+    const y = starY + Math.sin(angle) * radius;
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  }
+  ctx.closePath();
+  ctx.fill();
+
+  const pixels = ctx.getImageData(0, 0, source.width, source.height).data;
+  const candidates = [];
+  const stride = compact ? 5 : 4;
+  for (let y = 8; y < source.height - 8; y += stride) {
+    for (let x = 8; x < source.width - 8; x += stride) {
+      if (pixels[(y * source.width + x) * 4 + 3] > 80) candidates.push([x, y]);
+    }
+  }
+  for (let i = candidates.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
+  }
+  const count = Math.min(compact ? 3200 : 6200, candidates.length);
+  const logo = new Float32Array(count * 3);
+  const scatter = new Float32Array(count * 3);
+  const stars = new Float32Array(count * 3);
+  const colors = new Float32Array(count * 3);
+  const seeds = new Float32Array(count);
+  const aspect = window.innerWidth / Math.max(1, window.innerHeight);
+  const logoWidth = compact ? Math.min(3.6, 3.05 * aspect) : 4.9;
+  const logoHeight = logoWidth * source.height / source.width;
+
+  for (let i = 0; i < count; i++) {
+    const [px, py] = candidates[i];
+    const lx = (px / source.width - 0.5) * logoWidth;
+    const ly = (0.5 - py / source.height) * logoHeight;
+    const seed = Math.random();
+    logo[i * 3] = lx;
+    logo[i * 3 + 1] = ly;
+    logo[i * 3 + 2] = (seed - 0.5) * 0.035;
+
+    const scatterRadius = 2.0 + Math.random() * 4.8;
+    const scatterAngle = Math.random() * Math.PI * 2;
+    scatter[i * 3] = Math.cos(scatterAngle) * scatterRadius;
+    scatter[i * 3 + 1] = Math.sin(scatterAngle) * scatterRadius;
+    scatter[i * 3 + 2] = -1.0 - Math.random() * 5.5;
+
+    stars[i * 3] = (Math.random() - 0.5) * 18 * Math.max(1, aspect);
+    stars[i * 3 + 1] = (Math.random() - 0.5) * 10;
+    stars[i * 3 + 2] = -2 - Math.random() * 32;
+    const gold = px > 670 && py < 82;
+    colors[i * 3] = gold ? 1.0 : 0.20 + seed * 0.16;
+    colors[i * 3 + 1] = gold ? 0.66 : 0.48 + seed * 0.26;
+    colors[i * 3 + 2] = gold ? 0.10 : 0.95;
+    seeds[i] = seed;
+  }
+
+  const geometry = new Qt();
+  geometry.setAttribute("position", new Wt(logo, 3));
+  geometry.setAttribute("aScatter", new Wt(scatter, 3));
+  geometry.setAttribute("aStar", new Wt(stars, 3));
+  geometry.setAttribute("aColor", new Wt(colors, 3));
+  geometry.setAttribute("aSeed", new Wt(seeds, 1));
+
+  const material = new Xt({
+    transparent: true,
+    depthWrite: false,
+    depthTest: false,
+    blending: he,
+    uniforms: {
+      uTime: { value: 0 },
+      uAssemble: { value: 0 },
+      uDissolve: { value: 0 },
+      uOpacity: { value: 1 },
+      uPointer: { value: new At(99, 99) },
+      uPointerStrength: { value: 0 },
+      uPixelRatio: { value: Math.min(window.devicePixelRatio || 1, 1.5) }
+    },
+    vertexShader: `
+      attribute vec3 aScatter;
+      attribute vec3 aStar;
+      attribute vec3 aColor;
+      attribute float aSeed;
+      uniform float uTime;
+      uniform float uAssemble;
+      uniform float uDissolve;
+      uniform float uPointerStrength;
+      uniform vec2 uPointer;
+      uniform float uPixelRatio;
+      varying vec3 vColor;
+      varying float vAlpha;
+
+      float ease(float x) { return x * x * (3.0 - 2.0 * x); }
+      void main() {
+        float assemble = ease(clamp(uAssemble, 0.0, 1.0));
+        float dissolve = ease(clamp(uDissolve, 0.0, 1.0));
+        vec3 logoPosition = mix(aScatter, position, assemble);
+        vec3 p = mix(logoPosition, aStar, dissolve);
+        float shimmer = sin(uTime * (0.7 + aSeed) + aSeed * 31.0) * 0.018;
+        p += normalize(vec3(p.xy + 0.001, 0.35)) * shimmer * (1.0 - dissolve);
+
+        vec2 delta = p.xy - uPointer;
+        float distanceToPointer = max(length(delta), 0.025);
+        float influence = (1.0 - smoothstep(0.0, 0.72, distanceToPointer)) * uPointerStrength;
+        p.xy += normalize(delta) * influence * (0.18 + 0.32 * (1.0 - distanceToPointer));
+
+        vec4 mvPosition = modelViewMatrix * vec4(p, 1.0);
+        float depthScale = clamp(3.8 / max(1.0, -mvPosition.z), 0.45, 1.8);
+        gl_PointSize = (1.45 + aSeed * 2.0) * uPixelRatio * depthScale;
+        gl_Position = projectionMatrix * mvPosition;
+        vColor = aColor;
+        vAlpha = mix(0.92, 0.34 + aSeed * 0.42, dissolve);
+      }
+    `,
+    fragmentShader: `
+      uniform float uOpacity;
+      varying vec3 vColor;
+      varying float vAlpha;
+      void main() {
+        vec2 q = gl_PointCoord - 0.5;
+        float d = length(q);
+        float core = 1.0 - smoothstep(0.08, 0.5, d);
+        float glow = 1.0 - smoothstep(0.0, 0.5, d);
+        float alpha = (core * 0.82 + glow * 0.24) * vAlpha * uOpacity;
+        if (alpha < 0.01) discard;
+        gl_FragColor = vec4(vColor + core * 0.26, alpha);
+      }
+    `
+  });
+  const points = new Xe(geometry, material);
+  points.name = "miraiway-particle-identity";
+  points.frustumCulled = false;
+  scene.add(points);
+
+  const pointerTarget = new At(99, 99);
+  const pointerCurrent = new At(99, 99);
+  let pointerActive = false;
+  function onPointerMove(event) {
+    if (event.pointerType === "touch") return;
+    const halfHeight = Math.tan((camera.fov * Math.PI / 180) * 0.5) * camera.position.z;
+    pointerTarget.set(
+      (event.clientX / window.innerWidth * 2 - 1) * halfHeight * camera.aspect,
+      (1 - event.clientY / window.innerHeight * 2) * halfHeight
+    );
+    pointerActive = true;
+  }
+  function onPointerLeave() {
+    pointerActive = false;
+    pointerTarget.set(99, 99);
+  }
+  window.addEventListener("pointermove", onPointerMove, { passive: true });
+  document.documentElement.addEventListener("pointerleave", onPointerLeave, { passive: true });
+
+  return {
+    points,
+    material,
+    update(time, assemble, dissolve, opacity) {
+      const follow = 1 - Math.exp(-1 / 60 * 8);
+      pointerCurrent.lerp(pointerTarget, follow);
+      material.uniforms.uTime.value = time;
+      material.uniforms.uAssemble.value = assemble;
+      material.uniforms.uDissolve.value = dissolve;
+      material.uniforms.uOpacity.value = opacity;
+      material.uniforms.uPointer.value.copy(pointerCurrent);
+      material.uniforms.uPointerStrength.value += ((pointerActive ? 1 : 0) - material.uniforms.uPointerStrength.value) * 0.08;
+    },
+    resize(pixelRatio) {
+      material.uniforms.uPixelRatio.value = pixelRatio;
+    },
+    dispose() {
+      window.removeEventListener("pointermove", onPointerMove);
+      document.documentElement.removeEventListener("pointerleave", onPointerLeave);
+      scene.remove(points);
+      geometry.dispose();
+      material.dispose();
+    }
+  };
+}
+
 async function Vm(){
   ne.setLoaderProgress(.08,"loading geometry…");
   let [i, t] = await Promise.all([
@@ -4416,7 +4619,7 @@ function Wm(i, t){
   // Post-processing cost scales with the square of DPR. A 1.5 ceiling keeps
   // the cinematic look while avoiding 2K off-screen buffers on common DPR 2
   // laptops.
-  const maxRenderDpr = 1.5;
+  const maxRenderDpr = compactRender ? 1 : 1.35;
   let r = Math.min(window.devicePixelRatio || 1, maxRenderDpr);
   s.setPixelRatio(r);
   s.setSize(window.innerWidth, window.innerHeight);
@@ -4427,6 +4630,10 @@ function Wm(i, t){
   let o = new Qs;
   let a = new Pe(38, window.innerWidth / window.innerHeight, 0.01, 200);
   a.position.set(0, 0, 4.5);
+
+  // The identity is ready before the Earth is revealed. It uses the same
+  // renderer/scene so the logo can become the stars without a canvas cut.
+  let openingIdentity = createParticleIdentity(o, a, compactRender);
 
   let l = rc(compactRender ? 800 : 1200);
   o.add(l.points);
@@ -4556,13 +4763,14 @@ function Wm(i, t){
     let O = window.innerWidth, X = window.innerHeight;
     a.aspect = O / X;
     a.updateProjectionMatrix();
-    let Z = Math.min(window.devicePixelRatio || 1, 1.5);
+    let Z = Math.min(window.devicePixelRatio || 1, compactRender ? 1 : 1.35);
     s.setPixelRatio(Z);
     _.setPixelRatio(Z);
     s.setSize(O, X);
     _.setSize(O, X);
     c.materials.dotMat.uniforms.uPixelRatio.value = Z;
     l.material.uniforms.uPixelRatio.value = Z;
+    openingIdentity?.resize(Z);
   };
   window.addEventListener("resize", L);
 
@@ -4674,10 +4882,65 @@ function Wm(i, t){
   let smoothProgress = 0;
   let smoothTime = 0;
   let webglSleeping = false;
+  const openingDuration = reduceMotion ? 0.35 : 7.6;
+  let openingComplete = false;
+  let openingReadyDispatched = false;
+  let openingSkipRequested = false;
+  const openingIdentityEl = document.getElementById("opening-identity");
+  const skipOpeningBtn = document.getElementById("skip-opening-btn");
+  skipOpeningBtn?.addEventListener("click", () => { openingSkipRequested = true; });
 
   function J() {
     let O = Math.min(Q.getDelta(), 0.05);
     let X = Q.elapsedTime;
+
+    if (!openingComplete) {
+      const openingTime = (openingSkipRequested || window.__MIRAI_SKIP_OPENING_REQUESTED) ? openingDuration : X;
+      const assemble = smoothstep(0.15, reduceMotion ? 0.25 : 1.65, openingTime);
+      const dissolve = smoothstep(reduceMotion ? 0.15 : 3.45, reduceMotion ? 0.28 : 6.15, openingTime);
+      const identityAlpha = 1 - smoothstep(reduceMotion ? 0.24 : 6.45, openingDuration, openingTime);
+      const spaceReveal = smoothstep(reduceMotion ? 0.12 : 4.2, reduceMotion ? 0.3 : 7.15, openingTime);
+
+      openingIdentity?.update(openingTime, assemble, dissolve, identityAlpha);
+      l.update(openingTime);
+      l.setOpacity(spaceReveal * 0.92);
+      l.points.rotation.y = openingTime * 0.004;
+      c.setReveal(0);
+      c.setOpacity(0);
+      h.setOpacity(0);
+      d.setOpacity(0);
+      f.setOpacity(0);
+      m.setOpacity(0);
+      p.strength = 0.3 + (1 - dissolve) * 0.12;
+      u.uniforms.uTime.value = openingTime;
+      u.uniforms.uFlare.value = smoothstep(5.6, 7.1, openingTime) * 0.1;
+      u.uniforms.uVignette.value = 0.96;
+      setCachedStyle(s.domElement, "opacity", "1");
+      setCachedStyle(darkBgEl, "opacity", "1");
+      setCachedStyle(heroInitialLayer, "opacity", "0");
+      setCachedStyle(heroStageEl, "opacity", "0");
+      setCachedStyle(openingIdentityEl, "--opening-progress", rounded(openingTime / openingDuration));
+      _.render();
+
+      if (!openingReadyDispatched) {
+        openingReadyDispatched = true;
+        requestAnimationFrame(() => window.dispatchEvent(new CustomEvent("mirai-opening-ready")));
+      }
+
+      if (openingTime >= openingDuration - 0.001) {
+        openingComplete = true;
+        openingIdentity?.dispose();
+        openingIdentity = null;
+        document.body.classList.add("opening-complete");
+        window.dispatchEvent(new CustomEvent("mirai-opening-complete"));
+        x.seek(0);
+        smoothTime = 0;
+        Q.start();
+      }
+
+      requestAnimationFrame(J);
+      return;
+    }
     
     // One frame-rate-independent smoothing clock drives every visual layer.
     // Keeping a single clock prevents the typography sphere, background and
@@ -5130,4 +5393,3 @@ if (document.readyState === "loading") {
 }
 
 })();
-

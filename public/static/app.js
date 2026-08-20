@@ -23,6 +23,10 @@
   const pageLoader = document.getElementById('page-loader');
   const loaderReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const loaderStartedAt = performance.now();
+  const hasCinematicOpening = document.body.classList.contains('has-cinematic-opening');
+  document.getElementById('skip-opening-btn')?.addEventListener('click', () => {
+    window.__MIRAI_SKIP_OPENING_REQUESTED = true;
+  });
   let loaderHasOpened = false;
   let loaderOpenTimer = null;
   
@@ -60,6 +64,7 @@
   }
 
   function schedulePageLoaderOpen(delay = 0) {
+    if (hasCinematicOpening && !document.body.classList.contains('cinematic-opening-ready')) return;
     if (loaderHasOpened || loaderOpenTimer) return;
     const minimumVisibleDuration = loaderReducedMotion.matches ? 80 : 620;
     const elapsed = performance.now() - loaderStartedAt;
@@ -69,7 +74,19 @@
     );
   }
 
-  if (document.readyState === 'complete') {
+  if (hasCinematicOpening) {
+    window.addEventListener('mirai-opening-ready', () => {
+      document.body.classList.add('cinematic-opening-ready');
+      schedulePageLoaderOpen(0);
+    }, { once: true });
+    // A failed WebGL boot must never trap navigation.
+    setTimeout(() => {
+      if (!document.body.classList.contains('cinematic-opening-ready')) {
+        document.body.classList.add('cinematic-opening-ready');
+        schedulePageLoaderOpen(0);
+      }
+    }, 5000);
+  } else if (document.readyState === 'complete') {
     schedulePageLoaderOpen(80);
   } else {
     window.addEventListener('load', () => schedulePageLoaderOpen(80), { once: true });
@@ -473,7 +490,9 @@
           canvasHasContent = false;
         }
         if (!globeReducedMotion.matches) time += 0.02;
-        requestAnimationFrame(renderGlobe);
+        // The planet is absent for most of the Earth flight. Polling at 60fps
+        // here wastes a main-thread frame without changing a pixel.
+        setTimeout(() => requestAnimationFrame(renderGlobe), 100);
         return;
       }
       ctx.clearRect(0, 0, logicalWidth, logicalHeight);
@@ -1062,19 +1081,29 @@
     window.__miraiwayMapInitializing = true;
 
     if (!window.maplibregl) {
-      let attempts = 0;
-      const pollTimer = setInterval(() => {
-        attempts++;
-        if (window.maplibregl) {
-          clearInterval(pollTimer);
+      if (!document.querySelector('link[data-maplibre]')) {
+        const stylesheet = document.createElement('link');
+        stylesheet.rel = 'stylesheet';
+        stylesheet.href = 'https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.css';
+        stylesheet.dataset.maplibre = 'true';
+        document.head.appendChild(stylesheet);
+      }
+      const existingScript = document.querySelector('script[data-maplibre]');
+      if (!existingScript) {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.js';
+        script.async = true;
+        script.dataset.maplibre = 'true';
+        script.onload = () => {
           window.__miraiwayMapInitializing = false;
           initMapLibreSection();
-        } else if (attempts > 50) {
-          clearInterval(pollTimer);
+        };
+        script.onerror = () => {
           window.__miraiwayMapInitializing = false;
-          console.warn('MapLibre GL library load timeout.');
-        }
-      }, 100);
+          console.warn('MapLibre GL library load failed.');
+        };
+        document.head.appendChild(script);
+      }
       return;
     }
 

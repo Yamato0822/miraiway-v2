@@ -10,7 +10,7 @@ import { newsItems } from '../data/news'
 
 export const Home: FC = () => {
   return (
-    <Layout>
+    <Layout canonicalPath="/" cinematicOpening>
       <Header activePage="home" />
 
       <main id="page-main">
@@ -42,14 +42,19 @@ export const Home: FC = () => {
           <div class="hero-journey-sticky">
             <div id="journey-dark-bg" aria-hidden="true"></div>
             <div id="journey-dawn-bloom" aria-hidden="true"></div>
-            <div id="celestial-orbit-plane" class="celestial-orbit-plane" aria-hidden="true">
-              <div class="orbit-ring-track orbit-ring-track--outer"></div>
-              <div class="orbit-ring-track orbit-ring-track--inner"></div>
-              <div class="orbit-dust-node orbit-dust-node--1"></div>
-              <div class="orbit-dust-node orbit-dust-node--2"></div>
-              <div class="orbit-dust-node orbit-dust-node--3"></div>
-            </div>
             <canvas id="stage-canvas" aria-hidden="true"></canvas>
+            <div id="opening-identity" class="opening-identity" aria-label="MiraiWay オープニング">
+              <p class="opening-identity__eyebrow">PARTICLES OF POSSIBILITY</p>
+              <p class="opening-identity__hint">MOVE TO SHAPE THE FUTURE</p>
+              <button
+                id="skip-opening-btn"
+                class="opening-identity__skip"
+                type="button"
+                onclick="window.__MIRAI_SKIP_OPENING_REQUESTED = true"
+              >
+                SKIP INTRO <span aria-hidden="true">↘</span>
+              </button>
+            </div>
             <div id="grain-overlay" aria-hidden="true"></div>
             <div id="vignette-overlay" aria-hidden="true"></div>
             <div id="scanline-overlay" aria-hidden="true"></div>

@@ -7,6 +7,7 @@ import { LogoMark } from '../components/LogoMark'
 export const CompanyPage: FC = () => {
   return (
     <Layout
+      canonicalPath="/company"
       title="会社概要 | MiraiWay - 日本とスリランカをつなぐ特定技能人材支援"
       description="MiraiWayの会社概要および共同代表（Hasitha Shamika / 佐藤 弘輝）の紹介ページです。日本とスリランカの両国体制で、特定技能人材の教育・採用・定着を一気通貫で支援します。"
     >
@@ -169,4 +170,3 @@ export const CompanyPage: FC = () => {
     </Layout>
   )
 }
-

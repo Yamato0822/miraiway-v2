@@ -1,0 +1,23 @@
+/static/images/*
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+
+/static/videos/*
+  Cache-Control: public, max-age=2592000, stale-while-revalidate=604800
+
+/static/data/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+
+/static/geojson/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+
+/static/*.js
+  Cache-Control: public, max-age=0, must-revalidate
+
+/static/*.css
+  Cache-Control: public, max-age=0, must-revalidate
+
+https://miraiway.pages.dev/*
+  X-Robots-Tag: noindex
+
+https://:version.miraiway.pages.dev/*
+  X-Robots-Tag: noindex

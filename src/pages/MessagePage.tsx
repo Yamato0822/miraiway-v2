@@ -7,6 +7,7 @@ import { LogoMark } from '../components/LogoMark'
 export const MessagePage: FC = () => {
   return (
     <Layout
+      canonicalPath="/message"
       title="メッセージ・ビジョン | MiraiWay - どこで生まれても、挑戦できる世界へ。"
       description="MiraiWayのビジョンとメッセージページです。生まれた場所の違いで未来の可能性が閉ざされない世界へ。国を越えた協業によって、新しい未来への道をひらきます。"
     >

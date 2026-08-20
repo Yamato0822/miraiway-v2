@@ -6,6 +6,7 @@ import { Footer } from '../components/Footer'
 export const PrivacyPolicyPage: FC = () => {
   return (
     <Layout
+      canonicalPath="/privacy"
       title="個人情報保護方針（プライバシーポリシー） | MiraiWay"
       description="MiraiWayの個人情報保護方針（プライバシーポリシー）についてのページです。個人情報の取得、利用目的、管理および保護についての取り組みを掲載しています。"
     >

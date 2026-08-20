@@ -7,6 +7,7 @@ import { SectionHeading } from '../components/SectionHeading'
 export const ContactPage: FC = () => {
   return (
     <Layout
+      canonicalPath="/contact"
       title="お問い合わせ | MiraiWay - 国境を越えて、可能性はつながる"
       description="MiraiWayへのお問い合わせページです。スリランカ人材の採用、現地教育、導入サポート、各種資料請求などお気軽にご相談ください。"
     >

@@ -8,6 +8,7 @@ import { newsItems } from '../data/news'
 
 export const NewsPage: FC = () => (
   <Layout
+    canonicalPath="/news"
     title="お知らせ | MiraiWay"
     description="MiraiWayからのお知らせ、サービス情報、イベント情報をご案内します。"
   >

@@ -39,6 +39,7 @@ const responseFlow = [
 
 export const RetentionPage: FC = () => (
   <Layout
+    canonicalPath="/services/retention"
     title="受け入れ・定着支援 | MiraiWay"
     description="MiraiWayの受け入れ・定着支援。来日前の準備から就労後の定期面談、生活相談、企業との連携まで継続して伴走します。"
   >
