@@ -347,18 +347,22 @@
     // Canvas fillText + shadowBlur is exceptionally expensive when repeated
     // hundreds of times per frame. Rasterize each unique glyph/color once and
     // reuse the bitmap while preserving the same 3D transforms and colors.
+    // Pre-rasterize glyphs into high-density luminescent stardust dot particles
     const glyphSpriteCache = new Map();
     const glyphMeasureCanvas = document.createElement('canvas');
     const glyphMeasureCtx = glyphMeasureCanvas.getContext('2d');
-    const glyphDpr = Math.min(dpr, 1.5);
+    const glyphSampleCanvas = document.createElement('canvas');
+    const glyphSampleCtx = glyphSampleCanvas.getContext('2d', { willReadFrequently: true });
+    const glyphDpr = Math.min(window.devicePixelRatio || 1, 2.0);
+
     const globeGlowCanvas = document.createElement('canvas');
     globeGlowCanvas.width = 512;
     globeGlowCanvas.height = 512;
     const globeGlowCtx = globeGlowCanvas.getContext('2d', { alpha: true });
     const globeGlowGradient = globeGlowCtx.createRadialGradient(256, 256, 8, 256, 256, 250);
-    globeGlowGradient.addColorStop(0, 'rgba(116, 166, 255, 0.32)');
-    globeGlowGradient.addColorStop(0.36, 'rgba(74, 126, 238, 0.2)');
-    globeGlowGradient.addColorStop(0.68, 'rgba(31, 67, 154, 0.08)');
+    globeGlowGradient.addColorStop(0, 'rgba(116, 166, 255, 0.35)');
+    globeGlowGradient.addColorStop(0.36, 'rgba(74, 126, 238, 0.22)');
+    globeGlowGradient.addColorStop(0.68, 'rgba(31, 67, 154, 0.09)');
     globeGlowGradient.addColorStop(1, 'rgba(10, 26, 70, 0)');
     globeGlowCtx.fillStyle = globeGlowGradient;
     globeGlowCtx.fillRect(0, 0, 512, 512);
@@ -369,24 +373,110 @@
       if (cached) return cached;
 
       const rgb = variant === 'base' ? point.baseRgb : point.cosmicRgb;
-      const color = `rgb(${rgb[0]} ${rgb[1]} ${rgb[2]})`;
+      const isBullet = point.char === '·' || point.char === '•' || point.char === '●' || point.char === '・';
       const font = `${point.weight} ${point.fontSize}px ${fontFamily}`;
       glyphMeasureCtx.font = font;
       const metrics = glyphMeasureCtx.measureText(point.char);
       const glyphWidth = Math.max(2, Math.ceil(metrics.width));
-      const padding = Math.ceil(point.fontSize * 0.16 + 3);
+      const padding = Math.ceil(point.fontSize * 0.20 + 6);
       const logicalSpriteWidth = glyphWidth + padding * 2;
       const logicalSpriteHeight = Math.ceil(point.fontSize * 1.55) + padding * 2;
+
       const spriteCanvas = document.createElement('canvas');
       spriteCanvas.width = Math.ceil(logicalSpriteWidth * glyphDpr);
       spriteCanvas.height = Math.ceil(logicalSpriteHeight * glyphDpr);
       const spriteCtx = spriteCanvas.getContext('2d', { alpha: true });
       spriteCtx.scale(glyphDpr, glyphDpr);
-      spriteCtx.font = font;
-      spriteCtx.fillStyle = color;
-      spriteCtx.textAlign = 'center';
-      spriteCtx.textBaseline = 'middle';
-      spriteCtx.fillText(point.char, logicalSpriteWidth / 2, logicalSpriteHeight / 2);
+
+      const centerX = logicalSpriteWidth / 2;
+      const centerY = logicalSpriteHeight / 2;
+
+      if (isBullet) {
+        // Special Starlight Diamond / Star Particle for bullet separators
+        const bulletRadius = Math.max(2.4, point.fontSize * 0.11);
+        
+        const glowGrad = spriteCtx.createRadialGradient(centerX, centerY, 0, centerX, centerY, bulletRadius * 3.4);
+        if (variant === 'base') {
+          glowGrad.addColorStop(0, 'rgba(59, 130, 246, 0.75)');
+          glowGrad.addColorStop(0.45, 'rgba(37, 99, 235, 0.3)');
+          glowGrad.addColorStop(1, 'rgba(10, 31, 54, 0)');
+        } else {
+          glowGrad.addColorStop(0, 'rgba(186, 230, 253, 0.95)');
+          glowGrad.addColorStop(0.45, 'rgba(96, 165, 250, 0.45)');
+          glowGrad.addColorStop(1, 'rgba(14, 165, 233, 0)');
+        }
+        spriteCtx.fillStyle = glowGrad;
+        spriteCtx.beginPath();
+        spriteCtx.arc(centerX, centerY, bulletRadius * 3.4, 0, Math.PI * 2);
+        spriteCtx.fill();
+
+        // High-intensity white/cyan core
+        spriteCtx.fillStyle = variant === 'base' ? '#60a5fa' : '#ffffff';
+        spriteCtx.beginPath();
+        spriteCtx.arc(centerX, centerY, bulletRadius, 0, Math.PI * 2);
+        spriteCtx.fill();
+      } else {
+        // Sample glyph alpha mask to generate high-density luminescent stardust dots
+        glyphSampleCanvas.width = logicalSpriteWidth;
+        glyphSampleCanvas.height = logicalSpriteHeight;
+        glyphSampleCtx.clearRect(0, 0, logicalSpriteWidth, logicalSpriteHeight);
+        glyphSampleCtx.font = font;
+        glyphSampleCtx.fillStyle = '#ffffff';
+        glyphSampleCtx.textAlign = 'center';
+        glyphSampleCtx.textBaseline = 'middle';
+        glyphSampleCtx.fillText(point.char, centerX, centerY);
+
+        const imgData = glyphSampleCtx.getImageData(0, 0, logicalSpriteWidth, logicalSpriteHeight);
+        const data = imgData.data;
+
+        // Density pitch tailored to font size (1.8px for small, up to 3.2px for giant hero text)
+        const pitch = Math.max(1.8, Math.min(3.2, point.fontSize * 0.048));
+        const baseRadius = pitch * 0.46;
+
+        for (let y = pitch * 0.5; y < logicalSpriteHeight; y += pitch) {
+          const py = Math.floor(y);
+          for (let x = pitch * 0.5; x < logicalSpriteWidth; x += pitch) {
+            const px = Math.floor(x);
+            const idx = (py * logicalSpriteWidth + px) * 4 + 3;
+            const alpha = data[idx];
+
+            if (alpha > 26) {
+              const density = alpha / 255;
+              const radius = Math.max(0.65, baseRadius * (0.60 + 0.60 * density));
+
+              if (variant === 'base') {
+                // Corporate light dawn mode: Deep navy ink stardust with electric sapphire core
+                if (density > 0.62) {
+                  // Micro aura halo
+                  spriteCtx.fillStyle = `rgba(37, 99, 235, ${0.20 * density})`;
+                  spriteCtx.beginPath();
+                  spriteCtx.arc(x, y, radius * 1.8, 0, Math.PI * 2);
+                  spriteCtx.fill();
+                }
+                // Crisp core particle
+                spriteCtx.fillStyle = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${0.74 + 0.26 * density})`;
+                spriteCtx.beginPath();
+                spriteCtx.arc(x, y, radius, 0, Math.PI * 2);
+                spriteCtx.fill();
+              } else {
+                // Cosmic dark mode: Luminescent stardust dots with cyan/blue glow
+                if (density > 0.48) {
+                  spriteCtx.fillStyle = `rgba(96, 165, 250, ${0.34 * density})`;
+                  spriteCtx.beginPath();
+                  spriteCtx.arc(x, y, radius * 1.9, 0, Math.PI * 2);
+                  spriteCtx.fill();
+                }
+                spriteCtx.fillStyle = density > 0.84 
+                  ? '#ffffff' 
+                  : `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${0.85 + 0.15 * density})`;
+                spriteCtx.beginPath();
+                spriteCtx.arc(x, y, radius, 0, Math.PI * 2);
+                spriteCtx.fill();
+              }
+            }
+          }
+        }
+      }
 
       const sprite = {
         canvas: spriteCanvas,
@@ -591,8 +681,8 @@
 
         const tLen = Math.sqrt(item.Tx * item.Tx + item.Ty * item.Ty);
         const depthAlpha = item.isBack
-          ? 0.07 * item.reveal * masterAlpha * letterBuild
-          : (0.1 + 0.9 * Math.pow(tLen, 0.5)) * item.reveal * masterAlpha * letterBuild;
+          ? 0.12 * item.reveal * masterAlpha * letterBuild
+          : (0.18 + 0.82 * Math.pow(tLen, 0.5)) * item.reveal * masterAlpha * letterBuild;
         if (depthAlpha <= 0.002) return;
 
         ctx.save();
